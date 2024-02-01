@@ -1,4 +1,4 @@
-use crate::ir::{Expr, Op};
+use crate::ast::{Expr, Op};
 
 pub struct Interpreter {}
 
