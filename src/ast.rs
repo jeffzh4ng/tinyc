@@ -1,5 +1,6 @@
 pub enum Expr {
     LiteralNum(i128),
+    LiteralBool(bool),
     Binary {
         op: Op,
         l: Box<Expr>,
@@ -10,6 +11,12 @@ pub enum Expr {
         then: Box<Expr>,
         els: Box<Expr>,
     },
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Val {
+    Num(i128),
+    Bool(bool),
 }
 
 pub enum Op {
