@@ -12,8 +12,8 @@ pub enum Category {
 
 #[derive(PartialEq, Debug)]
 pub struct Token {
-    lexeme: String,
-    category: Category,
+    pub lexeme: String,
+    pub category: Category,
     // line: u32,
 }
 
