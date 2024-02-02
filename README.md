@@ -20,6 +20,7 @@ a C compiler targetting RISC-V, hosted in Rust
 | allocator | 📋 | 📋 | 📋 | 📋 | 📋 |
 
 ### References
+- Programming Languages: Application and Interpretation (Krishnamurthi)
 - Compiler Construction (Wirth)
 - Modern Compiler Implementation in ML (Appel)
 - Engineering a Compiler (Cooper, Torczon)
