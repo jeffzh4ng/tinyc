@@ -1,6 +1,7 @@
 pub enum Expr {
-    LiteralNum(i128),
-    LiteralBool(bool),
+    Num(i128),
+    Bool(bool),
+    Var(String),
     Binary {
         op: Op,
         l: Box<Expr>,
@@ -10,6 +11,11 @@ pub enum Expr {
         cond: Box<Expr>,
         then: Box<Expr>,
         els: Box<Expr>,
+    },
+    Let {
+        identifier: String,
+        binding: Box<Expr>,
+        body: Box<Expr>,
     },
 }
 
