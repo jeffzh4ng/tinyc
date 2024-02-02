@@ -1,13 +1,13 @@
 #[derive(PartialEq, Debug)]
 pub enum Category {
+    // literals
+    Int,
+
     // single char
     Plus,
     Minus,
     Star,
     Slash,
-
-    // literals
-    Int,
 }
 
 #[derive(PartialEq, Debug)]
@@ -54,7 +54,7 @@ impl Scanner {
                         .collect::<Vec<_>>();
 
                     let t = Token {
-                        lexeme: f.to_string(),
+                        lexeme: String::from(f),
                         category: Category::Int,
                     };
 
@@ -75,9 +75,10 @@ impl Scanner {
         match cs.as_slice() {
             [] => vec![],
             [f, r @ ..] => match f {
+                '0'..='9' => Scanner::scan_int(cs),
                 '+' => {
                     let t = Token {
-                        lexeme: "+".to_string(),
+                        lexeme: String::from("+"),
                         category: Category::Plus,
                     };
 
@@ -87,7 +88,7 @@ impl Scanner {
                 }
                 '-' => {
                     let t = Token {
-                        lexeme: "-".to_string(),
+                        lexeme: String::from("-"),
                         category: Category::Minus,
                     };
 
@@ -97,7 +98,7 @@ impl Scanner {
                 }
                 '*' => {
                     let t = Token {
-                        lexeme: "*".to_string(),
+                        lexeme: String::from("*"),
                         category: Category::Star,
                     };
 
@@ -107,7 +108,7 @@ impl Scanner {
                 }
                 '/' => {
                     let t = Token {
-                        lexeme: "/".to_string(),
+                        lexeme: String::from("/"),
                         category: Category::Slash,
                     };
 
@@ -115,10 +116,9 @@ impl Scanner {
                         .chain(Scanner::scan(r.to_vec()))
                         .collect()
                 }
-                '0'..='9' => Scanner::scan_int(cs),
                 _ => {
                     let t = Token {
-                        lexeme: "PANIC?".to_string(),
+                        lexeme: String::from("PANIC?"),
                         category: Category::Plus,
                     };
 
@@ -183,9 +183,9 @@ mod test_scan {
         let output = Scanner::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: "9".to_string(), category: Category::Int },
-            Token { lexeme: "+".to_string(), category: Category::Plus },
-            Token { lexeme: "8".to_string(), category: Category::Int },
+            Token { lexeme: String::from("9"), category: Category::Int },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("8"), category: Category::Int },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -197,9 +197,9 @@ mod test_scan {
         let output = Scanner::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: "90".to_string(), category: Category::Int },
-            Token { lexeme: "+".to_string(), category: Category::Plus },
-            Token { lexeme: "80".to_string(), category: Category::Int },
+            Token { lexeme: String::from("90"), category: Category::Int },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("80"), category: Category::Int },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -211,15 +211,15 @@ mod test_scan {
         let output = Scanner::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: "2".to_string(), category: Category::Int },
-            Token { lexeme: "+".to_string(), category: Category::Plus },
-            Token { lexeme: "3".to_string(), category: Category::Int },
-            Token { lexeme: "*".to_string(), category: Category::Star },
-            Token { lexeme: "5".to_string(), category: Category::Int },
-            Token { lexeme: "-".to_string(), category: Category::Minus },
-            Token { lexeme: "8".to_string(), category: Category::Int },
-            Token { lexeme: "/".to_string(), category: Category::Slash },
-            Token { lexeme: "3".to_string(), category: Category::Int },
+            Token { lexeme: String::from("2"), category: Category::Int },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("3"), category: Category::Int },
+            Token { lexeme: String::from("*"), category: Category::Star },
+            Token { lexeme: String::from("5"), category: Category::Int },
+            Token { lexeme: String::from("-"), category: Category::Minus },
+            Token { lexeme: String::from("8"), category: Category::Int },
+            Token { lexeme: String::from("/"), category: Category::Slash },
+            Token { lexeme: String::from("3"), category: Category::Int },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -231,15 +231,15 @@ mod test_scan {
         let output = Scanner::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: "22".to_string(), category: Category::Int },
-            Token { lexeme: "+".to_string(), category: Category::Plus },
-            Token { lexeme: "33".to_string(), category: Category::Int },
-            Token { lexeme: "*".to_string(), category: Category::Star },
-            Token { lexeme: "55".to_string(), category: Category::Int },
-            Token { lexeme: "-".to_string(), category: Category::Minus },
-            Token { lexeme: "88".to_string(), category: Category::Int },
-            Token { lexeme: "/".to_string(), category: Category::Slash },
-            Token { lexeme: "33".to_string(), category: Category::Int },
+            Token { lexeme: String::from("22"), category: Category::Int },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("33"), category: Category::Int },
+            Token { lexeme: String::from("*"), category: Category::Star },
+            Token { lexeme: String::from("55"), category: Category::Int },
+            Token { lexeme: String::from("-"), category: Category::Minus },
+            Token { lexeme: String::from("88"), category: Category::Int },
+            Token { lexeme: String::from("/"), category: Category::Slash },
+            Token { lexeme: String::from("33"), category: Category::Int },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -258,15 +258,15 @@ mod test_scan {
         let output = Scanner::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: "23".to_string(), category: Category::Int },
-            Token { lexeme: "+".to_string(), category: Category::Plus },
-            Token { lexeme: "18".to_string(), category: Category::Int },
-            Token { lexeme: "-".to_string(), category: Category::Minus },
-            Token { lexeme: "45".to_string(), category: Category::Int },
-            Token { lexeme: "*".to_string(), category: Category::Star },
-            Token { lexeme: "2".to_string(), category: Category::Int },
-            Token { lexeme: "/".to_string(), category: Category::Slash },
-            Token { lexeme: "18".to_string(), category: Category::Int },
+            Token { lexeme: String::from("23"), category: Category::Int },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("18"), category: Category::Int },
+            Token { lexeme: String::from("-"), category: Category::Minus },
+            Token { lexeme: String::from("45"), category: Category::Int },
+            Token { lexeme: String::from("*"), category: Category::Star },
+            Token { lexeme: String::from("2"), category: Category::Int },
+            Token { lexeme: String::from("/"), category: Category::Slash },
+            Token { lexeme: String::from("18"), category: Category::Int },
         ];
 
         assert!(vecs_match(&output, &expected_output))
