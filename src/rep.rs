@@ -9,7 +9,7 @@ pub enum Expr {
         body: Box<Expr>,
     },
     Lambda {
-        param: String,
+        f_param: String,
         body: Box<Expr>,
     },
 
@@ -26,7 +26,7 @@ pub enum Expr {
     },
     Var(String),
     LambdaApp {
-        arg: Box<Expr>,
+        a_param: Box<Expr>,
         lambda: Box<Expr>, // choice: identifier or expr
     },
 }

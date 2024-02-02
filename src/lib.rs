@@ -1,3 +1,3 @@
-pub mod ast;
-pub mod interpreter;
+pub mod eval;
+pub mod rep;
 pub mod scanner;

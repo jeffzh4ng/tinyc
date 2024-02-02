@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::ast::{Expr, Op, Val};
+use crate::rep::{Expr, Op, Val};
 
 type Env = HashMap<String, Val>;
 
@@ -9,8 +9,28 @@ pub struct Interpreter {}
 impl Interpreter {
     pub fn eval(&self, e: Expr, nv: Env) -> Val {
         match e {
+            // introductions
             Expr::Num(n) => Val::Num(n), // TODO: inheriting host lang's number semantics
             Expr::Bool(b) => Val::Bool(b),
+            Expr::Let {
+                identifier,
+                binding,
+                body,
+            } => {
+                #[rustfmt::skip]
+              let extended_nv = nv
+              .into_iter()
+              .chain(std::iter::once((identifier, self.eval(*binding, nv))))
+              .collect();
+
+                self.eval(*body, extended_nv)
+            }
+            Expr::Lambda {
+                f_param: param,
+                body,
+            } => Val::Lam { param, body: *body },
+
+            // eliminations
             Expr::Binary { op, l, r } => match op {
                 // threading through nv since SMoL has static scope
                 Op::Add => self.plus(self.eval(*l, nv), self.eval(*r, nv)),
@@ -29,21 +49,10 @@ impl Interpreter {
                 // }
             }
             Expr::Var(id) => todo!(), // (nv.get(&id).unwrap()),
-            Expr::Let {
-                identifier,
-                binding,
-                body,
+            Expr::LambdaApp {
+                a_param: arg,
+                lambda,
             } => {
-                #[rustfmt::skip]
-                let extended_nv = nv
-                .into_iter()
-                .chain(std::iter::once((identifier, self.eval(*binding, nv))))
-                .collect();
-
-                self.eval(*body, extended_nv)
-            }
-            Expr::Lambda { param, body } => Val::Lam { param, body: *body },
-            Expr::LambdaApp { arg, lambda } => {
                 // choice: order of f eval
                 let arg = self.eval(*arg, nv);
                 let lam = self.eval(*lambda, nv);
