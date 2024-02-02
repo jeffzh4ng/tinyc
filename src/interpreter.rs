@@ -42,6 +42,28 @@ impl Interpreter {
 
                 self.eval(*body, extended_nv)
             }
+            Expr::Lambda { param, body } => Val::Lam { param, body: *body },
+            Expr::LambdaApp { arg, lambda } => {
+                // choice: order of f eval
+                let arg = self.eval(*arg, nv);
+                let lam = self.eval(*lambda, nv);
+
+                // lecture: inherit's host lang (racket's) let semantics
+
+                match lam {
+                    Val::Lam { param, body } => {
+                        let extended_nv = nv
+                            .into_iter()
+                            .chain(std::iter::once((param, arg)))
+                            .collect();
+
+                        self.eval(body, extended_nv)
+                    }
+                    _ => {
+                        todo!() // error
+                    }
+                }
+            }
         }
     }
 

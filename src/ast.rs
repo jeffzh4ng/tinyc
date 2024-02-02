@@ -1,7 +1,19 @@
+#[derive(Debug, PartialEq)]
 pub enum Expr {
+    // introductions (values)
     Num(i128),
     Bool(bool),
-    Var(String),
+    Let {
+        identifier: String,
+        binding: Box<Expr>,
+        body: Box<Expr>,
+    },
+    Lambda {
+        param: String,
+        body: Box<Expr>,
+    },
+
+    // eliminations (operations)
     Binary {
         op: Op,
         l: Box<Expr>,
@@ -12,10 +24,10 @@ pub enum Expr {
         then: Box<Expr>,
         els: Box<Expr>,
     },
-    Let {
-        identifier: String,
-        binding: Box<Expr>,
-        body: Box<Expr>,
+    Var(String),
+    LambdaApp {
+        arg: Box<Expr>,
+        lambda: Box<Expr>, // choice: identifier or expr
     },
 }
 
@@ -23,8 +35,10 @@ pub enum Expr {
 pub enum Val {
     Num(i128),
     Bool(bool),
+    Lam { param: String, body: Expr },
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Op {
     Add,
     Subtract,
