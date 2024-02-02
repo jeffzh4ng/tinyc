@@ -2,7 +2,6 @@
 a C compiler targetting RISC-V, hosted in Rust
 
 ## Frontend
-**Understanding source**
 |     | arithmetic | conditionals | loops | tuples | functions
 | --- | --- | --- | --- | --- | --- |
 | scanner | 📋 | 📋 | 📋 | 📋 | 📋 |
@@ -12,15 +11,19 @@ a C compiler targetting RISC-V, hosted in Rust
 ## Optimizer
 
 ## Backend
-**Mapping target**
 |     | arithmetic | conditionals | loops | tuples | functions
 | --- | --- | --- | --- | --- | --- |
 | selector | 📋 | 📋 | 📋 | 📋 | 📋 |
 | scheduler | 📋 | 📋 | 📋 | 📋 | 📋 |
 | allocator | 📋 | 📋 | 📋 | 📋 | 📋 |
 
-### References
+**Papers**
+- [Teaching Programming Languages in a Post-Linnaean Age (Krishnamurthi)](https://cs.brown.edu/~sk/Publications/Papers/Published/sk-teach-pl-post-linnaean/)
+- [An Incremental Approach to Compiler Construction (Ghuloum)](http://scheme2006.cs.uchicago.edu/11-ghuloum.pdf)
+
+**Texts**
 - Programming Languages: Application and Interpretation (Krishnamurthi)
+- Crafting Interpreters (Nystrom)
 - Compiler Construction (Wirth)
 - Modern Compiler Implementation in ML (Appel)
 - Engineering a Compiler (Cooper, Torczon)
