@@ -1,8 +1,19 @@
-use din::scanner;
+use din::lexer::Lexer;
 
 fn main() {
+    println!(
+        "
+    ⠀⠀⠀⠀⠀⣼⣧⠀⠀⠀⠀⠀
+    ⠀⠀⠀⠀⣼⣿⣿⣧⠀⠀⠀⠀
+    ⠀⠀⠀⠾⠿⠿⠿⠿⠷⠀⠀⠀
+    ⠀⠀⣼⣆⠀⠀⠀⠀⣰⣧⠀⠀
+    ⠀⣼⣿⣿⣆⠀⠀⣰⣿⣿⣧⠀
+    ⠾⠟⠿⠿⠿⠧⠼⠿⠿⠿⠻⠷
+    din: C89 -> RISC V
+    "
+    );
     let input = "2 + 3 * 5 - 8 / 3".chars().collect();
-    let output = scanner::Scanner::scan(input);
+    let output = Lexer::scan(input);
 
     println!("{:?}", output);
 }

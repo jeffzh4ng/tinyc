@@ -1,3 +1,4 @@
-pub mod eval;
+// pub mod eval;
+// pub mod parser;
+pub mod lexer;
 pub mod rep;
-pub mod scanner;

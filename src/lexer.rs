@@ -1,5 +1,11 @@
 #[derive(PartialEq, Debug)]
 
+// non-tokens:
+// - comments
+// - preprocessor directives
+// - macros
+// - whitespace: spaces, tabs, newlines
+
 pub enum Category {
     // introductions (values)
     LiteralInt,
@@ -31,15 +37,15 @@ pub struct Token {
 }
 
 #[derive(Default)]
-pub struct Scanner {}
+pub struct Lexer {}
 
-impl Scanner {
+impl Lexer {
     fn skip_whitespace(input: Vec<char>) -> Vec<char> {
         match input.as_slice() {
             [] => vec![],
             [f, r @ ..] => {
                 if f.is_whitespace() {
-                    Scanner::skip_whitespace(r.to_vec())
+                    Lexer::skip_whitespace(r.to_vec())
                 } else {
                     input
                 }
@@ -49,7 +55,8 @@ impl Scanner {
 
     fn scan_int(input: Vec<char>) -> Vec<Token> {
         // scan_int calls skip_whitespace too to remain idempotent
-        let cs: Vec<char> = Scanner::skip_whitespace(input);
+        let cs: Vec<char> = Lexer::skip_whitespace(input);
+
         match cs.as_slice() {
             [] => vec![],
             [f, _r @ ..] => match f {
@@ -71,9 +78,7 @@ impl Scanner {
                         category: Category::LiteralInt,
                     };
 
-                    std::iter::once(t)
-                        .chain(Scanner::scan(r.to_vec()))
-                        .collect()
+                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
                 }
                 _ => {
                     // panic
@@ -84,20 +89,18 @@ impl Scanner {
     }
 
     pub fn scan(input: Vec<char>) -> Vec<Token> {
-        let cs = Scanner::skip_whitespace(input);
+        let cs = Lexer::skip_whitespace(input);
         match cs.as_slice() {
             [] => vec![],
             [f, r @ ..] => match f {
-                '0'..='9' => Scanner::scan_int(cs),
+                '0'..='9' => Lexer::scan_int(cs),
                 '+' => {
                     let t = Token {
                         lexeme: Some(String::from("+")),
                         category: Category::Plus,
                     };
 
-                    std::iter::once(t)
-                        .chain(Scanner::scan(r.to_vec()))
-                        .collect()
+                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
                 }
                 '-' => {
                     let t = Token {
@@ -105,9 +108,7 @@ impl Scanner {
                         category: Category::Minus,
                     };
 
-                    std::iter::once(t)
-                        .chain(Scanner::scan(r.to_vec()))
-                        .collect()
+                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
                 }
                 '*' => {
                     let t = Token {
@@ -115,9 +116,7 @@ impl Scanner {
                         category: Category::Star,
                     };
 
-                    std::iter::once(t)
-                        .chain(Scanner::scan(r.to_vec()))
-                        .collect()
+                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
                 }
                 '/' => {
                     let t = Token {
@@ -125,9 +124,7 @@ impl Scanner {
                         category: Category::Slash,
                     };
 
-                    std::iter::once(t)
-                        .chain(Scanner::scan(r.to_vec()))
-                        .collect()
+                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
                 }
                 _ => {
                     let t = Token {
@@ -135,9 +132,7 @@ impl Scanner {
                         category: Category::Plus,
                     };
 
-                    std::iter::once(t)
-                        .chain(Scanner::scan(r.to_vec()))
-                        .collect()
+                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
                 }
             },
         }
@@ -172,7 +167,7 @@ mod test_valid {
             .collect();
 
         println!("{:?}", input);
-        let output = Scanner::scan(input);
+        let output = Lexer::scan(input);
         let expected_output = todo!();
         println!("{:?}", output);
     }
@@ -188,7 +183,7 @@ mod test_skip_whitespace {
     #[test]
     fn skip_space() {
         let input = "    7".chars().collect();
-        let output = Scanner::skip_whitespace(input);
+        let output = Lexer::skip_whitespace(input);
         let expected_output = "7".chars().collect();
 
         assert!(vecs_match(&output, &expected_output))
@@ -204,7 +199,7 @@ mod test_skip_whitespace {
         7"#
         .chars()
         .collect();
-        let output = Scanner::skip_whitespace(input);
+        let output = Lexer::skip_whitespace(input);
         let expected_output = "7".chars().collect();
 
         assert!(vecs_match(&output, &expected_output))
@@ -218,7 +213,7 @@ mod test_arithmetic {
     #[test]
     fn simple() {
         let input = "9 + 8".chars().collect();
-        let output = Scanner::scan(input);
+        let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: Some(String::from("9")), category: Category::LiteralInt },
@@ -232,7 +227,7 @@ mod test_arithmetic {
     #[test]
     fn simple_two() {
         let input = "90 + 80".chars().collect();
-        let output = Scanner::scan(input);
+        let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: Some(String::from("90")), category: Category::LiteralInt },
@@ -246,7 +241,7 @@ mod test_arithmetic {
     #[test]
     fn complex() {
         let input = "2 + 3 * 5 - 8 / 3".chars().collect();
-        let output = Scanner::scan(input);
+        let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: Some(String::from("2")), category: Category::LiteralInt },
@@ -266,7 +261,7 @@ mod test_arithmetic {
     #[test]
     fn complex_two() {
         let input = "22 + 33 * 55 - 88 / 33".chars().collect();
-        let output = Scanner::scan(input);
+        let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: Some(String::from("22")), category: Category::LiteralInt },
@@ -293,7 +288,7 @@ mod test_arithmetic {
         "#
         .chars()
         .collect();
-        let output = Scanner::scan(input);
+        let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: Some(String::from("23")), category: Category::LiteralInt },
