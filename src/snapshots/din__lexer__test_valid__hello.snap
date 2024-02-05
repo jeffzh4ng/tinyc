@@ -1,0 +1,23 @@
+---
+source: src/lexer.rs
+expression: output
+---
+- lexeme: int
+  category: KeywordTypeInt
+- lexeme: main
+  category: KeywordMain
+- lexeme: (
+  category: LeftParen
+- lexeme: )
+  category: RightParen
+- lexeme: "{"
+  category: LeftBrace
+- lexeme: return
+  category: KeywordReturn
+- lexeme: "0"
+  category: LiteralInt
+- lexeme: ;
+  category: SemiColon
+- lexeme: "}"
+  category: RightBrace
+

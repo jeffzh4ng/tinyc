@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+use serde::{Deserialize, Serialize};
 
 // non-tokens:
 // - comments
@@ -6,6 +6,7 @@
 // - macros
 // - whitespace: spaces, tabs, newlines
 
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub enum Category {
     // introductions (values)
     LiteralInt, // RE: [0-9]+
@@ -31,7 +32,7 @@ pub enum Category {
     SemiColon,  // RE: \;
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Token {
     pub lexeme: Option<String>,
     pub category: Category,
@@ -256,6 +257,7 @@ fn vecs_match<T: PartialEq>(a: &Vec<T>, b: &Vec<T>) -> bool {
 
 #[cfg(test)]
 mod test_valid {
+    use insta;
     use std::fs;
 
     use super::*;
@@ -269,11 +271,8 @@ mod test_valid {
             .map(|b| *b as char)
             .collect();
 
-        println!("{:?}", input);
         let output = Lexer::scan(input);
-        println!("{:?}", output);
-        // let expected_output = todo!();
-        // println!("{:?}", output);
+        insta::assert_yaml_snapshot!(output);
     }
 }
 
