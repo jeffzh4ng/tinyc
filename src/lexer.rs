@@ -34,7 +34,7 @@ pub enum Category {
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct Token {
-    pub lexeme: Option<String>,
+    pub lexeme: String,
     pub category: Category,
 }
 
@@ -57,7 +57,7 @@ impl Lexer {
                 'a'..='z' | 'A'..='Z' => Lexer::scan_id(cs),
                 '+' => {
                     let t = Token {
-                        lexeme: Some(String::from("+")),
+                        lexeme: String::from("+"),
                         category: Category::Plus,
                     };
 
@@ -65,7 +65,7 @@ impl Lexer {
                 }
                 '-' => {
                     let t = Token {
-                        lexeme: Some(String::from("-")),
+                        lexeme: String::from("-"),
                         category: Category::Minus,
                     };
 
@@ -73,7 +73,7 @@ impl Lexer {
                 }
                 '*' => {
                     let t = Token {
-                        lexeme: Some(String::from("*")),
+                        lexeme: String::from("*"),
                         category: Category::Star,
                     };
 
@@ -81,7 +81,7 @@ impl Lexer {
                 }
                 '/' => {
                     let t = Token {
-                        lexeme: Some(String::from("/")),
+                        lexeme: String::from("/"),
                         category: Category::Slash,
                     };
 
@@ -89,7 +89,7 @@ impl Lexer {
                 }
                 '(' => {
                     let t = Token {
-                        lexeme: Some(String::from("(")),
+                        lexeme: String::from("("),
                         category: Category::LeftParen,
                     };
 
@@ -97,7 +97,7 @@ impl Lexer {
                 }
                 ')' => {
                     let t = Token {
-                        lexeme: Some(String::from(")")),
+                        lexeme: String::from(")"),
                         category: Category::RightParen,
                     };
 
@@ -105,7 +105,7 @@ impl Lexer {
                 }
                 '{' => {
                     let t = Token {
-                        lexeme: Some(String::from("{")),
+                        lexeme: String::from("{"),
                         category: Category::LeftBrace,
                     };
 
@@ -113,7 +113,7 @@ impl Lexer {
                 }
                 '}' => {
                     let t = Token {
-                        lexeme: Some(String::from("}")),
+                        lexeme: String::from("}"),
                         category: Category::RightBrace,
                     };
 
@@ -121,7 +121,7 @@ impl Lexer {
                 }
                 ';' => {
                     let t = Token {
-                        lexeme: Some(String::from(";")),
+                        lexeme: String::from(";"),
                         category: Category::SemiColon,
                     };
 
@@ -129,7 +129,7 @@ impl Lexer {
                 }
                 _ => {
                     let t = Token {
-                        lexeme: Some(String::from("PANIC?")),
+                        lexeme: String::from("PANIC?"),
                         category: Category::Plus,
                     };
 
@@ -160,7 +160,7 @@ impl Lexer {
                         .collect::<Vec<_>>();
 
                     let t = Token {
-                        lexeme: Some(f),
+                        lexeme: f,
                         category: Category::LiteralInt,
                     };
 
@@ -197,15 +197,15 @@ impl Lexer {
 
                     let keyword = match f.as_str() {
                         "int" => Some(Token {
-                            lexeme: Some(String::from("int")),
+                            lexeme: String::from("int"),
                             category: Category::KeywordTypeInt,
                         }),
                         "main" => Some(Token {
-                            lexeme: Some(String::from("main")),
+                            lexeme: String::from("main"),
                             category: Category::KeywordMain,
                         }),
                         "return" => Some(Token {
-                            lexeme: Some(String::from("return")),
+                            lexeme: String::from("return"),
                             category: Category::KeywordReturn,
                         }),
                         _ => None,
@@ -214,7 +214,7 @@ impl Lexer {
                     let t = match keyword {
                         Some(k) => k,
                         None => Token {
-                            lexeme: Some(f),
+                            lexeme: f,
                             category: Category::Identifier,
                         },
                     };
@@ -319,9 +319,9 @@ mod test_arithmetic {
         let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: Some(String::from("9")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("+")), category: Category::Plus },
-            Token { lexeme: Some(String::from("8")), category: Category::LiteralInt },
+            Token { lexeme: String::from("9"), category: Category::LiteralInt },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("8"), category: Category::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -333,9 +333,9 @@ mod test_arithmetic {
         let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: Some(String::from("90")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("+")), category: Category::Plus },
-            Token { lexeme: Some(String::from("80")), category: Category::LiteralInt },
+            Token { lexeme: String::from("90"), category: Category::LiteralInt },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("80"), category: Category::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -347,15 +347,15 @@ mod test_arithmetic {
         let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: Some(String::from("2")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("+")), category: Category::Plus },
-            Token { lexeme: Some(String::from("3")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("*")), category: Category::Star },
-            Token { lexeme: Some(String::from("5")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("-")), category: Category::Minus },
-            Token { lexeme: Some(String::from("8")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("/")), category: Category::Slash },
-            Token { lexeme: Some(String::from("3")), category: Category::LiteralInt },
+            Token { lexeme: String::from("2"), category: Category::LiteralInt },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("3"), category: Category::LiteralInt },
+            Token { lexeme: String::from("*"), category: Category::Star },
+            Token { lexeme: String::from("5"), category: Category::LiteralInt },
+            Token { lexeme: String::from("-"), category: Category::Minus },
+            Token { lexeme: String::from("8"), category: Category::LiteralInt },
+            Token { lexeme: String::from("/"), category: Category::Slash },
+            Token { lexeme: String::from("3"), category: Category::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -367,15 +367,15 @@ mod test_arithmetic {
         let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: Some(String::from("22")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("+")), category: Category::Plus },
-            Token { lexeme: Some(String::from("33")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("*")), category: Category::Star },
-            Token { lexeme: Some(String::from("55")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("-")), category: Category::Minus },
-            Token { lexeme: Some(String::from("88")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("/")), category: Category::Slash },
-            Token { lexeme: Some(String::from("33")), category: Category::LiteralInt },
+            Token { lexeme: String::from("22"), category: Category::LiteralInt },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("33"), category: Category::LiteralInt },
+            Token { lexeme: String::from("*"), category: Category::Star },
+            Token { lexeme: String::from("55"), category: Category::LiteralInt },
+            Token { lexeme: String::from("-"), category: Category::Minus },
+            Token { lexeme: String::from("88"), category: Category::LiteralInt },
+            Token { lexeme: String::from("/"), category: Category::Slash },
+            Token { lexeme: String::from("33"), category: Category::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -394,15 +394,15 @@ mod test_arithmetic {
         let output = Lexer::scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: Some(String::from("23")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("+")), category: Category::Plus },
-            Token { lexeme: Some(String::from("18")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("-")), category: Category::Minus },
-            Token { lexeme: Some(String::from("45")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("*")), category: Category::Star },
-            Token { lexeme: Some(String::from("2")), category: Category::LiteralInt },
-            Token { lexeme: Some(String::from("/")), category: Category::Slash },
-            Token { lexeme: Some(String::from("18")), category: Category::LiteralInt },
+            Token { lexeme: String::from("23"), category: Category::LiteralInt },
+            Token { lexeme: String::from("+"), category: Category::Plus },
+            Token { lexeme: String::from("18"), category: Category::LiteralInt },
+            Token { lexeme: String::from("-"), category: Category::Minus },
+            Token { lexeme: String::from("45"), category: Category::LiteralInt },
+            Token { lexeme: String::from("*"), category: Category::Star },
+            Token { lexeme: String::from("2"), category: Category::LiteralInt },
+            Token { lexeme: String::from("/"), category: Category::Slash },
+            Token { lexeme: String::from("18"), category: Category::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
