@@ -1,15 +1,20 @@
 # Architecture
+Some thoughts on the theory behind languages, interpreters, compilers, and how
+it translates (if at all) to Din's architecture.
+
+TODO: preprocessor
 
 ### Frontend (lexing, parsing, typing)
 Din's frontend follows a traditional three pass architecture, where separation
-of concerns is split based on the different levels of abstraction that naturally
-occur when raising the representation from characters, to tokens, to trees.
+of concerns is split based on the different levels of abstraction which naturally
+occur when raising the representation of source from characters, to tokens, to
+trees.
 
-While academia loves to formalize both lexical[^0] and syntactic[^1] analysis with
-well-defined compiler compilers, Din's lexer and parser are both handwritten. Many
-open source compiler frontends follow suit, such as GCC and Clang.
+While academia tends to formalize both lexical and syntactic analysis with
+well-defined compiler compilers, Din's lexer and parser are both handwritten.
+Many open source compiler frontends follow suit, like GCC and Clang.
 
-A heuristic the author used for calculating cost-benefit calculus was
+A heuristic the author used for calculating cost-benefit calculus waas:
 ```
 benefit(DSL) ∝ |engineers|
 ```
@@ -19,15 +24,22 @@ managing cloud infrastructure and building games) may make sense when
 `|engineers| > 1e4`, but definitely not for a project like Din, where
 `|engineers| = 1`.
 
-[^0]: REs -> NFAs -> DFA -> min(DFA) -> lexer, where the first three edges are
-     Thompson's construction, subset construction, and Hopcroft's algorithm
-
-[^1]: BNF -> parser
-
 **1. Lexing**
 
-**2. Parsing**
+For lexing, the central problem is recognizing tokens from
+characters. Intuitions with formal models can start either via specification via
+regular expressions (REs) or implementation via finite automata (FA).
 
+Regardless of entry point, you'll find these models are equivalent by converting
+REs -> NFAs -> DFA -> REs via the Thompson's, subset, and Kleene's construction
+respectively. These well-defined formalisms and their correctness properties lend
+themselves to lexer compilers such as Lex and Flex which take REs as input, and
+produce lexers as output.
+
+Due to the cost benefit analysis stated above, Din ignores lexer compilers. Its
+lexer is hand-written.
+
+**2. Parsing**
 Pratt Parsing (aka the monads of syntactic analysis)
 - [index](https://www.oilshell.org/blog/2017/03/31.html)
 - [Dijkstra (1961)](https://ir.cwi.nl/pub/9251/9251D.pdf)
@@ -63,6 +75,8 @@ take no more than 5%-10% of total compile time.
 - Modern Compiler Design (Grune)
 
 **Optimizations**
+- 80s: register allocation
+- 90s: scheduling (bc RISC introduced pipelining)
 
 # References: Source and Target Languages
 **Source: C89**
