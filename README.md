@@ -1,2 +1,2 @@
 # din
-a C compiler targetting RISC-V, hosted in Rust
+a CPU compiler (C89 -> RISC-V)
