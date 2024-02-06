@@ -1,30 +1,47 @@
 # Architecture
 Some thoughts on the theory behind languages, interpreters, compilers, and how
-it translates (if at all) to Din's architecture.
+it translates (if at all) to din's architecture.
 
 TODO: preprocessor
 
 ### Frontend (lexing, parsing, typing)
-Din's frontend follows a traditional three pass architecture, where separation
+```
+chars -> |lexer| -> tokens -> |parser| -> tree
+```
+
+din's frontend follows a traditional three pass architecture, where separation
 of concerns is split based on the different levels of abstraction which naturally
 occur when raising the representation of source from characters, to tokens, to
 trees.
 
 While academia tends to formalize both lexical and syntactic analysis with
-well-defined compiler compilers, Din's lexer and parser are both handwritten.
+well-defined compiler compilers, din's lexer and parser are both handwritten.
 Many open source compiler frontends follow suit, like GCC and Clang.
 
-A heuristic the author used for calculating cost-benefit calculus waas:
-```
-benefit(DSL) ∝ |engineers|
-```
+A heuristic the author used for calculating cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
 
 Sacrificing flow control for a straight-jacketed DSL (such as HCL and ECS for
 managing cloud infrastructure and building games) may make sense when
-`|engineers| > 1e4`, but definitely not for a project like Din, where
+`|engineers| > 1e4`, but definitely not for a project like din, where
 `|engineers| = 1`.
 
 **1. Lexing**
+```rust
+struct Token {
+    pub lexeme: String,
+    pub category: Category, // literals, identifiers, keywords, punctuation, etc.
+}
+
+struct Lexer {}
+
+impl Lexer {
+   pub fn scan(input: Vec<char>) -> Vec<Token> {}
+}
+
+```
+
+TODO: A is the language of M = M recognizes A = A = L(M)
+
 
 For lexing, the central problem is recognizing tokens from
 characters. Intuitions with formal models can start either via specification via
@@ -36,43 +53,106 @@ respectively. These well-defined formalisms and their correctness properties len
 themselves to lexer compilers such as Lex and Flex which take REs as input, and
 produce lexers as output.
 
-Due to the cost benefit analysis stated above, Din ignores lexer compilers. Its
+Due to the cost benefit analysis stated above, din ignores lexer compilers. Its
 lexer is hand-written.
 
 **2. Parsing**
+
+*Specifications: Grammars*
+For parsing and syntactic analysis, REs are not strong enough to express the
+recursive-like nature of expressions declared in a non-lisp-S-expression-like
+syntax. Consider
+
+```TODO
+(a + b) * c
+```
+
+This is because REs and their DFA counterparts don't
+have the necessary state to balance parentheses.
+TODO: pumping lemma...
+
+---
+
+In formal language theory, this
+motivates to move one step up the
+[Chomsky Hierarchy](https://en.wikipedia.org/wiki/Chomsky_hierarchy) to
+context-free grammars (CFGs), and their specifications via Backus-Naur form (BNF).
+
+The formal model is similar in form to lexing. Given a token stream, the parser
+needs to build a constructive proof that the token stream can be derived from
+a grammar's derivations.
+
+CFGs, at their core: are REs with recurison.
+- derivations (list of rules) create productions (trees) with non-terminals and terminals.
+- BNF specification
+
+---
+
+```rust
+struct Parser
+
+impl Parser {
+  fn parse(tokens: Vec<Token>) -> Expr {
+
+  }
+}
+
+```
+
+*Implementations: Top down (recursive descent)*
+
+Top down refers to direction of tree creation via recursion. Recursive descent refers to
+direction of grammar.
+
+RECURSIVE DESCENT
+- a literal translation of the grammar’s rules straight into imperative code.
+problem 1: left recursion
+problem 2: associativity
+problem 3: efficiency
+
+RECURSIVE DESCENT WITH OPERATOR PRECEDENCE (pratt or shunting)
+
+*Bottom up (recursive ascent)*
+
+Bottom up refers to direction of tree creation via recursion. Recursive ascent refers to
+direction of grammar.
+
+Yacc, Bison, ANTLR
+
+
 Pratt Parsing (aka the monads of syntactic analysis)
-- [index](https://www.oilshell.org/blog/2017/03/31.html)
+[index](https://www.oilshell.org/blog/2017/03/31.html)
+
+*ogs*
 - [Dijkstra (1961)](https://ir.cwi.nl/pub/9251/9251D.pdf)
 - [Pratt (1973)](https://tdop.github.io/)
 - [Norvell (1999)](https://www.engr.mun.ca/%7Etheo/Misc/exp_parsing.htm)
+
+*new gen*
 - [Crockford (2007)](https://crockford.com/javascript/tdop/tdop.html)
 - [Bendersky (2010)](https://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing)
 - [Nystrom (2011)](https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/)
 - [Ball (2016)](https://edu.anarcho-copy.org/Programming%20Languages/Go/writing%20an%20INTERPRETER%20in%20go.pdf)
 - [Kladov (2020)](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing)
 
-Comparisons
-- [Oilshell (2016)](https://www.oilshell.org/blog/2016/11/01.html)
+Recursive descent ⊆ Pratt Parsing ≅ Shunting Yard
+- [Chu (2016)](https://www.oilshell.org/blog/2016/11/01.html)
+- [Chu (2017)](https://www.oilshell.org/blog/2017/03/30.html)
 - [Norvell (2016)](https://www.engr.mun.ca/%7Etheo/Misc/pratt_parsing.htm)
 - [Kladov (2020)](https://matklad.github.io/2020/04/15/from-pratt-to-dijkstra.html)
 - [Johnston (2021)](https://www.abubalay.com/blog/2021/12/31/lr-control-flow)
 
 # References: Interpreters and Compilers
-[An Incremental Approach to Compiler Construction (Ghuloum)](http://scheme2006.cs.uchicago.edu/11-ghuloum.pdf)
-
-Note: please avoid the dragon book. You'll walk away with the impression that
-compiler construction is primarily about parsing, when in fact parsing should
-take no more than 5%-10% of total compile time.
-
-**Interpreters and introductions**
+**Interpreters and Compilers**
 - Programming Languages: Application and Interpretation (Krishnamurthi)
-- Crafting Interpreters (Nystrom)
-- Writing an Interpreter in Go (Ball)
-
-**Compilers and formalisms**
-- Writing a Compiler in Go (Ball)
 - Engineering a Compiler (Cooper, Torczon)
 - Modern Compiler Design (Grune)
+- [Cornell's CS 4120 SP23 Lecture Notes (Myers)](https://www.cs.cornell.edu/courses/cs4120/2023sp/notes/)
+- [An Incremental Approach to Compiler Construction (Ghuloum)](http://scheme2006.cs.uchicago.edu/11-ghuloum.pdf)
+
+note: please avoid the dragon book. You'll walk away with the impression that
+compiler construction is primarily about parsing, when in fact parsing should
+take no more than 5%-10% of total compile time.
 
 **Optimizations**
 - 80s: register allocation
@@ -80,10 +160,56 @@ take no more than 5%-10% of total compile time.
 
 # References: Source and Target Languages
 **Source: C89**
-- C99 ISO Standard
-- If You Must Learn C (Ragde)
+- [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
 - The C Programming Language (K&R)
-- C Programming: A Modern Approach (King)
+- If You Must Learn C (Ragde)
+
+```
+prog	:	{ dcl ';'  |  func }
+dcl	:	type var_decl { ',' var_decl }
+ 	|	[ extern ] type id '(' parm_types ')' { ',' id '(' parm_types ')' }
+ 	|	[ extern ] void id '(' parm_types ')' { ',' id '(' parm_types ')' }
+var_decl	:	id [ '[' intcon ']' ]
+type	:	char
+ 	|	int
+parm_types	:	void
+ 	|	type id [ '[' ']' ] { ',' type id [ '[' ']' ] }
+func	:	type id '(' parm_types ')' '{' { type var_decl { ',' var_decl } ';' } { stmt } '}'
+ 	|	void id '(' parm_types ')' '{' { type var_decl { ',' var_decl } ';' } { stmt } '}'
+stmt	:	if '(' expr ')' stmt [ else stmt ]
+ 	|	while '(' expr ')' stmt
+ 	|	for '(' [ assg ] ';' [ expr ] ';' [ assg ] ')' stmt
+ 	|	return [ expr ] ';'
+ 	|	assg ';'
+ 	|	id '(' [expr { ',' expr } ] ')' ';'
+ 	|	'{' { stmt } '}'
+ 	|	';'
+assg	:	id [ '[' expr ']' ] = expr
+expr	:	'–' expr
+ 	|	'!' expr
+ 	|	expr binop expr
+ 	|	expr relop expr
+ 	|	expr logical_op expr
+ 	|	id [ '(' [expr { ',' expr } ] ')' | '[' expr ']' ]
+ 	|	'(' expr ')'
+ 	|	intcon
+ 	|	charcon
+ 	|	stringcon
+binop	:	+
+ 	|	–
+ 	|	*
+ 	|	/
+relop	:	==
+ 	|	!=
+ 	|	<=
+ 	|	<
+ 	|	>=
+ 	|	>
+logical_op	:	&&
+ 	|	||
+```
+Credit: [C-- Language Spec (Debray)](https://www2.cs.arizona.edu/~debray/Teaching/CSc453/DOCS/cminusminusspec.html)
+
 
 **Target: RISC-V**
 - The RISC-V Reader (Waterman, Patterson)
