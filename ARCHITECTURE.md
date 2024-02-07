@@ -2,9 +2,15 @@
 
 **Contents**
 1. [Frontend](./https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#frontend-lexing-parsing-typing)
+    - [Formalizations](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#formalizations)
+    - [Parsing](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#parsing-top-down-recursive-descent)
 2. [Backend]()
 3. [References: Interpreters and Compilers](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-interpreters-and-compilers)
+
 4. [References: Source and Target Languages](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-source-and-target-languages)
+    - [Source: C89/90](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#source-c8990)
+    - [Target 1: RISC-V](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#target-1-risc-v)
+    - [Target 2: LLVM](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#target-2-llvm)
 
 # Frontend (lexing, parsing, typing)
 ```
@@ -13,21 +19,22 @@ chars -> |lexer| -> tokens -> |parser| -> parse tree -> |elaborator| -> abstract
 
 din's frontend follows a traditional three pass architecture, where separation
 of concerns is split based on the different levels of abstraction which naturally
-occur when raising the representation of source from characters, to tokens, to
+occur when raising the representation of source from charactersk, to tokens, to
 trees.
 
 While academia tends to formalize both lexical and syntactic analysis with
 well-defined compiler compilers, din's lexer and parser are both handwritten.
-There are even many open source compiler frontends such as GCC and Clang which
-handwrite their frontends; and din follows suit. However, a quick overview of
-the formalizations is given below.
+There are even many open source compilers such as GCC and Clang which
+handwrite their own frontends; and din follows suit. However, a quick overview of
+formalizations is given below.
 
 ### Formalizations
 
-Lexing and parsing sit on a strong foundation of theory which sets at the
+Lexing and parsing sit on a strong foundation of theory which sit at the
 intersection of languages and computation. The core problem of both lexical and
 syntactic analysis is to recognize a series of symbols from an alphabet by
-producing a derivation of productions specified by the language.
+producing a derivation of productions specified by the language. That was a bunch
+of word salad according to formal definitions. More clearly:
 
 Lexical analysis:
 - alphabet: characters
@@ -45,25 +52,25 @@ Syntactic analysis:
 
 There are well-defined algorithms to convert specs into implementations. For
 instance, with syntactic analysis, you can convert REs -> NFAs -> DFA -> min(DFA)
-via Thompson's, subset, and Kleene's construction respectively.
+via Thompson's, subset, and Kleene's construction, respectively.
 
 RE/FA aren't expressive enough for a certain set of languages, called context-free
-languages (there's also a result called the Pumping Lemma which determiens if
-a language is regualr or not). If a language is context-free, it'll need to be
+languages (in which you can use the Pumping Lemma result to determine if
+a language is regular or not). If a language is context-free, it'll need to be
 specified via BNF and implemented with pushdown automata, which are the same
 as their regular-language counterparts with the addition of recursion.
 
-The formalization in both lexical and syntactic analysis results in so called
+The formalization of both lexical and syntactic analysis results in so called
 compiler compilers which take in your lexical and syntactic grammars, and produce
 the machines (lexers and parsers), which *you* then use for your compiler. This
-is not any different from higher order programming.
+is not so different from higher order programming.
 
 While these academic formalizations can help compiler construction with respect
 to correctness (rule #1 of compiler construction is to perserve semantics
 afterall), caution should be exercised based on your engineering constraints.
 A heuristic to use when calculating cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
 Sacrificing flow control for a straight-jacketed DSL (such as HCL and ECS for
-managing cloud infrastructure and building games) may make sense when
+managing cloud infrastructure and building games) makes sense when
 `|engineers| > 1e4`, but definitely not for a project like din, where
 `|engineers| = 1`.
 
@@ -114,7 +121,7 @@ take no more than 5%-10% of total compile time.
 
 # References: Source and Target Languages
 
-### Source: C89
+### Source: C89/90
 - [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
 - The C Programming Language (K&R)
 - If You Must Learn C (Ragde)
@@ -165,10 +172,16 @@ PUNC_SEMICOLON   ::= ;
 ```
 
 *Semantics (types)*
-
-### Target: RISC-V
+### Target 1: RISC-V
 - The RISC-V Reader (Waterman, Patterson)
 - Computer Organization and Design RISC-V Edition: The Hardware Software Interface (Patterson, Hennessy)
 - Computer Architecture: A Quantitative Approach (Hennesey, Patterson)
 - Digital Design and Computer Architecture (Harris, Harris)
 - Inside the Machine (Stokes)
+
+### Target 2: LLVM
+- [LLVM for Grad Students (Sampson)](https://www.cs.cornell.edu/~asampson/blog/llvm.html)
+- [Greenplace (Bendersky)](https://eli.thegreenplace.net/tag/llvm-clang)
+- [Compilers and IRs (Zhang)](https://www.lei.chat/posts/compilers-and-irs-llvm-ir-spirv-and-mlir/)
+- [AOSA: LLVM (Lattner)](https://aosabook.org/en/v1/llvm.html)
+- [Tourist's Guide to the LLVM Source Code (Regehr)](https://blog.regehr.org/archives/1453)
