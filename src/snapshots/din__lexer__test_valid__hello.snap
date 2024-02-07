@@ -7,17 +7,17 @@ expression: output
 - lexeme: main
   category: KeywordMain
 - lexeme: (
-  category: LeftParen
+  category: PuncLeftParen
 - lexeme: )
-  category: RightParen
+  category: PuncRightParen
 - lexeme: "{"
-  category: LeftBrace
+  category: PuncLeftBrace
 - lexeme: return
   category: KeywordReturn
 - lexeme: "0"
   category: LiteralInt
 - lexeme: ;
-  category: SemiColon
+  category: PuncSemiColon
 - lexeme: "}"
-  category: RightBrace
+  category: PuncRightBrace
 

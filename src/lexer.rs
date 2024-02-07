@@ -6,6 +6,11 @@ use serde::{Deserialize, Serialize};
 // - macros
 // - whitespace: spaces, tabs, newlines
 
+// see: ARCHITECTURE.md Section 4 for specified lexical grammar
+
+// note: variations are explicitly typed. Collapsing categories like keywords
+//       into one variant while outsourcing variation to lexeme field on Token
+//       will produce more work for syntactic analysis, since lexeme : String
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub enum Category {
     // introductions (values)
@@ -13,23 +18,23 @@ pub enum Category {
     Identifier, // RE: [a−zA−Z][a−zA−Z0−9]*
 
     // keywords (subset of identifiers)
-    KeywordTypeInt, // RE: int
-    KeywordMain,    // RE: main
-    KeywordVoid,    // RE: void
-    KeywordReturn,  // RE: return
+    KeywordTypeInt,
+    KeywordMain,
+    KeywordVoid,
+    KeywordReturn,
 
     // eliminations (operations)
-    Plus,  // RE: \+
-    Minus, // RE: \-
-    Star,  // RE: \*
-    Slash, // RE: \/
+    Plus,
+    Minus,
+    Star,
+    Slash,
 
     // punctuation
-    LeftParen,  // RE: \(
-    RightParen, // RE: \)
-    LeftBrace,  // RE: \{
-    RightBrace, // RE: \}
-    SemiColon,  // RE: \;
+    PuncLeftParen,
+    PuncRightParen,
+    PuncLeftBrace,
+    PuncRightBrace,
+    PuncSemiColon,
 }
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
@@ -41,203 +46,199 @@ pub struct Token {
 // TODO: keep track of file and (col, row) for error reporting
 // struct Position {}
 
-#[derive(Default)]
-pub struct Lexer {}
+// TODO: just filter out whitespace instead of having a helper function
+pub fn scan(input: Vec<char>) -> Vec<Token> {
+    let cs = skip_whitespace(input);
 
-impl Lexer {
-    pub fn scan(input: Vec<char>) -> Vec<Token> {
-        let cs = Lexer::skip_whitespace(input);
+    // literals and identifiers have arbitrary length
+    // operations and punctuations are single ASCII characters
+    match cs.as_slice() {
+        [] => vec![],
+        [f, r @ ..] => match f {
+            '0'..='9' => scan_int(cs),
+            'a'..='z' | 'A'..='Z' => scan_id(cs),
+            '+' => {
+                let t = Token {
+                    lexeme: String::from("+"),
+                    category: Category::Plus,
+                };
 
-        // literals and identifiers have arbitrary length
-        // operations and punctuations are single ASCII characters
-        match cs.as_slice() {
-            [] => vec![],
-            [f, r @ ..] => match f {
-                '0'..='9' => Lexer::scan_int(cs),
-                'a'..='z' | 'A'..='Z' => Lexer::scan_id(cs),
-                '+' => {
-                    let t = Token {
-                        lexeme: String::from("+"),
-                        category: Category::Plus,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            '-' => {
+                let t = Token {
+                    lexeme: String::from("-"),
+                    category: Category::Minus,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                '-' => {
-                    let t = Token {
-                        lexeme: String::from("-"),
-                        category: Category::Minus,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            '*' => {
+                let t = Token {
+                    lexeme: String::from("*"),
+                    category: Category::Star,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                '*' => {
-                    let t = Token {
-                        lexeme: String::from("*"),
-                        category: Category::Star,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            '/' => {
+                let t = Token {
+                    lexeme: String::from("/"),
+                    category: Category::Slash,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                '/' => {
-                    let t = Token {
-                        lexeme: String::from("/"),
-                        category: Category::Slash,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            '(' => {
+                let t = Token {
+                    lexeme: String::from("("),
+                    category: Category::PuncLeftParen,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                '(' => {
-                    let t = Token {
-                        lexeme: String::from("("),
-                        category: Category::LeftParen,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            ')' => {
+                let t = Token {
+                    lexeme: String::from(")"),
+                    category: Category::PuncRightParen,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                ')' => {
-                    let t = Token {
-                        lexeme: String::from(")"),
-                        category: Category::RightParen,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            '{' => {
+                let t = Token {
+                    lexeme: String::from("{"),
+                    category: Category::PuncLeftBrace,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                '{' => {
-                    let t = Token {
-                        lexeme: String::from("{"),
-                        category: Category::LeftBrace,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            '}' => {
+                let t = Token {
+                    lexeme: String::from("}"),
+                    category: Category::PuncRightBrace,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                '}' => {
-                    let t = Token {
-                        lexeme: String::from("}"),
-                        category: Category::RightBrace,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            ';' => {
+                let t = Token {
+                    lexeme: String::from(";"),
+                    category: Category::PuncSemiColon,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                ';' => {
-                    let t = Token {
-                        lexeme: String::from(";"),
-                        category: Category::SemiColon,
-                    };
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            _ => {
+                let t = Token {
+                    lexeme: String::from("PANIC?"),
+                    category: Category::Plus,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                _ => {
-                    let t = Token {
-                        lexeme: String::from("PANIC?"),
-                        category: Category::Plus,
-                    };
-
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-            },
-        }
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+        },
     }
+}
 
-    fn scan_int(input: Vec<char>) -> Vec<Token> {
-        // scan_int calls skip_whitespace too to remain idempotent
-        let cs: Vec<char> = Lexer::skip_whitespace(input);
+fn scan_int(input: Vec<char>) -> Vec<Token> {
+    // scan_int calls skip_whitespace too to remain idempotent
+    let cs: Vec<char> = skip_whitespace(input);
 
-        match cs.as_slice() {
-            [] => vec![],
-            [f, _r @ ..] => match f {
-                '0'..='9' => {
-                    #[rustfmt::skip]
+    match cs.as_slice() {
+        [] => vec![],
+        [f, _r @ ..] => match f {
+            '0'..='9' => {
+                #[rustfmt::skip]
                     let f = cs
                         .iter()
                         .take_while(|&&c| c.is_numeric())
                         .collect::<String>();
 
-                    #[rustfmt::skip]
+                #[rustfmt::skip]
                     let r = cs
                         .into_iter()
                         .skip_while(|&c| c.is_numeric())
                         .collect::<Vec<_>>();
 
-                    let t = Token {
-                        lexeme: f,
-                        category: Category::LiteralInt,
-                    };
+                let t = Token {
+                    lexeme: f,
+                    category: Category::LiteralInt,
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                _ => {
-                    // panic
-                    todo!()
-                }
-            },
-        }
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            _ => {
+                // panic
+                todo!()
+            }
+        },
     }
+}
 
-    // TODO: support identifiers with alpha*numeric* characters after first alphabetic
-    fn scan_id(input: Vec<char>) -> Vec<Token> {
-        // scan_id calls skip_whitespace too to remain idempotent
-        let cs: Vec<char> = Lexer::skip_whitespace(input);
+// TODO: support identifiers with alpha*numeric* characters after first alphabetic
+fn scan_id(input: Vec<char>) -> Vec<Token> {
+    // scan_id calls skip_whitespace too to remain idempotent
+    let cs: Vec<char> = skip_whitespace(input);
 
-        match cs.as_slice() {
-            [] => vec![],
-            [f, _r @ ..] => match f {
-                'a'..='z' => {
-                    #[rustfmt::skip]
+    match cs.as_slice() {
+        [] => vec![],
+        [f, _r @ ..] => match f {
+            'a'..='z' => {
+                #[rustfmt::skip]
                     let f = cs
                         .iter()
                         .take_while(|&&c| c.is_alphabetic())
                         .collect::<String>();
 
-                    #[rustfmt::skip]
+                #[rustfmt::skip]
                     let r = cs
                         .into_iter()
                         .skip_while(|&c| c.is_alphabetic())
                         .collect::<Vec<_>>();
 
-                    let keyword = match f.as_str() {
-                        "int" => Some(Token {
-                            lexeme: String::from("int"),
-                            category: Category::KeywordTypeInt,
-                        }),
-                        "main" => Some(Token {
-                            lexeme: String::from("main"),
-                            category: Category::KeywordMain,
-                        }),
-                        "return" => Some(Token {
-                            lexeme: String::from("return"),
-                            category: Category::KeywordReturn,
-                        }),
-                        _ => None,
-                    };
+                let keyword = match f.as_str() {
+                    "int" => Some(Token {
+                        lexeme: String::from("int"),
+                        category: Category::KeywordTypeInt,
+                    }),
+                    "main" => Some(Token {
+                        lexeme: String::from("main"),
+                        category: Category::KeywordMain,
+                    }),
+                    "return" => Some(Token {
+                        lexeme: String::from("return"),
+                        category: Category::KeywordReturn,
+                    }),
+                    _ => None,
+                };
 
-                    let t = match keyword {
-                        Some(k) => k,
-                        None => Token {
-                            lexeme: f,
-                            category: Category::Identifier,
-                        },
-                    };
+                let t = match keyword {
+                    Some(k) => k,
+                    None => Token {
+                        lexeme: f,
+                        category: Category::Identifier,
+                    },
+                };
 
-                    std::iter::once(t).chain(Lexer::scan(r.to_vec())).collect()
-                }
-                _ => {
-                    // panic
-                    todo!()
-                }
-            },
-        }
+                std::iter::once(t).chain(scan(r.to_vec())).collect()
+            }
+            _ => {
+                // panic
+                todo!()
+            }
+        },
     }
+}
 
-    fn skip_whitespace(input: Vec<char>) -> Vec<char> {
-        match input.as_slice() {
-            [] => vec![],
-            [f, r @ ..] => {
-                if f.is_whitespace() {
-                    Lexer::skip_whitespace(r.to_vec())
-                } else {
-                    input
-                }
+fn skip_whitespace(input: Vec<char>) -> Vec<char> {
+    match input.as_slice() {
+        [] => vec![],
+        [f, r @ ..] => {
+            if f.is_whitespace() {
+                skip_whitespace(r.to_vec())
+            } else {
+                input
             }
         }
     }
@@ -271,7 +272,7 @@ mod test_valid {
             .map(|b| *b as char)
             .collect();
 
-        let output = Lexer::scan(input);
+        let output = scan(input);
         insta::assert_yaml_snapshot!(output);
     }
 }
@@ -286,7 +287,7 @@ mod test_skip_whitespace {
     #[test]
     fn skip_space() {
         let input = "    7".chars().collect();
-        let output: Vec<char> = Lexer::skip_whitespace(input);
+        let output: Vec<char> = skip_whitespace(input);
         let expected_output = "7".chars().collect();
 
         assert!(vecs_match(&output, &expected_output))
@@ -302,7 +303,7 @@ mod test_skip_whitespace {
         7"#
         .chars()
         .collect();
-        let output = Lexer::skip_whitespace(input);
+        let output = skip_whitespace(input);
         let expected_output = "7".chars().collect();
 
         assert!(vecs_match(&output, &expected_output))
@@ -316,7 +317,7 @@ mod test_arithmetic {
     #[test]
     fn simple() {
         let input = "9 + 8".chars().collect();
-        let output = Lexer::scan(input);
+        let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("9"), category: Category::LiteralInt },
@@ -330,7 +331,7 @@ mod test_arithmetic {
     #[test]
     fn simple_two() {
         let input = "90 + 80".chars().collect();
-        let output = Lexer::scan(input);
+        let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("90"), category: Category::LiteralInt },
@@ -344,7 +345,7 @@ mod test_arithmetic {
     #[test]
     fn complex() {
         let input = "2 + 3 * 5 - 8 / 3".chars().collect();
-        let output = Lexer::scan(input);
+        let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("2"), category: Category::LiteralInt },
@@ -364,7 +365,7 @@ mod test_arithmetic {
     #[test]
     fn complex_two() {
         let input = "22 + 33 * 55 - 88 / 33".chars().collect();
-        let output = Lexer::scan(input);
+        let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("22"), category: Category::LiteralInt },
@@ -391,7 +392,7 @@ mod test_arithmetic {
         "#
         .chars()
         .collect();
-        let output = Lexer::scan(input);
+        let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("23"), category: Category::LiteralInt },
