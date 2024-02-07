@@ -21,7 +21,9 @@ pub enum Category {
     KeywordTypeInt,
     KeywordMain,
     KeywordVoid,
-    KeywordReturn,
+
+    // statements
+    StatementReturn,
 
     // eliminations (operations)
     Plus,
@@ -208,7 +210,7 @@ fn scan_id(input: Vec<char>) -> Vec<Token> {
                     }),
                     "return" => Some(Token {
                         lexeme: String::from("return"),
-                        category: Category::KeywordReturn,
+                        category: Category::StatementReturn,
                     }),
                     _ => None,
                 };
