@@ -1,11 +1,14 @@
+#[derive(Debug)]
 pub struct Program {
     pub main_function: MainFunction,
 }
 
+#[derive(Debug)]
 pub struct MainFunction {
     pub statement: Statement,
 }
 
+#[derive(Debug)]
 pub enum Statement {
     Return(Expr),
 }

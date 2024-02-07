@@ -1,4 +1,4 @@
-use din::{lexer, parser::Parser};
+use din::{lexer, parser};
 use std::fs;
 
 fn main() {
@@ -19,6 +19,6 @@ fn main() {
         .map(|b| *b as char)
         .collect();
     let tokens = lexer::scan(chars);
-    // let tree = Parser::parse(tokens);
-    println!("{:?}", tokens);
+    let program = parser::parse_program(tokens).unwrap();
+    println!("{:?}", program);
 }

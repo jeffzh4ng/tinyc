@@ -11,8 +11,8 @@ use serde::{Deserialize, Serialize};
 // note: variations are explicitly typed. Collapsing categories like keywords
 //       into one variant while outsourcing variation to lexeme field on Token
 //       will produce more work for syntactic analysis, since lexeme : String
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
-pub enum Category {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+pub enum TokenType {
     // introductions (values)
     LiteralInt, // RE: [0-9]+
     Identifier, // RE: [a−zA−Z][a−zA−Z0−9]*
@@ -39,10 +39,10 @@ pub enum Category {
     PuncSemiColon,
 }
 
-#[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct Token {
     pub lexeme: String,
-    pub category: Category,
+    pub typ: TokenType,
 }
 
 // TODO: keep track of file and (col, row) for error reporting
@@ -62,7 +62,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             '+' => {
                 let t = Token {
                     lexeme: String::from("+"),
-                    category: Category::Plus,
+                    typ: TokenType::Plus,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -70,7 +70,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             '-' => {
                 let t = Token {
                     lexeme: String::from("-"),
-                    category: Category::Minus,
+                    typ: TokenType::Minus,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -78,7 +78,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             '*' => {
                 let t = Token {
                     lexeme: String::from("*"),
-                    category: Category::Star,
+                    typ: TokenType::Star,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -86,7 +86,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             '/' => {
                 let t = Token {
                     lexeme: String::from("/"),
-                    category: Category::Slash,
+                    typ: TokenType::Slash,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -94,7 +94,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             '(' => {
                 let t = Token {
                     lexeme: String::from("("),
-                    category: Category::PuncLeftParen,
+                    typ: TokenType::PuncLeftParen,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -102,7 +102,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             ')' => {
                 let t = Token {
                     lexeme: String::from(")"),
-                    category: Category::PuncRightParen,
+                    typ: TokenType::PuncRightParen,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -110,7 +110,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             '{' => {
                 let t = Token {
                     lexeme: String::from("{"),
-                    category: Category::PuncLeftBrace,
+                    typ: TokenType::PuncLeftBrace,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -118,7 +118,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             '}' => {
                 let t = Token {
                     lexeme: String::from("}"),
-                    category: Category::PuncRightBrace,
+                    typ: TokenType::PuncRightBrace,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -126,7 +126,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             ';' => {
                 let t = Token {
                     lexeme: String::from(";"),
-                    category: Category::PuncSemiColon,
+                    typ: TokenType::PuncSemiColon,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -134,7 +134,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
             _ => {
                 let t = Token {
                     lexeme: String::from("PANIC?"),
-                    category: Category::Plus,
+                    typ: TokenType::Plus,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -165,7 +165,7 @@ fn scan_int(input: Vec<char>) -> Vec<Token> {
 
                 let t = Token {
                     lexeme: f,
-                    category: Category::LiteralInt,
+                    typ: TokenType::LiteralInt,
                 };
 
                 std::iter::once(t).chain(scan(r.to_vec())).collect()
@@ -202,15 +202,15 @@ fn scan_id(input: Vec<char>) -> Vec<Token> {
                 let keyword = match f.as_str() {
                     "int" => Some(Token {
                         lexeme: String::from("int"),
-                        category: Category::KeywordTypeInt,
+                        typ: TokenType::KeywordTypeInt,
                     }),
                     "main" => Some(Token {
                         lexeme: String::from("main"),
-                        category: Category::KeywordMain,
+                        typ: TokenType::KeywordMain,
                     }),
                     "return" => Some(Token {
                         lexeme: String::from("return"),
-                        category: Category::StatementReturn,
+                        typ: TokenType::StatementReturn,
                     }),
                     _ => None,
                 };
@@ -219,7 +219,7 @@ fn scan_id(input: Vec<char>) -> Vec<Token> {
                     Some(k) => k,
                     None => Token {
                         lexeme: f,
-                        category: Category::Identifier,
+                        typ: TokenType::Identifier,
                     },
                 };
 
@@ -322,9 +322,9 @@ mod test_arithmetic {
         let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: String::from("9"), category: Category::LiteralInt },
-            Token { lexeme: String::from("+"), category: Category::Plus },
-            Token { lexeme: String::from("8"), category: Category::LiteralInt },
+            Token { lexeme: String::from("9"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("+"), typ: TokenType::Plus },
+            Token { lexeme: String::from("8"), typ: TokenType::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -336,9 +336,9 @@ mod test_arithmetic {
         let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: String::from("90"), category: Category::LiteralInt },
-            Token { lexeme: String::from("+"), category: Category::Plus },
-            Token { lexeme: String::from("80"), category: Category::LiteralInt },
+            Token { lexeme: String::from("90"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("+"), typ: TokenType::Plus },
+            Token { lexeme: String::from("80"), typ: TokenType::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -350,15 +350,15 @@ mod test_arithmetic {
         let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: String::from("2"), category: Category::LiteralInt },
-            Token { lexeme: String::from("+"), category: Category::Plus },
-            Token { lexeme: String::from("3"), category: Category::LiteralInt },
-            Token { lexeme: String::from("*"), category: Category::Star },
-            Token { lexeme: String::from("5"), category: Category::LiteralInt },
-            Token { lexeme: String::from("-"), category: Category::Minus },
-            Token { lexeme: String::from("8"), category: Category::LiteralInt },
-            Token { lexeme: String::from("/"), category: Category::Slash },
-            Token { lexeme: String::from("3"), category: Category::LiteralInt },
+            Token { lexeme: String::from("2"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("+"), typ: TokenType::Plus },
+            Token { lexeme: String::from("3"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("*"), typ: TokenType::Star },
+            Token { lexeme: String::from("5"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("-"), typ: TokenType::Minus },
+            Token { lexeme: String::from("8"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("/"), typ: TokenType::Slash },
+            Token { lexeme: String::from("3"), typ: TokenType::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -370,15 +370,15 @@ mod test_arithmetic {
         let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: String::from("22"), category: Category::LiteralInt },
-            Token { lexeme: String::from("+"), category: Category::Plus },
-            Token { lexeme: String::from("33"), category: Category::LiteralInt },
-            Token { lexeme: String::from("*"), category: Category::Star },
-            Token { lexeme: String::from("55"), category: Category::LiteralInt },
-            Token { lexeme: String::from("-"), category: Category::Minus },
-            Token { lexeme: String::from("88"), category: Category::LiteralInt },
-            Token { lexeme: String::from("/"), category: Category::Slash },
-            Token { lexeme: String::from("33"), category: Category::LiteralInt },
+            Token { lexeme: String::from("22"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("+"), typ: TokenType::Plus },
+            Token { lexeme: String::from("33"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("*"), typ: TokenType::Star },
+            Token { lexeme: String::from("55"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("-"), typ: TokenType::Minus },
+            Token { lexeme: String::from("88"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("/"), typ: TokenType::Slash },
+            Token { lexeme: String::from("33"), typ: TokenType::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
@@ -397,15 +397,15 @@ mod test_arithmetic {
         let output = scan(input);
         #[rustfmt::skip]
         let expected_output = vec![
-            Token { lexeme: String::from("23"), category: Category::LiteralInt },
-            Token { lexeme: String::from("+"), category: Category::Plus },
-            Token { lexeme: String::from("18"), category: Category::LiteralInt },
-            Token { lexeme: String::from("-"), category: Category::Minus },
-            Token { lexeme: String::from("45"), category: Category::LiteralInt },
-            Token { lexeme: String::from("*"), category: Category::Star },
-            Token { lexeme: String::from("2"), category: Category::LiteralInt },
-            Token { lexeme: String::from("/"), category: Category::Slash },
-            Token { lexeme: String::from("18"), category: Category::LiteralInt },
+            Token { lexeme: String::from("23"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("+"), typ: TokenType::Plus },
+            Token { lexeme: String::from("18"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("-"), typ: TokenType::Minus },
+            Token { lexeme: String::from("45"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("*"), typ: TokenType::Star },
+            Token { lexeme: String::from("2"), typ: TokenType::LiteralInt },
+            Token { lexeme: String::from("/"), typ: TokenType::Slash },
+            Token { lexeme: String::from("18"), typ: TokenType::LiteralInt },
         ];
 
         assert!(vecs_match(&output, &expected_output))
