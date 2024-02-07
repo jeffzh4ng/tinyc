@@ -1,15 +1,10 @@
 # Architecture
-Some thoughts on the theory behind languages, interpreters, compilers, and how
-it translates (if at all) to din's architecture.
 
 **Contents**
 1. [Frontend](./https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#frontend-lexing-parsing-typing)
 2. [Backend]()
 3. [References: Interpreters and Compilers](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-interpreters-and-compilers)
 4. [References: Source and Target Languages](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-source-and-target-languages)
-
-
-TODO: preprocessor
 
 # Frontend (lexing, parsing, typing)
 ```
@@ -23,14 +18,51 @@ trees.
 
 While academia tends to formalize both lexical and syntactic analysis with
 well-defined compiler compilers, din's lexer and parser are both handwritten.
-Many open source compiler frontends follow suit, such as GCC and Clang.
+There are even many open source compiler frontends such as GCC and Clang which
+handwrite their frontends; and din follows suit. However, a quick overview of
+the formalizations is given below.
 
-A heuristic the author used for calculating cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
+**Formalizations**
 
+Lexing and parsing sit on a strong foundation of theory which sets at the
+intersection of languages and computation. The core problem of both lexical and
+syntactic analysis is to recognize a series of symbols from an alphabet by
+producing a derivation of productions specified by the language.
+
+Lexical analysis:
+- alphabet: characters
+- series of symbols: tokens
+- language: regular
+  - spec: regular expressions (RE)
+  - impl: deterministic finite automata (DFA)
+
+Syntactic analysis:
+- alphabet: tokens
+- series of symbols: tree
+- language: context-free
+  - spec: Backus-Naur Form (BNF)
+  - impl: pushdown automata (PA)
+
+There are well-defined algorithms to convert specs into implementations, as well
+as proofs (Pumping Lemma) for determining when a language is regular or not. For
+instance, with syntactic analysis, you can convert REs -> NFAs -> DFA -> min(DFA)
+via Thompson's, subset, and Kleene's construction respectively. This results
+in so called "compiler compilers" which take in your lexical and syntactic
+grammars, and produce the machines (lexers and parsers), which *you* then use
+for your compiler. This is not any different from higher order programming.
+
+While these academic formalizations can help compiler construction with respect
+to correctness, caution should be exercised based on your engineering constraints.
+A heuristic to use when calculating cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
 Sacrificing flow control for a straight-jacketed DSL (such as HCL and ECS for
 managing cloud infrastructure and building games) may make sense when
 `|engineers| > 1e4`, but definitely not for a project like din, where
 `|engineers| = 1`.
+
+The only theory din leverages is the research behind the different types of
+top down parsing (recursive descent) to handle operation precedence and
+associativity with non-Lisp-like-S-expression-syntax, which, so happens to be
+din's case, as its source language is C.
 
 ### 1. Lexing
 ```rust
@@ -39,73 +71,15 @@ struct Token {
     pub category: Category, // literals, identifiers, keywords, punctuation, etc.
 }
 
-struct Lexer {}
-
-impl Lexer {
-   pub fn scan(input: Vec<char>) -> Vec<Token> {}
-}
-
+pub fn scan(input: Vec<char>) -> Vec<Token> {}
 ```
-
-TODO: A is the language of M = M recognizes A = A = L(M)
-
-
-For lexing, the central problem is recognizing tokens from
-characters. Intuitions with formal models can start either via specification via
-regular expressions (REs) or implementation via finite automata (FA).
-
-Regardless of entry point, you'll find these models are equivalent by converting
-REs -> NFAs -> DFA -> REs via Thompson's, subset, and Kleene's construction
-respectively. These well-defined formalisms and their correctness properties lend
-themselves to lexer compilers such as Lex and Flex which take REs as input, and
-produce table-driven lexers as output.
-
-Due to the cost benefit analysis stated above, din ignores lexer compilers. Its
-lexer is hand-written.
 
 ### 2. Parsing
-
-*Specifications: Grammars*
-For parsing and syntactic analysis, REs are not strong enough to express the
-recursive-like nature of expressions declared in a non-lisp-S-expression-like
-syntax. Consider
-
-```TODO
-(a + b) * c
-```
-
-This is because REs and their DFA counterparts don't
-have the necessary state to balance parentheses.
-TODO: pumping lemma...
-
----
-
-In formal language theory, this
-motivates to move one step up the
-[Chomsky Hierarchy](https://en.wikipedia.org/wiki/Chomsky_hierarchy) to
-context-free grammars (CFGs), and their specifications via Backus-Naur form (BNF).
-
-The formal model is similar in form to lexing. Given a token stream, the parser
-needs to build a constructive proof that the token stream can be derived from
-a grammar's derivations.
-
-CFGs, at their core: are REs with recurison.
-- derivations (list of rules) create productions (trees) with non-terminals and terminals.
-- BNF specification
-
----
-
 ```rust
-struct Parser
+fn parse(tokens: Vec<Token>) -> Expr {
 
-impl Parser {
-  fn parse(tokens: Vec<Token>) -> Expr {
-
-  }
 }
-
 ```
-
 *Implementations: Top down (recursive descent)*
 
 Top down refers to direction of tree creation via recursion. Recursive descent refers to
@@ -205,6 +179,7 @@ puncsemicolon   ::= ;
 <statement>     ::= keywordreturn <exp> puncsemicolon
 <exp>           ::= literalint
                 | <exp> binop <exp>
+                | puncleftparen <expr> puncrightparen
 
 <binop>         ::= plus
                 | minus
@@ -215,11 +190,6 @@ puncsemicolon   ::= ;
 ```
 
 *Semantics (types)*
-
-
-
-
-
 
 ### Target: RISC-V
 - The RISC-V Reader (Waterman, Patterson)
