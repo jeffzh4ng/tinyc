@@ -22,7 +22,7 @@ There are even many open source compiler frontends such as GCC and Clang which
 handwrite their frontends; and din follows suit. However, a quick overview of
 the formalizations is given below.
 
-**Formalizations**
+### Formalizations
 
 Lexing and parsing sit on a strong foundation of theory which sets at the
 intersection of languages and computation. The core problem of both lexical and
@@ -43,16 +43,24 @@ Syntactic analysis:
   - spec: Backus-Naur Form (BNF)
   - impl: pushdown automata (PA)
 
-There are well-defined algorithms to convert specs into implementations, as well
-as proofs (Pumping Lemma) for determining when a language is regular or not. For
+There are well-defined algorithms to convert specs into implementations. For
 instance, with syntactic analysis, you can convert REs -> NFAs -> DFA -> min(DFA)
-via Thompson's, subset, and Kleene's construction respectively. This results
-in so called "compiler compilers" which take in your lexical and syntactic
-grammars, and produce the machines (lexers and parsers), which *you* then use
-for your compiler. This is not any different from higher order programming.
+via Thompson's, subset, and Kleene's construction respectively.
+
+RE/FA aren't expressive enough for a certain set of languages, called context-free
+languages (there's also a result called the Pumping Lemma which determiens if
+a language is regualr or not). If a language is context-free, it'll need to be
+specified via BNF and implemented with pushdown automata, which are the same
+as their regular-language counterparts with the addition of recursion.
+
+The formalization in both lexical and syntactic analysis results in so called
+compiler compilers which take in your lexical and syntactic grammars, and produce
+the machines (lexers and parsers), which *you* then use for your compiler. This
+is not any different from higher order programming.
 
 While these academic formalizations can help compiler construction with respect
-to correctness, caution should be exercised based on your engineering constraints.
+to correctness (rule #1 of compiler construction is to perserve semantics
+afterall), caution should be exercised based on your engineering constraints.
 A heuristic to use when calculating cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
 Sacrificing flow control for a straight-jacketed DSL (such as HCL and ECS for
 managing cloud infrastructure and building games) may make sense when
@@ -64,44 +72,11 @@ top down parsing (recursive descent) to handle operation precedence and
 associativity with non-Lisp-like-S-expression-syntax, which, so happens to be
 din's case, as its source language is C.
 
-### 1. Lexing
-```rust
-struct Token {
-    pub lexeme: String,
-    pub category: Category, // literals, identifiers, keywords, punctuation, etc.
-}
+### Parsing: top-down, recursive descent
 
-pub fn scan(input: Vec<char>) -> Vec<Token> {}
-```
+a literal translation of the grammar’s rules straight into imperative code.
 
-### 2. Parsing
-```rust
-fn parse(tokens: Vec<Token>) -> Expr {
-
-}
-```
-*Implementations: Top down (recursive descent)*
-
-Top down refers to direction of tree creation via recursion. Recursive descent refers to
-direction of grammar.
-
-RECURSIVE DESCENT
-- a literal translation of the grammar’s rules straight into imperative code.
-problem 1: left recursion
-problem 2: associativity
-problem 3: efficiency
-
-RECURSIVE DESCENT WITH OPERATOR PRECEDENCE (pratt or shunting)
-
-*Bottom up (recursive ascent)*
-
-Bottom up refers to direction of tree creation via recursion. Recursive ascent refers to
-direction of grammar.
-
-Yacc, Bison, ANTLR
-
-
-Pratt Parsing (aka the monads of syntactic analysis)
+*References: Pratt Parsing (the monads of syntac analysis)*
 [index](https://www.oilshell.org/blog/2017/03/31.html)
 
 *ogs*
@@ -148,43 +123,43 @@ take no more than 5%-10% of total compile time.
 ```
 // introductions
 
-literalint      ::= [0-9]+
-id              ::= [a−zA−Z][a−zA−Z0−9]*
+LITERAL_INT      ::= [0-9]+
+ID               ::= [a−zA−Z][a−zA−Z0−9]*
 
 // keywords
-keywordint      ::= int
-keywordvoid     ::= void
-keywordreturn   ::= return
+KEYWORD_INT      ::= int
+KEYWORD_VOID     ::= void
+KEYWORD_RETURN   ::= return
 
 // eliminations
-plus            ::= +
-minus           ::= -
-star            ::= *
-slash           ::= /
+PLUS             ::= +
+MINUS            ::= -
+STAR             ::= *
+SLASH            ::= /
 
 // punctuation
-puncleftparen   ::= (
-puncrightparen  ::= )
-puncleftbrace   ::= {
-puncrightbrace  ::= }
-puncsemicolon   ::= ;
+PUNC_LEFTPAREN   ::= (
+PUNC_RIGHTPARE   ::= )
+PUNC_LEFTBRACE   ::= {
+PUNC_RIGHTBRAC   ::= }
+PUNC_SEMICOLON   ::= ;
 ```
 
 *Syntactical grammar*
 ```
-<program>       ::= <function>
-<function>      ::= keywordint <identifier> puncleftparen punckeywordvoid
-                    puncrightparen puncleftbrace <statement> puncrightbrace
+<program>        ::= <function>
+<function>       ::= KEYWORD_INT <identifier> PUNC_LEFTPAREN KEYWORD_VOID
+                     PUNC_RIGHTPAREN PUNC_LEFTBRACE <statement> PUNC_RIGHTBRACE
 
-<statement>     ::= keywordreturn <exp> puncsemicolon
-<exp>           ::= literalint
-                | <exp> binop <exp>
-                | puncleftparen <expr> puncrightparen
+<statement>      ::= KEYWORD_RETURN <exp> PUNC_SEMICOLON
+<exp>            ::= LITERAL_INT
+                   | <exp> <binop> <exp>
+                   | PUNC_LEFTPAREN <expr> PUNC_RIGHTPAREN
 
-<binop>         ::= plus
-                | minus
-                | star
-                | slash
+<binop>          ::= PLUS
+                   | MINUS
+                   | STAR
+                   | SLASH
 
 <!-- <val> ::= literalint -->
 ```
