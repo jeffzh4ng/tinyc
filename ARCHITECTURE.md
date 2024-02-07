@@ -2,11 +2,18 @@
 Some thoughts on the theory behind languages, interpreters, compilers, and how
 it translates (if at all) to din's architecture.
 
+**Contents**
+1. [Frontend](./https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#frontend-lexing-parsing-typing)
+2. [Backend]()
+3. [References: Interpreters and Compilers](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-interpreters-and-compilers)
+4. [References: Source and Target Languages](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-source-and-target-languages)
+
+
 TODO: preprocessor
 
-### Frontend (lexing, parsing, typing)
+# Frontend (lexing, parsing, typing)
 ```
-chars -> |lexer| -> tokens -> |parser| -> tree
+chars -> |lexer| -> tokens -> |parser| -> parse tree -> |elaborator| -> abstract syntax tree
 ```
 
 din's frontend follows a traditional three pass architecture, where separation
@@ -16,7 +23,7 @@ trees.
 
 While academia tends to formalize both lexical and syntactic analysis with
 well-defined compiler compilers, din's lexer and parser are both handwritten.
-Many open source compiler frontends follow suit, like GCC and Clang.
+Many open source compiler frontends follow suit, such as GCC and Clang.
 
 A heuristic the author used for calculating cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
 
@@ -25,7 +32,7 @@ managing cloud infrastructure and building games) may make sense when
 `|engineers| > 1e4`, but definitely not for a project like din, where
 `|engineers| = 1`.
 
-**1. Lexing**
+### 1. Lexing
 ```rust
 struct Token {
     pub lexeme: String,
@@ -48,15 +55,15 @@ characters. Intuitions with formal models can start either via specification via
 regular expressions (REs) or implementation via finite automata (FA).
 
 Regardless of entry point, you'll find these models are equivalent by converting
-REs -> NFAs -> DFA -> REs via the Thompson's, subset, and Kleene's construction
+REs -> NFAs -> DFA -> REs via Thompson's, subset, and Kleene's construction
 respectively. These well-defined formalisms and their correctness properties lend
 themselves to lexer compilers such as Lex and Flex which take REs as input, and
-produce lexers as output.
+produce table-driven lexers as output.
 
 Due to the cost benefit analysis stated above, din ignores lexer compilers. Its
 lexer is hand-written.
 
-**2. Parsing**
+### 2. Parsing
 
 *Specifications: Grammars*
 For parsing and syntactic analysis, REs are not strong enough to express the
@@ -146,9 +153,7 @@ Recursive descent ⊆ Pratt Parsing ≅ Shunting Yard
 **Interpreters and Compilers**
 - Programming Languages: Application and Interpretation (Krishnamurthi)
 - Engineering a Compiler (Cooper, Torczon)
-- Modern Compiler Design (Grune)
 - [Cornell's CS 4120 SP23 Lecture Notes (Myers)](https://www.cs.cornell.edu/courses/cs4120/2023sp/notes/)
-- [An Incremental Approach to Compiler Construction (Ghuloum)](http://scheme2006.cs.uchicago.edu/11-ghuloum.pdf)
 
 note: please avoid the dragon book. You'll walk away with the impression that
 compiler construction is primarily about parsing, when in fact parsing should
@@ -159,59 +164,64 @@ take no more than 5%-10% of total compile time.
 - 90s: scheduling (bc RISC introduced pipelining)
 
 # References: Source and Target Languages
-**Source: C89**
+
+### Source: C89
 - [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
 - The C Programming Language (K&R)
 - If You Must Learn C (Ragde)
 
+*Lexical grammar*
 ```
-prog	:	{ dcl ';'  |  func }
-dcl	:	type var_decl { ',' var_decl }
- 	|	[ extern ] type id '(' parm_types ')' { ',' id '(' parm_types ')' }
- 	|	[ extern ] void id '(' parm_types ')' { ',' id '(' parm_types ')' }
-var_decl	:	id [ '[' intcon ']' ]
-type	:	char
- 	|	int
-parm_types	:	void
- 	|	type id [ '[' ']' ] { ',' type id [ '[' ']' ] }
-func	:	type id '(' parm_types ')' '{' { type var_decl { ',' var_decl } ';' } { stmt } '}'
- 	|	void id '(' parm_types ')' '{' { type var_decl { ',' var_decl } ';' } { stmt } '}'
-stmt	:	if '(' expr ')' stmt [ else stmt ]
- 	|	while '(' expr ')' stmt
- 	|	for '(' [ assg ] ';' [ expr ] ';' [ assg ] ')' stmt
- 	|	return [ expr ] ';'
- 	|	assg ';'
- 	|	id '(' [expr { ',' expr } ] ')' ';'
- 	|	'{' { stmt } '}'
- 	|	';'
-assg	:	id [ '[' expr ']' ] = expr
-expr	:	'–' expr
- 	|	'!' expr
- 	|	expr binop expr
- 	|	expr relop expr
- 	|	expr logical_op expr
- 	|	id [ '(' [expr { ',' expr } ] ')' | '[' expr ']' ]
- 	|	'(' expr ')'
- 	|	intcon
- 	|	charcon
- 	|	stringcon
-binop	:	+
- 	|	–
- 	|	*
- 	|	/
-relop	:	==
- 	|	!=
- 	|	<=
- 	|	<
- 	|	>=
- 	|	>
-logical_op	:	&&
- 	|	||
+// introductions
+
+literalint      ::= [0-9]+
+id              ::= [a−zA−Z][a−zA−Z0−9]*
+
+// keywords
+keywordint      ::= int
+keywordvoid     ::= void
+keywordreturn   ::= return
+
+// eliminations
+plus            ::= +
+minus           ::= -
+star            ::= *
+slash           ::= /
+
+// punctuation
+puncleftparen   ::= (
+puncrightparen  ::= )
+puncleftbrace   ::= {
+puncrightbrace  ::= }
+puncsemicolon   ::= ;
 ```
-Credit: [C-- Language Spec (Debray)](https://www2.cs.arizona.edu/~debray/Teaching/CSc453/DOCS/cminusminusspec.html)
+
+*Syntactical grammar*
+```
+<program>       ::= <function>
+<function>      ::= keywordint <identifier> puncleftparen punckeywordvoid
+                    puncrightparen puncleftbrace <statement> puncrightbrace
+
+<statement>     ::= keywordreturn <exp> puncsemicolon
+<exp>           ::= literalint
+                | <exp> binop <exp>
+
+<binop>         ::= plus
+                | minus
+                | star
+                | slash
+
+<!-- <val> ::= literalint -->
+```
+
+*Semantics (types)*
 
 
-**Target: RISC-V**
+
+
+
+
+### Target: RISC-V
 - The RISC-V Reader (Waterman, Patterson)
 - Computer Organization and Design RISC-V Edition: The Hardware Software Interface (Patterson, Hennessy)
 - Computer Architecture: A Quantitative Approach (Hennesey, Patterson)
