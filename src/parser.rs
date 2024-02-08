@@ -80,18 +80,23 @@ fn mtch(tokens: Vec<Token>, tt: TokenType) -> Result<Vec<Token>, io::Error> {
 }
 
 #[cfg(test)]
-mod tests {
+mod test_valid {
     use super::*;
+    use crate::lexer;
+    use insta;
+    use std::fs;
 
-    // #[test]
-    // fn arithmetic() {
-    //     let input = vec![Token {
-    //         lexeme: String::from("8"),
-    //         category: Category::LiteralInt,
-    //     }];
-    //     let output = Parser::parse(input);
-    //     let expected_output = Expr::Num(8);
+    #[test]
+    fn test_valid() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/hello.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect();
 
-    //     assert_eq!(output, expected_output);
-    // }
+        let tokens = lexer::scan(chars);
+        let tree = parse_program(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree);
+    }
 }

@@ -10,7 +10,7 @@ fn main() {
     ⠀⠀⣼⣆⠀⠀⠀⠀⣰⣧⠀⠀
     ⠀⣼⣿⣿⣆⠀⠀⣰⣿⣿⣧⠀
     ⠾⠟⠿⠿⠿⠧⠼⠿⠿⠿⠻⠷
-    din: C89 -> RISC V
+    din: C89/90 -> RISC V
     "
     );
     let chars = fs::read("tests/valid/hello.c")
@@ -19,6 +19,6 @@ fn main() {
         .map(|b| *b as char)
         .collect();
     let tokens = lexer::scan(chars);
-    let program = parser::parse_program(tokens).unwrap();
-    println!("{:?}", program);
+    let tree = parser::parse_program(tokens).unwrap();
+    println!("program: {:?}", tree);
 }
