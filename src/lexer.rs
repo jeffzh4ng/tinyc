@@ -277,6 +277,19 @@ mod test_valid {
         let output = scan(input);
         insta::assert_yaml_snapshot!(output);
     }
+
+    #[test]
+    fn hello_addition() {
+        #[rustfmt::skip]
+        let input = fs::read("tests/valid/hello_addition.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect();
+
+        let output = scan(input);
+        insta::assert_yaml_snapshot!(output);
+    }
 }
 
 #[cfg(test)]
