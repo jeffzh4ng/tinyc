@@ -3,21 +3,21 @@ source: src/lexer.rs
 expression: output
 ---
 - lexeme: int
-  category: KeywordTypeInt
+  typ: KeywordTypeInt
 - lexeme: main
-  category: KeywordMain
+  typ: KeywordMain
 - lexeme: (
-  category: PuncLeftParen
+  typ: PuncLeftParen
 - lexeme: )
-  category: PuncRightParen
+  typ: PuncRightParen
 - lexeme: "{"
-  category: PuncLeftBrace
+  typ: PuncLeftBrace
 - lexeme: return
-  category: KeywordReturn
+  typ: StatementReturn
 - lexeme: "0"
-  category: LiteralInt
+  typ: LiteralInt
 - lexeme: ;
-  category: PuncSemiColon
+  typ: PuncSemiColon
 - lexeme: "}"
-  category: PuncRightBrace
+  typ: PuncRightBrace
 
