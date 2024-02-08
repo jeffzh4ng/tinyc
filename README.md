@@ -1,5 +1,17 @@
 # din
 a CPU compiler (C89 -> RISC-V); [a project of one's own](https://paulgraham.com/own.html)
 
-There's an [ARCHITECTURE.md](./ARCHITECTURE.md) which goes over the influences
-of formal language theory and computer architecture on din's architecture.
+### Architecture
+Refer to [ARCHITECTURE.md](./ARCHITECTURE.md) for a more comprehensive overview.
+TL;DR:
+- frontend: handwritten lexer and parser (pratt)
+- backend: TODO
+
+### Roadmap
+1. Interpreting
+2. Compiling to LLVM
+3. Compiling to RISC-V
+4. Compiling to RISC-V with
+    - allocation
+    - scheduling
+    - selection

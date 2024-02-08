@@ -25,11 +25,13 @@ trees.
 While academia tends to formalize both lexical and syntactic analysis with
 well-defined compiler compilers, din's lexer and parser are both handwritten.
 There are even many open source compilers such as GCC and Clang which
-handwrite their own frontends; and din follows suit. However, a quick overview of
-formalizations is given below.
+handwrite their own frontends; and din follows suit. However, if you want
+a quick overview of the theory, feel free to expand the section below. Otherwise,
+we will move on with Pratt Parsing.
 
 ### Formalizations
-
+<details>
+  <summary>Expand</summary>
 Lexing and parsing sit on a strong foundation of theory which sit at the
 intersection of languages and computation. The core problem of both lexical and
 syntactic analysis is to recognize a series of symbols from an alphabet by
@@ -79,6 +81,8 @@ top down parsing (recursive descent) to handle operation precedence and
 associativity with non-Lisp-like-S-expression-syntax, which, so happens to be
 din's case, as its source language is C.
 
+</details>
+
 ### Parsing: top-down, recursive descent
 
 a literal translation of the grammar’s rules straight into imperative code.
@@ -112,12 +116,14 @@ Recursive descent ⊆ Pratt Parsing ≅ Shunting Yard
 - [Cornell's CS 4120 SP23 Lecture Notes (Myers)](https://www.cs.cornell.edu/courses/cs4120/2023sp/notes/)
 
 note: please avoid the dragon book. You'll walk away with the impression that
-compiler construction is primarily about parsing, when in fact parsing should
-take no more than 5%-10% of total compile time.
+compiler construction is primarily about parsing (and not much on other important
+areas, like type checking, optimization, etc), when in fact parsing should
+be the easiest part of the compiler.
 
 **Optimizations**
 - 80s: register allocation
 - 90s: scheduling (bc RISC introduced pipelining)
+- instruction selection?
 
 # References: Source and Target Languages
 
