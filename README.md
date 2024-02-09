@@ -11,7 +11,3 @@ TL;DR:
 1. Interpreting
 2. Compiling to LLVM
 3. Compiling to RISC-V
-4. Compiling to RISC-V with
-    - allocation
-    - scheduling
-    - selection

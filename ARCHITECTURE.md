@@ -1,25 +1,28 @@
 # Architecture
 
 **Contents**
-1. [Frontend](./https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#frontend-lexing-parsing-typing)
-    - [Formalizations](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#formalizations)
-    - [Parsing](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#parsing-top-down-recursive-descent)
-2. [Backend]()
-3. [References: Interpreters and Compilers](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-interpreters-and-compilers)
+1. [Frontend](#1-frontend)
+  -  A. [Lexical and Syntactic Analysis: Lexing and Parsing](#a-lexical-and-syntactic-analysis-lexing-and-parsing)
+  -  B. [Source Language References: C89/90](#b-source-language-references-c8990)
+  - C. [Semantic Analysis: Typing](#c-semantic-analysis-typing)
+2. [Backend](#2-backend)
+  - A. Selection
+  - B. Scheduling
+  - C. Allocation
+  - D. [Target Language 1 References: LLVM](#d-target-language-1-llvm)
+  - E. [Target Language 2 References: RISC-V](#e-target-language-2-risc-v)
+3. [References](#3-references)
+  - [A. Languages and Compilers](#a-languages-and-compilers)
+  - [B. Computer Architecture](#b-computer-architecture)
 
-4. [References: Source and Target Languages](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#references-source-and-target-languages)
-    - [Source: C89/90](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#source-c8990)
-    - [Target 1: RISC-V](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#target-1-risc-v)
-    - [Target 2: LLVM](https://github.com/jeffzh4ng/din/blob/master/ARCHITECTURE.md#target-2-llvm)
-
-# Frontend (lexing, parsing, typing)
+# 1. Frontend
 ```
 chars -> |lexer| -> tokens -> |parser| -> parse tree -> |elaborator| -> abstract syntax tree
 ```
 
 din's frontend follows a traditional three pass architecture, where separation
 of concerns is split based on the different levels of abstraction which naturally
-occur when raising the representation of source from charactersk, to tokens, to
+occur when raising the representation of source from characters, to tokens, to
 trees.
 
 While academia tends to formalize both lexical and syntactic analysis with
@@ -29,7 +32,9 @@ handwrite their own frontends; and din follows suit. However, if you want
 a quick overview of the theory, feel free to expand the section below. Otherwise,
 we will move on with Pratt Parsing.
 
-### Formalizations
+## A. Lexical and Syntactic Analysis: Lexing and Parsing
+
+### Academic Parsing: formalizations with automata
 <details>
   <summary>Expand</summary>
 Lexing and parsing sit on a strong foundation of theory which sit at the
@@ -83,7 +88,7 @@ din's case, as its source language is C.
 
 </details>
 
-### Parsing: top-down, recursive descent
+### Practical Parsing: top-down, recursive descent
 
 a literal translation of the grammar’s rules straight into imperative code.
 
@@ -109,25 +114,8 @@ Recursive descent ⊆ Pratt Parsing ≅ Shunting Yard
 - [Kladov (2020)](https://matklad.github.io/2020/04/15/from-pratt-to-dijkstra.html)
 - [Johnston (2021)](https://www.abubalay.com/blog/2021/12/31/lr-control-flow)
 
-# References: Interpreters and Compilers
-**Interpreters and Compilers**
-- Programming Languages: Application and Interpretation (Krishnamurthi)
-- Engineering a Compiler (Cooper, Torczon)
-- [Cornell's CS 4120 SP23 Lecture Notes (Myers)](https://www.cs.cornell.edu/courses/cs4120/2023sp/notes/)
 
-note: please avoid the dragon book. You'll walk away with the impression that
-compiler construction is primarily about parsing (and not much on other important
-areas, like type checking, optimization, etc), when in fact parsing should
-be the easiest part of the compiler.
-
-**Optimizations**
-- 80s: register allocation
-- 90s: scheduling (bc RISC introduced pipelining)
-- instruction selection?
-
-# References: Source and Target Languages
-
-### Source: C89/90
+## B. Source Language References: C89/90
 - [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
 - The C Programming Language (K&R)
 - If You Must Learn C (Ragde)
@@ -177,17 +165,59 @@ PUNC_SEMICOLON   ::= ;
 <!-- <val> ::= literalint -->
 ```
 
-*Semantics (types)*
-### Target 1: RISC-V
-- The RISC-V Reader (Waterman, Patterson)
-- Computer Organization and Design RISC-V Edition: The Hardware Software Interface (Patterson, Hennessy)
-- Computer Architecture: A Quantitative Approach (Hennesey, Patterson)
-- Digital Design and Computer Architecture (Harris, Harris)
-- Inside the Machine (Stokes)
 
-### Target 2: LLVM
+## C. Semantic Analysis: Typing
+
+---
+
+# 2. Backend
+Scheduling and allocation are NP-complete problems.
+
+## A. Selection
+## B. Scheduling
+## C. Allocation
+
+
+
+## D. Target Language 1: LLVM
 - [LLVM for Grad Students (Sampson)](https://www.cs.cornell.edu/~asampson/blog/llvm.html)
 - [Greenplace (Bendersky)](https://eli.thegreenplace.net/tag/llvm-clang)
 - [Compilers and IRs (Zhang)](https://www.lei.chat/posts/compilers-and-irs-llvm-ir-spirv-and-mlir/)
 - [AOSA: LLVM (Lattner)](https://aosabook.org/en/v1/llvm.html)
 - [Tourist's Guide to the LLVM Source Code (Regehr)](https://blog.regehr.org/archives/1453)
+
+## E. Target Language 2: RISC-V
+- The RISC-V Reader (Waterman, Patterson)
+
+# 3. References
+Good compiler construction references for hackers who want to show up
+[done](https://steve-yegge.blogspot.com/2008/06/done-and-gets-things-smart.html)
+are few to none. They range from textbooks all about frontend formalizations such
+as parsing (hello dragon book), to calculator blog posts which lack substance.
+
+More importantly, simply generating one specific ISA and treating
+the metal below you as a black box is not conducive towards successful compilers.
+Often, you will be co-designing fullstack software/hardware systems with computer
+architects, and so knowledge of computer architecture is essential (to avoid
+mistakes like [Itanium](https://en.wikipedia.org/wiki/IA-64#:~:text=The%20Itanium%20architecture%20is%20based,manage%20instruction%20dependencies%20at%20runtime.), for example).
+
+Because of the vast amount of area to cover, there is not one single book which
+contains all the gold. Knowledge from courses, books, and elder grey-beards must
+be patchworked together. Clearly the last type of knowledge can only be passed
+down within the trenches, but here are a few resources which I found not too bad.
+
+![](./kaepora.webp)
+> Hoo hoot! Link... Look up here! It appears that the time has finally come for
+> you to start your adventure! You will encounter many hardships ahead... That
+> is your fate. Don't feel discouraged, even during the toughest times!
+
+## A. Languages and Compilers
+- Programming Languages: Application and Interpretation (Krishnamurthi)
+- Cornell CS 4120 SP23 Lecture Notes (Myers)
+- Engineering a Compiler (Cooper, Torczon)
+
+## B. Computer Architecture
+- Computer Organization and Design RISC-V Edition: The Hardware Software Interface (Patterson, Hennessy)
+- Computer Architecture: A Quantitative Approach (Hennesey, Patterson)
+- Digital Design and Computer Architecture (Harris, Harris)
+- Inside the Machine (Stokes)
