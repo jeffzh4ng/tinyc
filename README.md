@@ -1,4 +1,6 @@
 # din
+![](./din.gif)
+
 a CPU compiler (C89 -> RISC-V); [a project of one's own](https://paulgraham.com/own.html)
 
 ### Architecture
