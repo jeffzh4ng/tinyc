@@ -1,4 +1,4 @@
-use din::{lexer, parser};
+use din::lexer;
 use std::fs;
 
 fn main() {
@@ -13,12 +13,13 @@ fn main() {
     din: C89/90 -> RISC V
     "
     );
-    let chars = fs::read("tests/valid/hello.c")
+    let chars = fs::read("tests/valid/hello_addition.c")
         .expect("Should have been able to read the file")
         .iter()
         .map(|b| *b as char)
         .collect();
-    let tokens = lexer::scan(chars);
-    let tree = parser::parse_program(tokens).unwrap();
-    println!("program: {:?}", tree);
+    let tokens = lexer::scan(&chars);
+    println!("tokens: {:?}", tokens);
+    // let tree = parser::parse_program(tokens).unwrap();
+    // println!("program: {:?}", tree);
 }

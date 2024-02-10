@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 // - macros
 // - whitespace: spaces, tabs, newlines
 
-// see: ARCHITECTURE.md Section 4 for specified lexical grammar
+// see: ARCHITECTURE.md for a more specified lexical grammar
 
 // note: variations are explicitly typed. Collapsing categories like keywords
 //       into one variant while outsourcing variation to lexeme field on Token
@@ -49,7 +49,7 @@ pub struct Token {
 // struct Position {}
 
 // TODO: just filter out whitespace instead of having a helper function
-pub fn scan(input: Vec<char>) -> Vec<Token> {
+pub fn scan(input: &Vec<char>) -> Vec<Token> {
     let cs = skip_whitespace(input);
 
     // literals and identifiers have arbitrary length
@@ -57,15 +57,15 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
     match cs.as_slice() {
         [] => vec![],
         [f, r @ ..] => match f {
-            '0'..='9' => scan_int(cs),
-            'a'..='z' | 'A'..='Z' => scan_id(cs),
+            '0'..='9' => scan_int(&cs),
+            'a'..='z' | 'A'..='Z' => scan_id(&cs),
             '+' => {
                 let t = Token {
                     lexeme: String::from("+"),
                     typ: TokenType::Plus,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             '-' => {
                 let t = Token {
@@ -73,7 +73,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::Minus,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             '*' => {
                 let t = Token {
@@ -81,7 +81,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::Star,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             '/' => {
                 let t = Token {
@@ -89,7 +89,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::Slash,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             '(' => {
                 let t = Token {
@@ -97,7 +97,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncLeftParen,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             ')' => {
                 let t = Token {
@@ -105,7 +105,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncRightParen,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             '{' => {
                 let t = Token {
@@ -113,7 +113,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncLeftBrace,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             '}' => {
                 let t = Token {
@@ -121,7 +121,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncRightBrace,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             ';' => {
                 let t = Token {
@@ -129,7 +129,7 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncSemiColon,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
             _ => {
                 let t = Token {
@@ -137,15 +137,15 @@ pub fn scan(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::Plus,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r.to_vec())).collect()
             }
         },
     }
 }
 
-fn scan_int(input: Vec<char>) -> Vec<Token> {
+fn scan_int(input: &Vec<char>) -> Vec<Token> {
     // scan_int calls skip_whitespace too to remain idempotent
-    let cs: Vec<char> = skip_whitespace(input);
+    let cs = skip_whitespace(input);
 
     match cs.as_slice() {
         [] => vec![],
@@ -155,10 +155,11 @@ fn scan_int(input: Vec<char>) -> Vec<Token> {
                     let f = cs
                         .iter()
                         .take_while(|&&c| c.is_numeric())
-                        .collect::<String>();
+                        .collect::<String>(); // allocate
 
                 #[rustfmt::skip]
                     let r = cs
+                        .clone() // TODO: this allocation can be avoided if Lexer is refactored recurses on global state
                         .into_iter()
                         .skip_while(|&c| c.is_numeric())
                         .collect::<Vec<_>>();
@@ -168,7 +169,7 @@ fn scan_int(input: Vec<char>) -> Vec<Token> {
                     typ: TokenType::LiteralInt,
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r)).collect()
             }
             _ => {
                 // panic
@@ -179,9 +180,9 @@ fn scan_int(input: Vec<char>) -> Vec<Token> {
 }
 
 // TODO: support identifiers with alpha*numeric* characters after first alphabetic
-fn scan_id(input: Vec<char>) -> Vec<Token> {
+fn scan_id(input: &Vec<char>) -> Vec<Token> {
     // scan_id calls skip_whitespace too to remain idempotent
-    let cs: Vec<char> = skip_whitespace(input);
+    let cs = skip_whitespace(input);
 
     match cs.as_slice() {
         [] => vec![],
@@ -195,6 +196,7 @@ fn scan_id(input: Vec<char>) -> Vec<Token> {
 
                 #[rustfmt::skip]
                     let r = cs
+                        .clone() // TODO: this allocation can be avoided if Lexer is refactored recurses on global state
                         .into_iter()
                         .skip_while(|&c| c.is_alphabetic())
                         .collect::<Vec<_>>();
@@ -223,7 +225,7 @@ fn scan_id(input: Vec<char>) -> Vec<Token> {
                     },
                 };
 
-                std::iter::once(t).chain(scan(r.to_vec())).collect()
+                std::iter::once(t).chain(scan(&r)).collect()
             }
             _ => {
                 // panic
@@ -233,14 +235,14 @@ fn scan_id(input: Vec<char>) -> Vec<Token> {
     }
 }
 
-fn skip_whitespace(input: Vec<char>) -> Vec<char> {
+fn skip_whitespace(input: &Vec<char>) -> Vec<char> {
     match input.as_slice() {
         [] => vec![],
         [f, r @ ..] => {
             if f.is_whitespace() {
-                skip_whitespace(r.to_vec())
+                skip_whitespace(&r.to_vec())
             } else {
-                input
+                input.clone() // TODO; allocation can be avoided if Lexer recurses on global state
             }
         }
     }
@@ -274,7 +276,7 @@ mod test_valid {
             .map(|b| *b as char)
             .collect();
 
-        let output = scan(input);
+        let output = scan(&input);
         insta::assert_yaml_snapshot!(output);
     }
 
@@ -287,7 +289,7 @@ mod test_valid {
             .map(|b| *b as char)
             .collect();
 
-        let output = scan(input);
+        let output = scan(&input);
         insta::assert_yaml_snapshot!(output);
     }
 }
@@ -302,7 +304,7 @@ mod test_skip_whitespace {
     #[test]
     fn skip_space() {
         let input = "    7".chars().collect();
-        let output: Vec<char> = skip_whitespace(input);
+        let output = skip_whitespace(&input);
         let expected_output = "7".chars().collect();
 
         assert!(vecs_match(&output, &expected_output))
@@ -318,7 +320,7 @@ mod test_skip_whitespace {
         7"#
         .chars()
         .collect();
-        let output = skip_whitespace(input);
+        let output = skip_whitespace(&input);
         let expected_output = "7".chars().collect();
 
         assert!(vecs_match(&output, &expected_output))
@@ -332,7 +334,7 @@ mod test_arithmetic {
     #[test]
     fn simple() {
         let input = "9 + 8".chars().collect();
-        let output = scan(input);
+        let output = scan(&input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("9"), typ: TokenType::LiteralInt },
@@ -346,7 +348,7 @@ mod test_arithmetic {
     #[test]
     fn simple_two() {
         let input = "90 + 80".chars().collect();
-        let output = scan(input);
+        let output = scan(&input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("90"), typ: TokenType::LiteralInt },
@@ -360,7 +362,7 @@ mod test_arithmetic {
     #[test]
     fn complex() {
         let input = "2 + 3 * 5 - 8 / 3".chars().collect();
-        let output = scan(input);
+        let output = scan(&input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("2"), typ: TokenType::LiteralInt },
@@ -380,7 +382,7 @@ mod test_arithmetic {
     #[test]
     fn complex_two() {
         let input = "22 + 33 * 55 - 88 / 33".chars().collect();
-        let output = scan(input);
+        let output = scan(&input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("22"), typ: TokenType::LiteralInt },
@@ -407,7 +409,7 @@ mod test_arithmetic {
         "#
         .chars()
         .collect();
-        let output = scan(input);
+        let output = scan(&input);
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("23"), typ: TokenType::LiteralInt },
