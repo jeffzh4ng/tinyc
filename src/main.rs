@@ -17,7 +17,7 @@ fn main() {
         .expect("Should have been able to read the file")
         .iter()
         .map(|b| *b as char)
-        .collect();
+        .collect::<Vec<_>>();
     let tokens = lexer::scan(&chars);
     println!("tokens: {:?}", tokens);
     // let tree = parser::parse_program(tokens).unwrap();

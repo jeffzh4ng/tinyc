@@ -49,23 +49,23 @@ pub struct Token {
 // struct Position {}
 
 // TODO: just filter out whitespace instead of having a helper function
-pub fn scan(input: &Vec<char>) -> Vec<Token> {
+pub fn scan(input: &[char]) -> Vec<Token> {
     let cs = skip_whitespace(input);
 
     // literals and identifiers have arbitrary length
     // operations and punctuations are single ASCII characters
-    match cs.as_slice() {
+    match cs {
         [] => vec![],
         [f, r @ ..] => match f {
-            '0'..='9' => scan_int(&cs),
-            'a'..='z' | 'A'..='Z' => scan_id(&cs),
+            '0'..='9' => scan_int(cs),
+            'a'..='z' | 'A'..='Z' => scan_id(cs),
             '+' => {
                 let t = Token {
                     lexeme: String::from("+"),
                     typ: TokenType::Plus,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             '-' => {
                 let t = Token {
@@ -73,7 +73,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::Minus,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             '*' => {
                 let t = Token {
@@ -81,7 +81,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::Star,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             '/' => {
                 let t = Token {
@@ -89,7 +89,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::Slash,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             '(' => {
                 let t = Token {
@@ -97,7 +97,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncLeftParen,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             ')' => {
                 let t = Token {
@@ -105,7 +105,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncRightParen,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             '{' => {
                 let t = Token {
@@ -113,7 +113,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncLeftBrace,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             '}' => {
                 let t = Token {
@@ -121,7 +121,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncRightBrace,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             ';' => {
                 let t = Token {
@@ -129,7 +129,7 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::PuncSemiColon,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
             _ => {
                 let t = Token {
@@ -137,39 +137,38 @@ pub fn scan(input: &Vec<char>) -> Vec<Token> {
                     typ: TokenType::Plus,
                 };
 
-                std::iter::once(t).chain(scan(&r.to_vec())).collect()
+                std::iter::once(t).chain(scan(r)).collect()
             }
         },
     }
 }
 
-fn scan_int(input: &Vec<char>) -> Vec<Token> {
+fn scan_int(input: &[char]) -> Vec<Token> {
     // scan_int calls skip_whitespace too to remain idempotent
     let cs = skip_whitespace(input);
 
-    match cs.as_slice() {
+    match cs {
         [] => vec![],
-        [f, _r @ ..] => match f {
+        [f, r @ ..] => match f {
             '0'..='9' => {
                 #[rustfmt::skip]
-                    let f = cs
-                        .iter()
-                        .take_while(|&&c| c.is_numeric())
-                        .collect::<String>(); // allocate
+                let i = r
+                    .iter()
+                    .take_while(|&&c| c.is_numeric())
+                    .count();
 
                 #[rustfmt::skip]
-                    let r = cs
-                        .clone() // TODO: this allocation can be avoided if Lexer is refactored recurses on global state
-                        .into_iter()
-                        .skip_while(|&c| c.is_numeric())
-                        .collect::<Vec<_>>();
+                let f = cs[..=i]
+                    .iter()
+                    .collect::<String>();
+                let new_r = &cs[i + 1..];
 
                 let t = Token {
                     lexeme: f,
                     typ: TokenType::LiteralInt,
                 };
 
-                std::iter::once(t).chain(scan(&r)).collect()
+                std::iter::once(t).chain(scan(new_r)).collect()
             }
             _ => {
                 // panic
@@ -180,26 +179,23 @@ fn scan_int(input: &Vec<char>) -> Vec<Token> {
 }
 
 // TODO: support identifiers with alpha*numeric* characters after first alphabetic
-fn scan_id(input: &Vec<char>) -> Vec<Token> {
+fn scan_id(input: &[char]) -> Vec<Token> {
     // scan_id calls skip_whitespace too to remain idempotent
     let cs = skip_whitespace(input);
 
-    match cs.as_slice() {
+    match cs {
         [] => vec![],
-        [f, _r @ ..] => match f {
+        [f, r @ ..] => match f {
             'a'..='z' => {
+                // Find the index where the alphabetic characters end
                 #[rustfmt::skip]
-                    let f = cs
-                        .iter()
-                        .take_while(|&&c| c.is_alphabetic())
-                        .collect::<String>();
+                let i = r
+                    .iter()
+                    .take_while(|&&c| c.is_alphabetic())
+                    .count();
 
-                #[rustfmt::skip]
-                    let r = cs
-                        .clone() // TODO: this allocation can be avoided if Lexer is refactored recurses on global state
-                        .into_iter()
-                        .skip_while(|&c| c.is_alphabetic())
-                        .collect::<Vec<_>>();
+                let f = (cs[..=i].iter()).collect::<String>();
+                let new_r = &cs[i + 1..];
 
                 let keyword = match f.as_str() {
                     "int" => Some(Token {
@@ -225,7 +221,7 @@ fn scan_id(input: &Vec<char>) -> Vec<Token> {
                     },
                 };
 
-                std::iter::once(t).chain(scan(&r)).collect()
+                std::iter::once(t).chain(scan(new_r)).collect()
             }
             _ => {
                 // panic
@@ -235,14 +231,14 @@ fn scan_id(input: &Vec<char>) -> Vec<Token> {
     }
 }
 
-fn skip_whitespace(input: &Vec<char>) -> Vec<char> {
-    match input.as_slice() {
-        [] => vec![],
+fn skip_whitespace(input: &[char]) -> &[char] {
+    match input {
+        [] => input,
         [f, r @ ..] => {
             if f.is_whitespace() {
-                skip_whitespace(&r.to_vec())
+                skip_whitespace(r)
             } else {
-                input.clone() // TODO; allocation can be avoided if Lexer recurses on global state
+                input
             }
         }
     }
@@ -274,9 +270,9 @@ mod test_valid {
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
-            .collect();
+            .collect::<Vec<_>>();
 
-        let output = scan(&input);
+        let output = scan(input.as_slice());
         insta::assert_yaml_snapshot!(output);
     }
 
@@ -287,9 +283,9 @@ mod test_valid {
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
-            .collect();
+            .collect::<Vec<_>>();
 
-        let output = scan(&input);
+        let output = scan(input.as_slice());
         insta::assert_yaml_snapshot!(output);
     }
 }
@@ -303,11 +299,11 @@ mod test_skip_whitespace {
 
     #[test]
     fn skip_space() {
-        let input = "    7".chars().collect();
-        let output = skip_whitespace(&input);
-        let expected_output = "7".chars().collect();
+        let input = "    7".chars().collect::<Vec<_>>();
+        let output = skip_whitespace(input.as_slice());
+        let expected_output = "7".chars().collect::<Vec<_>>();
 
-        assert!(vecs_match(&output, &expected_output))
+        assert!(vecs_match(&output.to_vec(), &expected_output))
     }
 
     #[test]
@@ -319,11 +315,11 @@ mod test_skip_whitespace {
 
         7"#
         .chars()
-        .collect();
-        let output = skip_whitespace(&input);
-        let expected_output = "7".chars().collect();
+        .collect::<Vec<_>>();
+        let output = skip_whitespace(input.as_slice());
+        let expected_output = "7".chars().collect::<Vec<_>>();
 
-        assert!(vecs_match(&output, &expected_output))
+        assert!(vecs_match(&output.to_vec(), &expected_output))
     }
 }
 
@@ -333,8 +329,8 @@ mod test_arithmetic {
 
     #[test]
     fn simple() {
-        let input = "9 + 8".chars().collect();
-        let output = scan(&input);
+        let input = "9 + 8".chars().collect::<Vec<_>>();
+        let output = scan(input.as_slice());
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("9"), typ: TokenType::LiteralInt },
@@ -347,8 +343,8 @@ mod test_arithmetic {
 
     #[test]
     fn simple_two() {
-        let input = "90 + 80".chars().collect();
-        let output = scan(&input);
+        let input = "90 + 80".chars().collect::<Vec<_>>();
+        let output = scan(input.as_slice());
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("90"), typ: TokenType::LiteralInt },
@@ -361,8 +357,8 @@ mod test_arithmetic {
 
     #[test]
     fn complex() {
-        let input = "2 + 3 * 5 - 8 / 3".chars().collect();
-        let output = scan(&input);
+        let input = "2 + 3 * 5 - 8 / 3".chars().collect::<Vec<_>>();
+        let output = scan(input.as_slice());
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("2"), typ: TokenType::LiteralInt },
@@ -381,8 +377,8 @@ mod test_arithmetic {
 
     #[test]
     fn complex_two() {
-        let input = "22 + 33 * 55 - 88 / 33".chars().collect();
-        let output = scan(&input);
+        let input = "22 + 33 * 55 - 88 / 33".chars().collect::<Vec<_>>();
+        let output = scan(input.as_slice());
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("22"), typ: TokenType::LiteralInt },
@@ -408,8 +404,8 @@ mod test_arithmetic {
         / 18
         "#
         .chars()
-        .collect();
-        let output = scan(&input);
+        .collect::<Vec<_>>();
+        let output = scan(input.as_slice());
         #[rustfmt::skip]
         let expected_output = vec![
             Token { lexeme: String::from("23"), typ: TokenType::LiteralInt },
