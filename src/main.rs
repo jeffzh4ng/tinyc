@@ -13,7 +13,7 @@ fn main() {
     din: C89/90 -> RISC V
     "
     );
-    let chars = fs::read("tests/valid/hello_addition.c")
+    let chars = fs::read("tests/valid/addition_multi.c")
         .expect("Should have been able to read the file")
         .iter()
         .map(|b| *b as char)

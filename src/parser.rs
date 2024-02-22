@@ -123,4 +123,32 @@ mod test_valid {
         let tree = parse_program(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree);
     }
+
+    #[test]
+    fn test_valid_addition() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/addition.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parse_program(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree);
+    }
+
+    #[test]
+    fn test_valid_addition_multi() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/addition_multi.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parse_program(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree);
+    }
 }
