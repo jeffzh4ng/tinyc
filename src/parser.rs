@@ -44,24 +44,30 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
                     l: Box::new(Expr::Num(f.lexeme.parse().unwrap())), // TODO: unwrapping
                     r: Box::new(Expr::Num(-1)),                        // TODO??
                 };
+
                 let mut cur_node = &mut root;
                 let mut r_tokens = r;
 
                 while let Ok((f, r)) = mtch(r_tokens, TokenType::Plus) {
                     let (f, r) = mtch(r, TokenType::LiteralInt)?;
-                    let new_node = Expr::Binary {
-                        op: Op::Add,
-                        l: Box::new(Expr::Num(f.lexeme.parse::<i128>().unwrap())), // inheriting rust's i128 for now
-                        r: Box::new(Expr::Num(-1)),                                // TODO??
-                    };
+                    let lit = f.lexeme.parse::<i128>().unwrap();
 
                     if let Expr::Binary {
                         r: ref mut right_child,
                         ..
                     } = cur_node
                     {
-                        *right_child = Box::new(new_node);
-                        cur_node = right_child;
+                        if mtch(r, TokenType::Plus).is_ok() {
+                            *right_child = Box::new(Expr::Binary {
+                                op: Op::Add,
+                                l: Box::new(Expr::Num(lit)), // inheriting rust's i128 for now
+                                r: Box::new(Expr::Num(-1)),  // TODO??
+                            });
+                            cur_node = right_child;
+                        } else {
+                            *right_child = Box::new(Expr::Num(lit));
+                            cur_node = right_child;
+                        }
                     }
 
                     r_tokens = r;
