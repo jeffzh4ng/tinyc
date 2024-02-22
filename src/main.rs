@@ -1,4 +1,4 @@
-use din::lexer;
+use din::{lexer, parser};
 use std::fs;
 
 fn main() {
@@ -20,6 +20,8 @@ fn main() {
         .collect::<Vec<_>>();
     let tokens = lexer::scan(&chars);
     println!("tokens: {:?}", tokens);
-    // let tree = parser::parse_program(tokens).unwrap();
+    let tree = parser::parse_program(tokens).unwrap();
+    println!("tree: {:?}", tree);
+
     // println!("program: {:?}", tree);
 }

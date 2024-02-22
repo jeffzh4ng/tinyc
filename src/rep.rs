@@ -1,22 +1,25 @@
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Program {
     pub main_function: MainFunction,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MainFunction {
     pub statement: Statement,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Statement {
     Return(Expr),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Expr {
     // introductions (values)
     Num(i128),
+    String(String),
     // Bool(bool),
     // Let {
     //     identifier: String,
@@ -42,17 +45,18 @@ pub enum Expr {
     // },
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Val {
     Num(i128),
     Bool(bool),
     Lam { param: String, body: Expr },
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Op {
     Add,
     Subtract,
     Multiply,
     Divide,
+    AddAdd, // works on strings
 }
