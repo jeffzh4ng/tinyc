@@ -100,10 +100,7 @@ fn parse_binop(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
             TokenType::Minus => Ok((Op::Sub, r)),
             TokenType::Star => Ok((Op::Mult, r)),
             TokenType::Slash => Ok((Op::Div, r)),
-            _ => {
-                println!("ayooo");
-                Err(io::Error::new(io::ErrorKind::Other, "bla"))
-            }
+            _ => Err(io::Error::new(io::ErrorKind::Other, "bla")),
         },
     }
 }
@@ -179,6 +176,20 @@ mod test_valid {
     fn test_arithmetic_subtraction() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/subtraction.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parse_program(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree);
+    }
+
+    #[test]
+    fn test_arithmetic_mult() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic/mult.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)

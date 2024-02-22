@@ -88,6 +88,21 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_mult() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic/mult.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = type_program(&tree);
+        insta::assert_yaml_snapshot!(judgement);
+    }
+
+    #[test]
     fn test() {
         let input = Expr::Binary {
             op: Op::Add,
