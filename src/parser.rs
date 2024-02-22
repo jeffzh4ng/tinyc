@@ -124,7 +124,7 @@ fn mtch<'a>(tokens: &'a [Token], tt: TokenType) -> Result<(&'a Token, &'a [Token
 }
 
 #[cfg(test)]
-mod test_valid {
+mod test_valid_arithmetic {
     use super::*;
     use crate::lexer;
     use insta;
@@ -145,9 +145,9 @@ mod test_valid {
     }
 
     #[test]
-    fn test_arithmetic_addition() {
+    fn test_add() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/addition.c")
+        let chars = fs::read("tests/valid/arithmetic/add.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -159,9 +159,9 @@ mod test_valid {
     }
 
     #[test]
-    fn test_arithmetic_addition_multi() {
+    fn test_add_multi() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/addition_multi.c")
+        let chars = fs::read("tests/valid/arithmetic/add_multi.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -173,9 +173,9 @@ mod test_valid {
     }
 
     #[test]
-    fn test_arithmetic_subtraction() {
+    fn test_sub() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/subtraction.c")
+        let chars = fs::read("tests/valid/arithmetic/sub.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -187,7 +187,7 @@ mod test_valid {
     }
 
     #[test]
-    fn test_arithmetic_mult() {
+    fn test_mult() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/mult.c")
             .expect("Should have been able to read the file")
@@ -199,17 +199,26 @@ mod test_valid {
         let tree = parse_program(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree);
     }
+}
+
+#[cfg(test)]
+mod test_valid_arithmetic_precedence {
+    use std::fs;
+
+    use super::*;
+    use crate::lexer;
 
     #[test]
-    fn test_arithmetic_div() {
+    fn test_add_sub() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/div.c")
+        let chars = fs::read("tests/valid/arithmetic_precedence/add_sub.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
+        let scan = lexer::scan(&chars);
+        let tokens = scan;
         let tree = parse_program(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree);
     }

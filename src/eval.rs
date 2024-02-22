@@ -134,7 +134,7 @@ fn div(lv: Val, rv: Val) -> Val {
 }
 
 #[cfg(test)]
-mod tests {
+mod test_valid_arithmetic {
     use std::fs;
 
     use crate::{lexer, parser, typer};
@@ -161,9 +161,9 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_addition() {
+    fn test_add() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/addition.c")
+        let chars = fs::read("tests/valid/arithmetic/add.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -180,9 +180,9 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_addition_multi() {
+    fn test_add_multi() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/addition_multi.c")
+        let chars = fs::read("tests/valid/arithmetic/add_multi.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -199,7 +199,7 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_subtraction() {
+    fn test_subtraction() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/subtraction.c")
             .expect("Should have been able to read the file")
@@ -218,7 +218,7 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_mult() {
+    fn test_mult() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/mult.c")
             .expect("Should have been able to read the file")
@@ -237,7 +237,7 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_div() {
+    fn test_div() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/div.c")
             .expect("Should have been able to read the file")
@@ -256,6 +256,33 @@ mod tests {
     }
 }
 
+#[cfg(test)]
+mod test_valid_arithmetic_precedence {
+    use std::fs;
+
+    use crate::{lexer, parser, typer};
+
+    use super::*;
+
+    #[test]
+    fn test_add_sub() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic_precedence/add_sub.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
+    }
+}
 // #[cfg(test)]
 // mod literal_tests {
 //     use super::*;
