@@ -199,4 +199,18 @@ mod test_valid {
         let tree = parse_program(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree);
     }
+
+    #[test]
+    fn test_arithmetic_div() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic/div.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parse_program(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree);
+    }
 }

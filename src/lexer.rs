@@ -327,6 +327,19 @@ mod test_valid {
         let output = scan(input.as_slice());
         insta::assert_yaml_snapshot!(output);
     }
+
+    #[test]
+    fn arithmetic_div() {
+        #[rustfmt::skip]
+        let input = fs::read("tests/valid/arithmetic/div.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let output = scan(input.as_slice());
+        insta::assert_yaml_snapshot!(output);
+    }
 }
 
 #[cfg(test)]

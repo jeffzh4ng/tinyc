@@ -14,7 +14,7 @@ fn main() {
     "
     );
 
-    let chars = fs::read("tests/valid/arithmetic/mult.c")
+    let chars = fs::read("tests/valid/arithmetic/div.c")
         .expect("Should have been able to read the file")
         .iter()
         .map(|b| *b as char)

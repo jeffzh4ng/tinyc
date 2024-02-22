@@ -40,7 +40,7 @@ fn eval_expr(e: Expr, nv: &mut Env) -> Val {
             Op::Add => plus(eval_expr(*l, nv), eval_expr(*r, nv)),
             Op::Sub => sub(eval_expr(*l, nv), eval_expr(*r, nv)),
             Op::Mult => mult(eval_expr(*l, nv), eval_expr(*r, nv)),
-            Op::Div => todo!(),
+            Op::Div => div(eval_expr(*l, nv), eval_expr(*r, nv)),
             Op::AddAdd => todo!(),
             // Op::Subtract => sub(eval_expr(*l, nv), eval_expr(*r, nv)),
             // Op::Multiply => mult(eval_expr(*l, nv), eval_expr(*r, nv)),
@@ -121,17 +121,17 @@ fn mult(lv: Val, rv: Val) -> Val {
     }
 }
 
-// fn div(&self, lv: Val, rv: Val) -> Val {
-//     match lv {
-//         Val::Num(l) => match rv {
-//             Val::Num(r) => Val::Num(l / r),
-//             Val::Bool(_) => todo!(),
-//             Val::Lam { param, body } => todo!(),
-//         },
-//         Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
-//         Val::Lam { param, body } => todo!(),
-//     }
-// }
+fn div(lv: Val, rv: Val) -> Val {
+    match lv {
+        Val::Num(l) => match rv {
+            Val::Num(r) => Val::Num(l / r),
+            Val::Bool(_) => todo!(),
+            Val::Lam { param, body } => todo!(),
+        },
+        Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
+        Val::Lam { param, body } => todo!(),
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -221,6 +221,25 @@ mod tests {
     fn test_valid_mult() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/mult.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
+    }
+
+    #[test]
+    fn test_valid_div() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic/div.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
