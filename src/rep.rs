@@ -55,8 +55,8 @@ pub enum Val {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum Op {
     Add,
-    Subtract,
-    Multiply,
-    Divide,
+    Sub,
+    Mult,
+    Div,
     AddAdd, // works on strings
 }

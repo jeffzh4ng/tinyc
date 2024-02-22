@@ -277,9 +277,35 @@ mod test_valid {
     }
 
     #[test]
-    fn hello_addition() {
+    fn arithmetic_addition() {
         #[rustfmt::skip]
         let input = fs::read("tests/valid/arithmetic/addition.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let output = scan(input.as_slice());
+        insta::assert_yaml_snapshot!(output);
+    }
+
+    #[test]
+    fn arithmetic_addition_multi() {
+        #[rustfmt::skip]
+        let input = fs::read("tests/valid/arithmetic/addition_multi.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let output = scan(input.as_slice());
+        insta::assert_yaml_snapshot!(output);
+    }
+
+    #[test]
+    fn arithmetic_subtraction() {
+        #[rustfmt::skip]
+        let input = fs::read("tests/valid/arithmetic/subtraction.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)

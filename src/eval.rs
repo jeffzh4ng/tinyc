@@ -38,9 +38,9 @@ fn eval_expr(e: Expr, nv: &mut Env) -> Val {
         Expr::Binary { op, l, r } => match op {
             // threading through nv since SMoL has static scope
             Op::Add => plus(eval_expr(*l, nv), eval_expr(*r, nv)),
-            Op::Subtract => todo!(),
-            Op::Multiply => todo!(),
-            Op::Divide => todo!(),
+            Op::Sub => sub(eval_expr(*l, nv), eval_expr(*r, nv)),
+            Op::Mult => todo!(),
+            Op::Div => todo!(),
             Op::AddAdd => todo!(),
             // Op::Subtract => sub(eval_expr(*l, nv), eval_expr(*r, nv)),
             // Op::Multiply => mult(eval_expr(*l, nv), eval_expr(*r, nv)),
@@ -97,17 +97,17 @@ fn plus(lv: Val, rv: Val) -> Val {
     }
 }
 
-// fn sub(&self, lv: Val, rv: Val) -> Val {
-//     match lv {
-//         Val::Num(l) => match rv {
-//             Val::Num(r) => Val::Num(l - r),
-//             Val::Bool(_) => todo!(),
-//             Val::Lam { param, body } => todo!(),
-//         },
-//         Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
-//         Val::Lam { param, body } => todo!(),
-//     }
-// }
+fn sub(lv: Val, rv: Val) -> Val {
+    match lv {
+        Val::Num(l) => match rv {
+            Val::Num(r) => Val::Num(l - r),
+            Val::Bool(_) => todo!(),
+            Val::Lam { param, body } => todo!(),
+        },
+        Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
+        Val::Lam { param, body } => todo!(),
+    }
+}
 
 // fn mult(&self, lv: Val, rv: Val) -> Val {
 //     match lv {
@@ -183,6 +183,25 @@ mod tests {
     fn test_valid_addition_multi() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/addition_multi.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
+    }
+
+    #[test]
+    fn test_valid_subtraction() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic/subtraction.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)

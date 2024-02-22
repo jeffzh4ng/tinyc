@@ -33,14 +33,15 @@ fn parse_statement(tokens: &[Token]) -> Result<(Statement, &[Token]), io::Error>
 
 fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     // parse_expr(tokens); // infinite recursion if parsing left-associative grammar;
+    // println!("moose: {:?}", tokens);
     match tokens {
         // expensive: cloning b/c of recursive call below
         [] => todo!(),
         [f, r @ ..] => match f.typ {
             TokenType::LiteralInt => {
-                let mut root = if mtch(r, TokenType::Plus).is_ok() {
+                let mut root = if let Ok((op, _)) = parse_binop(r) {
                     Expr::Binary {
-                        op: Op::Add,
+                        op,
                         l: Box::new(Expr::Num(f.lexeme.parse().unwrap())), // TODO: unwrapping
                         r: Box::new(Expr::Num(-1)),                        // TODO??
                     }
@@ -58,7 +59,7 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
                 let mut cur_node = &mut root;
                 let mut r_tokens = r;
 
-                while let Ok((f, r)) = mtch(r_tokens, TokenType::Plus) {
+                while let Ok((op, r)) = parse_binop(r_tokens) {
                     let (f, r) = mtch(r, TokenType::LiteralInt)?;
                     let lit = f.lexeme.parse::<i128>().unwrap();
 
@@ -67,9 +68,9 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
                         ..
                     } = cur_node
                     {
-                        if mtch(r, TokenType::Plus).is_ok() {
+                        if let Ok((op, r)) = parse_binop(r) {
                             *right_child = Box::new(Expr::Binary {
-                                op: Op::Add,
+                                op,
                                 l: Box::new(Expr::Num(lit)), // inheriting rust's i128 for now
                                 r: Box::new(Expr::Num(-1)),  // TODO??
                             });
@@ -91,8 +92,20 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     }
 }
 
-fn parse_binop(tokens: Vec<Token>) -> Expr {
-    todo!()
+fn parse_binop(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::Plus => Ok((Op::Add, r)),
+            TokenType::Minus => Ok((Op::Sub, r)),
+            TokenType::Star => Ok((Op::Mult, r)),
+            TokenType::Slash => Ok((Op::Div, r)),
+            _ => {
+                println!("ayooo");
+                Err(io::Error::new(io::ErrorKind::Other, "bla"))
+            }
+        },
+    }
 }
 
 fn check(tokens: Vec<Token>, tt: TokenType) {
@@ -121,7 +134,7 @@ mod test_valid {
     use std::fs;
 
     #[test]
-    fn test_valid() {
+    fn test_hello() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/hello.c")
             .expect("Should have been able to read the file")
@@ -135,7 +148,7 @@ mod test_valid {
     }
 
     #[test]
-    fn test_valid_addition() {
+    fn test_arithmetic_addition() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/addition.c")
             .expect("Should have been able to read the file")
@@ -149,9 +162,23 @@ mod test_valid {
     }
 
     #[test]
-    fn test_valid_addition_multi() {
+    fn test_arithmetic_addition_multi() {
         #[rustfmt::skip]
         let chars = fs::read("tests/valid/arithmetic/addition_multi.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parse_program(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree);
+    }
+
+    #[test]
+    fn test_arithmetic_subtraction() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic/subtraction.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
