@@ -137,7 +137,7 @@ mod test_valid {
     #[test]
     fn test_valid_addition() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/addition.c")
+        let chars = fs::read("tests/valid/arithmetic/addition.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -151,7 +151,7 @@ mod test_valid {
     #[test]
     fn test_valid_addition_multi() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/addition_multi.c")
+        let chars = fs::read("tests/valid/arithmetic/addition_multi.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
