@@ -38,12 +38,22 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
         [] => todo!(),
         [f, r @ ..] => match f.typ {
             TokenType::LiteralInt => {
-                // TODO: assuming only plus for now.
-                let mut root = Expr::Binary {
-                    op: Op::Add,
-                    l: Box::new(Expr::Num(f.lexeme.parse().unwrap())), // TODO: unwrapping
-                    r: Box::new(Expr::Num(-1)),                        // TODO??
+                let mut root = if mtch(r, TokenType::Plus).is_ok() {
+                    Expr::Binary {
+                        op: Op::Add,
+                        l: Box::new(Expr::Num(f.lexeme.parse().unwrap())), // TODO: unwrapping
+                        r: Box::new(Expr::Num(-1)),                        // TODO??
+                    }
+                } else {
+                    Expr::Num(f.lexeme.parse().unwrap())
                 };
+
+                // TODO: assuming only plus for now.
+                // let mut root = Expr::Binary {
+                //     op: Op::Add,
+                //     l: Box::new(Expr::Num(f.lexeme.parse().unwrap())), // TODO: unwrapping
+                //     r: Box::new(Expr::Num(-1)),                        // TODO??
+                // };
 
                 let mut cur_node = &mut root;
                 let mut r_tokens = r;

@@ -279,7 +279,7 @@ mod test_valid {
     #[test]
     fn hello_addition() {
         #[rustfmt::skip]
-        let input = fs::read("tests/valid/hello_addition.c")
+        let input = fs::read("tests/valid/addition.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
