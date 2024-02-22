@@ -17,7 +17,7 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
     let (statement, r) = parse_statement(r)?;
     let (_, r) = mtch(r, TokenType::PuncRightBrace)?;
 
-    if !tokens.is_empty() {
+    if !r.is_empty() {
         // panic?
     }
 
@@ -39,34 +39,35 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
         [f, r @ ..] => match f.typ {
             TokenType::LiteralInt => {
                 // TODO: assuming only plus for now.
-                let mut parent = Expr::Binary {
+                let mut root = Expr::Binary {
                     op: Op::Add,
                     l: Box::new(Expr::Num(f.lexeme.parse().unwrap())), // TODO: unwrapping
                     r: Box::new(Expr::Num(-1)),                        // TODO??
                 };
-                let mut r_expr = r;
+                let mut cur_node = &mut root;
+                let mut r_tokens = r;
 
-                while let Ok((f, r)) = mtch(r_expr, TokenType::Plus) {
+                while let Ok((f, r)) = mtch(r_tokens, TokenType::Plus) {
                     let (f, r) = mtch(r, TokenType::LiteralInt)?;
-                    let new_parent = Box::new(Expr::Binary {
+                    let new_node = Expr::Binary {
                         op: Op::Add,
                         l: Box::new(Expr::Num(f.lexeme.parse::<i128>().unwrap())), // inheriting rust's i128 for now
                         r: Box::new(Expr::Num(-1)),                                // TODO??
-                    });
-
-                    parent = match parent {
-                        Expr::Binary { op, l, r } => Expr::Binary {
-                            op,
-                            l,
-                            r: new_parent,
-                        },
-                        _ => todo!(),
                     };
 
-                    r_expr = r;
+                    if let Expr::Binary {
+                        r: ref mut right_child,
+                        ..
+                    } = cur_node
+                    {
+                        *right_child = Box::new(new_node);
+                        cur_node = right_child;
+                    }
+
+                    r_tokens = r;
                 }
 
-                Ok((parent, r_expr))
+                Ok((root, r_tokens))
             }
             TokenType::PuncLeftParen => todo!(),
             _ => todo!(), // panic?
