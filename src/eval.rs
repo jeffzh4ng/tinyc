@@ -1,253 +1,335 @@
 use std::collections::HashMap;
 
-use crate::rep::{Expr, Op, Val};
+use crate::rep::{Expr, Op, Program, Statement, Val};
 
 type Env = HashMap<String, Val>;
 
-pub struct Interpreter {}
-
-impl Interpreter {
-    pub fn eval(&self, e: Expr, nv: Env) -> Val {
-        match e {
-            // introductions
-            Expr::Num(n) => Val::Num(n), // TODO: inheriting host lang's number semantics
-            Expr::Bool(b) => Val::Bool(b),
-            Expr::Let {
-                identifier,
-                binding,
-                body,
-            } => {
-                #[rustfmt::skip]
-              let extended_nv = nv
-              .into_iter()
-              .chain(std::iter::once((identifier, self.eval(*binding, nv))))
-              .collect();
-
-                self.eval(*body, extended_nv)
-            }
-            Expr::Lambda {
-                f_param: param,
-                body,
-            } => Val::Lam { param, body: *body },
-
-            // eliminations
-            Expr::Binary { op, l, r } => match op {
-                // threading through nv since SMoL has static scope
-                Op::Add => self.plus(self.eval(*l, nv), self.eval(*r, nv)),
-                Op::Subtract => self.sub(self.eval(*l, nv), self.eval(*r, nv)),
-                Op::Multiply => self.mult(self.eval(*l, nv), self.eval(*r, nv)),
-                Op::Divide => self.div(self.eval(*l, nv), self.eval(*r, nv)),
-            },
-            Expr::If { cond, then, els } => {
-                Val::Num(0) // for now
-
-                // TODO: 0 is the only truthy val for now
-                // if self.eval(*cond) == 0 {
-                //     self.eval(*then)
-                // } else {
-                //     self.eval(*els)
-                // }
-            }
-            Expr::Var(id) => todo!(), // (nv.get(&id).unwrap()),
-            Expr::LambdaApp {
-                a_param: arg,
-                lambda,
-            } => {
-                // choice: order of f eval
-                let arg = self.eval(*arg, nv);
-                let lam = self.eval(*lambda, nv);
-
-                // lecture: inherit's host lang (racket's) let semantics
-
-                match lam {
-                    Val::Lam { param, body } => {
-                        let extended_nv = nv
-                            .into_iter()
-                            .chain(std::iter::once((param, arg)))
-                            .collect();
-
-                        self.eval(body, extended_nv)
-                    }
-                    _ => {
-                        todo!() // error
-                    }
-                }
-            }
-        }
-    }
-
-    fn plus(&self, lv: Val, rv: Val) -> Val {
-        match lv {
-            Val::Num(l) => match rv {
-                Val::Num(r) => Val::Num(l + r),
-                Val::Bool(_) => todo!(),
-            },
-            Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
-        }
-    }
-
-    fn sub(&self, lv: Val, rv: Val) -> Val {
-        match lv {
-            Val::Num(l) => match rv {
-                Val::Num(r) => Val::Num(l - r),
-                Val::Bool(_) => todo!(),
-            },
-            Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
-        }
-    }
-
-    fn mult(&self, lv: Val, rv: Val) -> Val {
-        match lv {
-            Val::Num(l) => match rv {
-                Val::Num(r) => Val::Num(l * r),
-                Val::Bool(_) => todo!(),
-            },
-            Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
-        }
-    }
-
-    fn div(&self, lv: Val, rv: Val) -> Val {
-        match lv {
-            Val::Num(l) => match rv {
-                Val::Num(r) => Val::Num(l / r),
-                Val::Bool(_) => todo!(),
-            },
-            Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
-        }
+pub fn eval_program(p: Program) -> Val {
+    match p.main_function.statement {
+        Statement::Return(e) => eval_expr(e, &mut HashMap::new()),
     }
 }
 
+fn eval_expr(e: Expr, nv: &mut Env) -> Val {
+    match e {
+        // introductions
+        Expr::Num(n) => Val::Num(n), // TODO: inheriting host lang's number semantics
+        Expr::String(s) => todo!(),
+        // Expr::Bool(b) => Val::Bool(b),
+        // Expr::Let {
+        //     identifier,
+        //     binding,
+        //     body,
+        // } => {
+        //     #[rustfmt::skip]
+        //   let extended_nv = nv
+        //   .into_iter()
+        //   .chain(std::iter::once((identifier, self.eval_expr(*binding, nv))))
+        //   .collect();
+
+        //     self.eval_expr(*body, extended_nv)
+        // }
+        // Expr::Lambda {
+        //     f_param: param,
+        //     body,
+        // } => Val::Lam { param, body: *body },
+
+        // eliminations
+        Expr::Binary { op, l, r } => match op {
+            // threading through nv since SMoL has static scope
+            Op::Add => plus(eval_expr(*l, nv), eval_expr(*r, nv)),
+            Op::Subtract => todo!(),
+            Op::Multiply => todo!(),
+            Op::Divide => todo!(),
+            Op::AddAdd => todo!(),
+            // Op::Subtract => sub(eval_expr(*l, nv), eval_expr(*r, nv)),
+            // Op::Multiply => mult(eval_expr(*l, nv), eval_expr(*r, nv)),
+            // Op::Divide => div(eval_expr(*l, nv), eval_expr(*r, nv)),
+            // Op::AddAdd => todo!(),
+        },
+        // Expr::If { cond, then, els } => {
+        //     Val::Num(0) // for now
+
+        //     // TODO: 0 is the only truthy val for now
+        //     // if self.eval(*cond) == 0 {
+        //     //     self.eval(*then)
+        //     // } else {
+        //     //     self.eval(*els)
+        //     // }
+        // }
+        // Expr::Var(id) => todo!(), // (nv.get(&id).unwrap()),
+        // Expr::LambdaApp {
+        //     a_param: arg,
+        //     lambda,
+        // } => {
+        //     // choice: order of f eval
+        //     let arg = self.eval_expr(*arg, nv);
+        //     let lam = self.eval_expr(*lambda, nv);
+
+        //     // lecture: inherit's host lang (racket's) let semantics
+
+        //     match lam {
+        //         Val::Lam { param, body } => {
+        //             let extended_nv = nv
+        //                 .into_iter()
+        //                 .chain(std::iter::once((param, arg)))
+        //                 .collect();
+
+        //             self.eval_expr(body, extended_nv)
+        //         }
+        //         _ => {
+        //             todo!() // error
+        //         }
+        //     }
+        // }
+    }
+}
+
+fn plus(lv: Val, rv: Val) -> Val {
+    match lv {
+        Val::Num(l) => match rv {
+            Val::Num(r) => Val::Num(l + r),
+            Val::Bool(_) => todo!(),
+            Val::Lam { param, body } => todo!(),
+        },
+        Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
+        Val::Lam { param, body } => todo!(),
+    }
+}
+
+// fn sub(&self, lv: Val, rv: Val) -> Val {
+//     match lv {
+//         Val::Num(l) => match rv {
+//             Val::Num(r) => Val::Num(l - r),
+//             Val::Bool(_) => todo!(),
+//             Val::Lam { param, body } => todo!(),
+//         },
+//         Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
+//         Val::Lam { param, body } => todo!(),
+//     }
+// }
+
+// fn mult(&self, lv: Val, rv: Val) -> Val {
+//     match lv {
+//         Val::Num(l) => match rv {
+//             Val::Num(r) => Val::Num(l * r),
+//             Val::Bool(_) => todo!(),
+//             Val::Lam { param, body } => todo!(),
+//         },
+//         Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
+//         Val::Lam { param, body } => todo!(),
+//     }
+// }
+
+// fn div(&self, lv: Val, rv: Val) -> Val {
+//     match lv {
+//         Val::Num(l) => match rv {
+//             Val::Num(r) => Val::Num(l / r),
+//             Val::Bool(_) => todo!(),
+//             Val::Lam { param, body } => todo!(),
+//         },
+//         Val::Bool(b) => todo!(), // TODO: error, plus has a strict interpretation
+//         Val::Lam { param, body } => todo!(),
+//     }
+// }
+
 #[cfg(test)]
-mod literal_tests {
+mod tests {
+    use std::fs;
+
+    use crate::{lexer, parser, typer};
+
     use super::*;
 
     #[test]
-    fn literal_simple() {
-        let interpreter = Interpreter {};
-        let (e, nv) = (Expr::Num(8), HashMap::new());
-        let output = interpreter.eval(e, nv);
-        assert_eq!(output, Val::Num(8));
+    fn test_valid() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/hello.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
+    }
+
+    #[test]
+    fn test_valid_addition() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/addition.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
+    }
+
+    #[test]
+    fn test_valid_addition_multi() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/addition_multi.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
     }
 }
 
-#[cfg(test)]
-mod binary_tests {
-    use super::*;
+// #[cfg(test)]
+// mod literal_tests {
+//     use super::*;
 
-    #[test]
-    fn binary_simple() {
-        let interpreter = Interpreter {};
+//     #[test]
+//     fn literal_simple() {
+//         let interpreter = Interpreter {};
+//         let (e, nv) = (Expr::Num(8), HashMap::new());
+//         let output = interpreter.eval_expr(e, nv);
+//         assert_eq!(output, Val::Num(8));
+//     }
+// }
 
-        let (e, nv) = (
-            Expr::Binary {
-                op: Op::Add,
-                l: Box::new(Expr::Num(9)),
-                r: Box::new(Expr::Num(10)),
-            },
-            HashMap::new(),
-        );
+// #[cfg(test)]
+// mod binary_tests {
+//     use super::*;
 
-        let output = interpreter.eval(e, nv);
-        assert_eq!(output, Val::Num(19));
-    }
+//     #[test]
+//     fn binary_simple() {
+//         let interpreter = Interpreter {};
 
-    #[test]
-    fn binary_complex_one() {
-        let interpreter = Interpreter {};
-        let (e, nv) = (
-            Expr::Binary {
-                op: Op::Add,
-                l: Box::new(Expr::Num(9)),
-                r: Box::new(Expr::Binary {
-                    op: Op::Add,
-                    l: Box::new(Expr::Num(9)),
-                    r: Box::new(Expr::Num(10)),
-                }),
-            },
-            HashMap::new(),
-        );
+//         let (e, nv) = (
+//             Expr::Binary {
+//                 op: Op::Add,
+//                 l: Box::new(Expr::Num(9)),
+//                 r: Box::new(Expr::Num(10)),
+//             },
+//             HashMap::new(),
+//         );
 
-        let output = interpreter.eval(e, nv);
-        assert_eq!(output, Val::Num(28));
-    }
+//         let output = interpreter.eval_expr(e, nv);
+//         assert_eq!(output, Val::Num(19));
+//     }
 
-    #[test]
-    fn binary_complex_two() {
-        let interpreter = Interpreter {};
-        let (e, nv) = (
-            Expr::Binary {
-                op: Op::Add,
-                l: Box::new(Expr::Num(9)),
-                r: Box::new(Expr::Binary {
-                    op: Op::Multiply,
-                    l: Box::new(Expr::Num(2)),
-                    r: Box::new(Expr::Num(3)),
-                }),
-            },
-            HashMap::new(),
-        );
+//     #[test]
+//     fn binary_complex_one() {
+//         let interpreter = Interpreter {};
+//         let (e, nv) = (
+//             Expr::Binary {
+//                 op: Op::Add,
+//                 l: Box::new(Expr::Num(9)),
+//                 r: Box::new(Expr::Binary {
+//                     op: Op::Add,
+//                     l: Box::new(Expr::Num(9)),
+//                     r: Box::new(Expr::Num(10)),
+//                 }),
+//             },
+//             HashMap::new(),
+//         );
 
-        let output = interpreter.eval(e, nv);
-        assert_eq!(output, Val::Num(15));
-    }
-}
+//         let output = interpreter.eval_expr(e, nv);
+//         assert_eq!(output, Val::Num(28));
+//     }
 
-#[cfg(test)]
-mod if_tests {
-    use super::*;
+//     #[test]
+//     fn binary_complex_two() {
+//         let interpreter = Interpreter {};
+//         let (e, nv) = (
+//             Expr::Binary {
+//                 op: Op::Add,
+//                 l: Box::new(Expr::Num(9)),
+//                 r: Box::new(Expr::Binary {
+//                     op: Op::Multiply,
+//                     l: Box::new(Expr::Num(2)),
+//                     r: Box::new(Expr::Num(3)),
+//                 }),
+//             },
+//             HashMap::new(),
+//         );
 
-    #[test]
-    fn if_then_simple() {
-        let interpreter = Interpreter {};
-        let (e, nv) = (
-            Expr::If {
-                cond: Box::new(Expr::Num(0)),
-                then: Box::new(Expr::Num(8)),
-                els: Box::new(Expr::Num(88)),
-            },
-            HashMap::new(),
-        );
+//         let output = interpreter.eval_expr(e, nv);
+//         assert_eq!(output, Val::Num(15));
+//     }
+// }
 
-        let output = interpreter.eval(e, nv);
-        // assert_eq!(output, Val::Num(8));
-        assert_eq!(output, Val::Num(0));
-    }
+// #[cfg(test)]
+// mod if_tests {
+//     use super::*;
 
-    #[test]
-    fn if_then_complex() {
-        let interpreter = Interpreter {};
-        let (e, nv) = (
-            Expr::If {
-                cond: Box::new(Expr::Binary {
-                    op: Op::Add,
-                    l: Box::new(Expr::Num(10)),
-                    r: Box::new(Expr::Num(-10)),
-                }),
-                then: Box::new(Expr::Num(8)),
-                els: Box::new(Expr::Num(88)),
-            },
-            HashMap::new(),
-        );
+//     #[test]
+//     fn if_then_simple() {
+//         let interpreter = Interpreter {};
+//         let (e, nv) = (
+//             Expr::If {
+//                 cond: Box::new(Expr::Num(0)),
+//                 then: Box::new(Expr::Num(8)),
+//                 els: Box::new(Expr::Num(88)),
+//             },
+//             HashMap::new(),
+//         );
 
-        let output = interpreter.eval(e, nv);
-        // assert_eq!(output, Val::Num(8));
-        assert_eq!(output, Val::Num(0));
-    }
+//         let output = interpreter.eval_expr(e, nv);
+//         // assert_eq!(output, Val::Num(8));
+//         assert_eq!(output, Val::Num(0));
+//     }
 
-    #[test]
-    fn if_else() {
-        let interpreter = Interpreter {};
-        let (e, nv) = (
-            Expr::If {
-                cond: Box::new(Expr::Num(1)),
-                then: Box::new(Expr::Num(8)),
-                els: Box::new(Expr::Num(88)),
-            },
-            HashMap::new(),
-        );
+//     #[test]
+//     fn if_then_complex() {
+//         let interpreter = Interpreter {};
+//         let (e, nv) = (
+//             Expr::If {
+//                 cond: Box::new(Expr::Binary {
+//                     op: Op::Add,
+//                     l: Box::new(Expr::Num(10)),
+//                     r: Box::new(Expr::Num(-10)),
+//                 }),
+//                 then: Box::new(Expr::Num(8)),
+//                 els: Box::new(Expr::Num(88)),
+//             },
+//             HashMap::new(),
+//         );
 
-        let output = interpreter.eval(e, nv);
-        // assert_eq!(output, Val::Num(88));
-        assert_eq!(output, Val::Num(0));
-    }
-}
+//         let output = interpreter.eval_expr(e, nv);
+//         // assert_eq!(output, Val::Num(8));
+//         assert_eq!(output, Val::Num(0));
+//     }
+
+//     #[test]
+//     fn if_else() {
+//         let interpreter = Interpreter {};
+//         let (e, nv) = (
+//             Expr::If {
+//                 cond: Box::new(Expr::Num(1)),
+//                 then: Box::new(Expr::Num(8)),
+//                 els: Box::new(Expr::Num(88)),
+//             },
+//             HashMap::new(),
+//         );
+
+//         let output = interpreter.eval_expr(e, nv);
+//         // assert_eq!(output, Val::Num(88));
+//         assert_eq!(output, Val::Num(0));
+//     }
+// }

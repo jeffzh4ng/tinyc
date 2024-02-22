@@ -1,4 +1,4 @@
-use din::{lexer, parser, typer};
+use din::{eval, lexer, parser, typer};
 use std::fs;
 
 fn main() {
@@ -26,13 +26,11 @@ fn main() {
     let tree = parser::parse_program(tokens).unwrap();
     println!("tree: {:?}", tree);
 
-    if !typer::type_program(tree) {
+    if !typer::type_program(&tree) {
         // return error
         todo!()
     }
 
-    // let result = eval::eval_program(tree);
-    // println!("result: {:?}", result);
-
-    // println!("program: {:?}", tree);
+    let res = eval::eval_program(tree);
+    println!("result: {:?}", res);
 }
