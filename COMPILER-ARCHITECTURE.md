@@ -1,128 +1,152 @@
 # Compiler Architecture
-
 **Contents**
-1. [Frontend (Parsing)](#1-frontend)
+
+1. [Representations]
+2. [Frontend (Parsing)](#1-frontend)
   - A. [Lexical and Syntactic Analysis: Lexing and Parsing](#a-lexical-and-syntactic-analysis-lexing-and-parsing)
   - B. [Source Language References: C89/90](#b-source-language-references-c8990)
   - C. [Semantic Analysis: Typing](#c-semantic-analysis-typing)
-2. [Middleend (Optimization)]
-3. [Backend (Code Gen)](#2-backend)
+3. [Middleend (Optimization)]
+4. [Backend (Code Gen)](#2-backend)
   - A. Selection
   - B. Scheduling
   - C. Allocation
   - D. [Target Language 1 References: LLVM](#d-target-language-1-llvm)
   - E. [Target Language 2 References: RISC-V](#e-target-language-2-risc-v)
-4. [References](#3-references)
+5. [References](#3-references)
   - [A. Languages and Compilers](#a-languages-and-compilers)
 
-# 1. Frontend (Parsing)
+# 1. Big Picture
+The two golden rules of compiler construction (any computing system really), is:
+1. correctness: preserve source semantics
+2. performance: optimize if possible
+
+<details>
+<summary>Food for thought</summary>
+Assuming Proebstings Law[^0], which is really being aware of:
+1. compiler optimizations yield 4% speedup/year
+2. rule of 72
+
+then compiler-related optimizations yield a doubling in program speedup every
+18 years. So perhaps there's more ROI to focus at the top[^1] and bottom[^2].
+</details>
+
+Compiler construction is usually broken down into three phases: frontend, middleend
+and backend. Just like how the more larger problem of translation between problems
+and electrons is broken down, so is too the problem between high level language
+and that of a machine.
+
+At each phase of the compiler, the representation of the program changes form.
+Usually, in the frontend, we represent the program as trees which helps with
+recognition. In the middleend, control flow graphs help with optimization. And
+finally, assembly helps with, well, the original problem! Generation of machine
+language.
+
+# 2. Frontend (Recognition)
+```rust
+fn lex(&[char]) -> Vec<Token>
+fn parse(Vec<Token>) -> Tree
+fn typ(Tree) -> bool
 ```
-chars -> |lexer| -> tokens -> |parser| -> tree -> |typer| -> typed tree
+
+```
+                                                                                              +
+                                                                                             / \
+ 9 * 10 + 3 --->|LEXER|---> [Lit(9), Star(*), Lit(10), Plus(+), Lit(3)] ---> |PARSER| --->  *   3 ---> |TYPER| ---> true
+                                                                                           / \
+                                                                                          9  10
 ```
 
 din's frontend follows a traditional three pass architecture, where separation
 of concerns is split based on the different levels of abstraction that naturally
 occurs when raising the representation of source from characters, to tokens, to
-trees.
+trees, to attributed trees.
 
-While academia formalizes both lexical and syntactic analysis with well-defined
-"compiler compilers", din's lexer and parser are both handwritten. There are even
-many open source compilers such as GCC and Clang which handwrite their own frontends;
-and din follows suit. However, if you want a quick overview of the theory, feel
-free to expand the section below. Otherwise, we will move on with Pratt Parsing.
+While academia formalizes frontend recognition (lexical, syntactic, and semantic
+analysis) with well-defined compiler compilers and ____, din's lexer, parser,
+and type checker are hand-written.
 
-## A. Lexical and Syntactic Analysis: Lexing and Parsing
+Many open source compilers such as GCC and Clang which handwrite their own frontends;
+and din follows suit. However, there are some golden nuggets of truth with well-defined
+formalizations when it comes to compiler *correctness*. Golden rule of compiler
+construction is to perserve semantics, afterall.
 
-### Academic Parsing: formalizations with automata
+If you'd like a quick overview of the theory, feel free to expand section A below.
+Otherwise, we will move on to section B with Pratt Parsing.
+
+### A. Academic Recognition: Formalizations with Automata
 <details>
-  <summary>Expand</summary>
-Lexing and parsing sit on a strong foundation of theory which sit at the
-intersection of languages and computation. The core problem of both lexical and
-syntactic analysis is to recognize a series of symbols from an alphabet by
-producing a derivation of productions specified by the language. That was a bunch
-of word salad according to formal definitions. More clearly:
+<summary>Expand</summary>
+Lexing, parsing, and typing sit on a strong foundation of computional theory. The
+core problem of the compiler's frontend is to *recognize* a series of symbols (called
+productions) from an alphabet by deriving a series of productions specified by a
+grammar. You can think of recognition as *judgement*, and the series of productions
+as *parsing*.
 
 Lexical analysis:
-- alphabet: characters
-- series of symbols: tokens
+- alphabet (input): characters
+- productions (output): tokens
 - language: regular
   - spec: regular expressions (RE)
   - impl: deterministic finite automata (DFA)
 
 Syntactic analysis:
-- alphabet: tokens
-- series of symbols: tree
+- alphabet (input): tokens
+- productions (output): tree
 - language: context-free
   - spec: Backus-Naur Form (BNF)
   - impl: pushdown automata (PA)
 
+Semantic analysis
+- alphabet (input): tree
+- productions (output): attributed tree
+- language: context-sensitive
+  - spec: ??
+  - impl: ??
+
 There are well-defined algorithms to convert specs into implementations. For
 instance, with syntactic analysis, you can convert REs -> NFAs -> DFA -> min(DFA)
-via Thompson's, subset, and Kleene's construction, respectively.
+via Thompson's, subset, and Kleene's construction (respectively).
 
-RE/FA aren't expressive enough for a certain set of languages, called context-free
-languages (in which you can use the Pumping Lemma result to determine if
-a language is regular or not). If a language is context-free, it'll need to be
-specified via BNF and implemented with pushdown automata, which are the same
-as their regular-language counterparts with the addition of recursion.
+RE/FA aren't *expressive* enough for a certain set of languages, called context-free
+languages. There are fancy results such as the Pumping Lemma to determine if a
+language is regular not. A more practical litmus test is to check if your parser
+needs to recognize if a series of open and closed parentheses is balanced or not.
+Intuitively, *finite automata* aren't strong enough to perform this analysis, as an
+unbounded number of states is required.
 
-The formalization of both lexical and syntactic analysis results in so called
-compiler compilers which take in your lexical and syntactic grammars, and produce
-the machines (lexers and parsers), which *you* then use for your compiler. This
+This motivates the next jump up the Chomsky hierarchy, to context-free languages,
+which are specified with BNF grammars and are implemented with *pushdown automata*.
+They are similar to DFAs, with the addition of *recursion*, by adding references
+to other productions within a production itself. These references are called
+*non-terminals*, whereas the literal (regular) references are called *terminals*.
+
+The formalizations of frontend analysis result in so called "compiler
+compilers" which take in your lexical and syntactic grammars, and produce
+the programs (lexers and parsers), which *you* then use for your compiler. This
 is not so different from higher order programming.
 
-While these academic formalizations can help compiler construction with respect
-to correctness (rule #1 of compiler construction is to perserve semantics
-afterall), caution should be exercised based on your engineering constraints.
-A heuristic to use when calculating cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
+TODO: type theory
+
+- The grammar is called “context-free” because whether the production applies doesn't depend on the surrounding context α and β.
+
+
+A heuristic to use when performing cost-benefit calculus is `benefit (DSL) ∝ |engineers|`
 Sacrificing flow control for a straight-jacketed DSL (such as HCL and ECS for
 managing cloud infrastructure and building games) makes sense when
 `|engineers| > 1e4`, but definitely not for a project like din, where
 `|engineers| = 1`.
 
 The only theory din leverages is the research behind the different types of
-top down parsing (recursive descent) to handle operation precedence and
-associativity with non-Lisp-like-S-expression-syntax, which, so happens to be
-din's case, as its source language is C.
-
+top down parsing (recursive descent) to handle operation associativity and
+precedence with non-Lisp-like-S-expression-syntax, which, so happens to be
+din's case, as it's source language is C.
 </details>
 
-### Practical Parsing: top-down, recursive descent
-
-a literal translation of the grammar’s rules straight into imperative code.
-
-*References: Pratt Parsing (the monads of syntac analysis)*
-[index](https://www.oilshell.org/blog/2017/03/31.html)
-
-*ogs*
-- [Dijkstra (1961)](https://ir.cwi.nl/pub/9251/9251D.pdf)
-- [Pratt (1973)](https://tdop.github.io/)
-- [Norvell (1999)](https://www.engr.mun.ca/%7Etheo/Misc/exp_parsing.htm)
-
-*new gen*
-- [Crockford (2007)](https://crockford.com/javascript/tdop/tdop.html)
-- [Bendersky (2010)](https://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing)
-- [Nystrom (2011)](https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/)
-- [Ball (2016)](https://edu.anarcho-copy.org/Programming%20Languages/Go/writing%20an%20INTERPRETER%20in%20go.pdf)
-- [Kladov (2020)](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing)
-
-Recursive descent ⊆ Pratt Parsing ≅ Shunting Yard
-- [Chu (2016)](https://www.oilshell.org/blog/2016/11/01.html)
-- [Chu (2017)](https://www.oilshell.org/blog/2017/03/30.html)
-- [Norvell (2016)](https://www.engr.mun.ca/%7Etheo/Misc/pratt_parsing.htm)
-- [Kladov (2020)](https://matklad.github.io/2020/04/15/from-pratt-to-dijkstra.html)
-- [Johnston (2021)](https://www.abubalay.com/blog/2021/12/31/lr-control-flow)
-
-
-## B. Source Language References: C89/90
-- [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
-- The C Programming Language (K&R)
-- If You Must Learn C (Ragde)
-
-*Lexical grammar*
+### B. Lexical Analysis: Lexing
+Grammar:
 ```
 // introductions
-
 LITERAL_INT      ::= [0-9]+
 ID               ::= [a−zA−Z][a−zA−Z0−9]*
 
@@ -145,16 +169,20 @@ PUNC_RIGHTBRAC   ::= }
 PUNC_SEMICOLON   ::= ;
 ```
 
-*Syntactical grammar*
+- notice how this spec doesn't recurse --> it's regular
+TODO: the hand-written implementation is what you would naturally derive
+      from solving it yourself. no formal textbooks needed.
+
+### C. Syntactic Analysis: Parsing
+**Syntactic Grammar**
 ```
 <program>        ::= <function>
-<function>       ::= KEYWORD_INT <identifier> PUNC_LEFTPAREN KEYWORD_VOID
+<function>       ::= KEYWORD_INT KEYWORD_MAIN PUNC_LEFTPAREN KEYWORD_VOID
                      PUNC_RIGHTPAREN PUNC_LEFTBRACE <statement> PUNC_RIGHTBRACE
 
 <statement>      ::= KEYWORD_RETURN <exp> PUNC_SEMICOLON
 <exp>            ::= LITERAL_INT
                    | <exp> <binop> <exp>
-                   | PUNC_LEFTPAREN <expr> PUNC_RIGHTPAREN
 
 <binop>          ::= PLUS
                    | MINUS
@@ -164,7 +192,172 @@ PUNC_SEMICOLON   ::= ;
 <!-- <val> ::= literalint -->
 ```
 
-## C. Semantic Analysis: Typing
+The syntactic grammar specified above via BNF is a subset of the C language,
+which will allow us to motivate the transition from recursive descent to pratt
+parsing. It only recognizes and parses programs that return arithmetic expressions.
+
+The `<program>` production refers to `<function>`, which, in turn, refers to
+`<statement>`, but these can be easily rewritten as one single RE. The one
+production which REs could not specify is the `<exp>` production which can refer
+to itself an arbitaryamount of times.
+
+**Recursive Descent: Specification**
+A recursive descent parser is a fancy name for parsing tokens into trees, the same
+way you lex characters into tokens. The entire parser is a series of
+mutually-recursive functions; one per specified production in the BNF grammar.
+
+Note: recursion in the logical sense: implemented with the host language's
+stack frames, or your explicit stack data struture.
+
+LL(1): single token lookahead
+LL(2): double token lookahead (why is this messy for hand-written parsers?)
+  - why hand-written gets complex for k > 1?
+    --> inherently top-down parsers are predictive?? somehow top-down ==> LL(1)??
+  - differentiate assignment?
+  - must see `=` token?
+LL(k)
+
+*Recursive Descent: Implementation*:
+```rust
+fn parse_expr(tokens: &[Token]) -> Expr {
+  match tokens {
+    [] => panic!(),
+    [f, r @ ..] => match f.typ {
+      TokenType::LiteralInt => {
+        // 1. create root with left initialized
+        let mut root = if let Ok((op, _)) = parse_binop(r) {
+            Expr::Binary {
+                op,
+                l: Box::new(Expr::Num(f.lexeme.parse().unwrap())),
+                r: Box::new(Expr::Num(-1)),
+            }
+        } else {
+            Expr::Num(f.lexeme.parse().unwrap())
+        };
+
+        // 2. initialize &mut root, and r_tokens, continually updated by loop
+        let mut cur_node = &mut root;
+        let mut r_tokens = r;
+
+        // 3. while there still exists ops in input
+        //    fill in right childs
+        while let Ok((_, r)) = parse_binop(r) {
+          // check: last loop ==> construct Expr::Num, not Expr::Binary
+        }
+
+        // 4. return
+        Ok((root, r_tokens))
+      },
+      TokenType::PuncLeftParen => todo!()
+    }
+  }
+}
+```
+
+*Problem 1: Left recursion*
+
+`Parser does not halt (no base case with recursion)`
+
+just while loop it bro
+
+
+*Problem 2: Precedence*
+
+`Parser halts with wrong answer (does not bind correctly *across* operators)`
+
+just mismash the gramamr bro
+
+*Problem 3: Associativity*
+
+`Parser halts with wrong answer (does not bind correctly *within* operators)`
+
+Test Case 1: Addition (Pass)
+```
+                                 +
+                                / \
+  9 + 10 + 11 -> |parser| ->   9   +
+                                  / \
+                                 10 11
+```
+Multiplication works for the same reasons.
+
+Test Case 2: Subtraction (Fail)
+```
+                                 -
+                                / \
+  9 - 10 - 11 -> |parser| ->   9   -
+                                  / \
+                                 10 11
+```
+Division fails for the same reasons.
+
+
+
+Whether or not the compiler
+considers this to be a legal
+
+They key here is to remember the order of recursion.
+
+Sol: ???
+
+
+*Problem 2: precedence*
+- sol 1: lookahead? messy for hand written
+- sol 2: fix grammar? structure gets hidden
+- sol 3: pratt parsing
+
+// problem 1: precedence
+(+ (* 9 10) 3)
+      +
+     / \
+    *   3        =   93
+   / \
+  9  10
+
+
+9 * 10 + 3;
+
+        *
+       / \
+      9   +       =   117
+         / \
+        10  3
+
+// sol 1: ❌
+maybe...
+((9 * 10) + 3);
+((9 * (3 + 6)) + 10)
+
+
+// how do we find op. we have to look ahead from paren
+// that's why s expressions are easy, op is with opening paren (lookahead > 1)
+// which then implies tables, b/c by hand is messy to lookahead more than 1: why?
+
+// sol 2: fix grammar ✅
+
+// problem 2: associativity
+// -> how do you make a RD parser not left recursive AND non left associative??
+
+**Pratt Parsing**
+
+[Pratt Parsing References: ](https://www.oilshell.org/blog/2017/03/31.html)
+
+
+### D. Semantic Analysis: Type Checking
+
+Lexical analysis detects lexical errors (ill-formed tokens), syntactic analysis
+detects syntax errors, and semantic analysis detects semantic errors, such as
+static type errors, undefined variables, and uninitialized variables.
+
+Once semantic analysis is complete and successful, the program must be a legal
+program in the programming language; no further errors in the program should be
+reported by the compiler.
+
+
+### E. Source Language References (C89/90)
+- [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
+- The C Programming Language (K&R)
+- If You Must Learn C (Ragde)
 
 ---
 
@@ -218,7 +411,7 @@ low-level irs (close to assembly. pseudo assembly)
 
 ---
 
-# 3. Backend (Code Gen)
+# 3. Backend (Generation)
 - scheduling and allocation are NP-complete.
 - ISA
   - tradeoffs (collection of features. risc vs cisc)
@@ -234,40 +427,19 @@ low-level irs (close to assembly. pseudo assembly)
 ## D. Target Language 1: RISC-V
 - The RISC-V Reader (Waterman, Patterson)
 
+- reference card (green, homage to IBM 360)
+
+### RV32I (Stable target)
+
+### RV32G (Standard extensions)
+
+- mult and divide: RV32M
+- floating point: RV32F and RV32D
+- atomic: RV32A
+
 ## E. Target Language 2: LLVM
 - [LLVM for Grad Students (Sampson)](https://www.cs.cornell.edu/~asampson/blog/llvm.html)
 - [Greenplace (Bendersky)](https://eli.thegreenplace.net/tag/llvm-clang)
 - [Compilers and IRs (Zhang)](https://www.lei.chat/posts/compilers-and-irs-llvm-ir-spirv-and-mlir/)
 - [AOSA: LLVM (Lattner)](https://aosabook.org/en/v1/llvm.html)
 - [Tourist's Guide to the LLVM Source Code (Regehr)](https://blog.regehr.org/archives/1453)
-
-# 3. References
-Good compiler construction references for hackers who want to show up
-[done](https://steve-yegge.blogspot.com/2008/06/done-and-gets-things-smart.html)
-are few to none. They range from textbooks all about frontend formalizations such
-as parsing (hello dragon book), to calculator blog posts which lack substance.
-
-More importantly, simply generating one specific ISA and treating
-the metal below you as a black box is not conducive towards successful compilers.
-Often, you will be co-designing fullstack hardware/software systems with computer
-architects, and so knowledge of ISA and microarchitecture will help you design
-on based on principle rather than precedent.
-
-Because of the vast amount of area to cover, there is not one single book which
-contains all the gold. Knowledge from courses, books, and elder grey-beards must
-be patchworked together. Clearly the last type of knowledge can only be passed
-down within the trenches, but here are a few resources which I found not too bad.
-
-![](./kaepora.webp)
-> Hoo hoot! Link... Look up here! It appears that the time has finally come for
-> you to start your adventure! You will encounter many hardships ahead... That
-> is your fate. Don't feel discouraged, even during the toughest times!
-
-## A. Languages and Compilers
-- Programming Languages: Application and Interpretation (Krishnamurthi)
-- Cornell CS 4120 SP23 Lecture Notes (Myers)
-- Engineering a Compiler (Cooper, Torczon)
-
-## B. Computer Architecture
-- Computer Organization and Design RISC-V Edition: The Hardware Software Interface (Patterson, Hennessy)
-- Digital Design and Computer Architecture, RISC-V Edition (Harris, Harris)
