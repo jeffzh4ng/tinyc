@@ -263,6 +263,44 @@ mod test_valid_arithmetic_precedence {
     use crate::{lexer, parser, typer};
 
     use super::*;
+
+    #[test]
+    fn test_mult_add() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic_precedence/mult_add_precedence.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
+    }
+
+    #[test]
+    fn test_mult_add_multi() {
+        #[rustfmt::skip]
+        let chars = fs::read("tests/valid/arithmetic_precedence/mult_add_precedence_multi.c")
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::scan(&chars);
+        let tree = parser::parse_program(tokens).unwrap();
+        let judgement = typer::type_program(&tree);
+        if !judgement {
+            panic!();
+        }
+        let res = eval_program(tree);
+        insta::assert_yaml_snapshot!(res);
+    }
 }
 // #[cfg(test)]
 // mod literal_tests {
