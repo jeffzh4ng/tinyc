@@ -1,3 +1,5 @@
+use proptest::prelude::*;
+
 use std::io;
 
 use crate::lexer::{Token, TokenType};
@@ -312,5 +314,15 @@ mod test_valid_arithmetic_precedence {
         let tokens = scan;
         let tree = parse_program(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree);
+    }
+}
+
+proptest! {
+    #[test]
+    fn doesnt_crash(s in "\\PC*") {
+        let t = Token{ lexeme: s, typ: TokenType::Identifier };
+        let tokens = vec![t];
+
+        let _ = parse_program(tokens);
     }
 }
