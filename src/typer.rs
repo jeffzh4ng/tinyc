@@ -75,7 +75,7 @@ mod tests {
     #[test]
     fn test_valid_subtraction() {
         #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/subtraction.c")
+        let chars = fs::read("tests/valid/arithmetic/sub.c")
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
