@@ -3,9 +3,12 @@
 
 1. [Representations]
 2. [Frontend (Parsing)](#1-frontend)
-  - A. [Lexical and Syntactic Analysis: Lexing and Parsing](#a-lexical-and-syntactic-analysis-lexing-and-parsing)
-  - B. [Source Language References: C89/90](#b-source-language-references-c8990)
-  - C. [Semantic Analysis: Typing](#c-semantic-analysis-typing)
+  - A. Academic Recognition: Formalizations with Automata
+  - B. Lexical Analysis: Lexing
+  - C. Syntactic Analysis: Parsing
+  - D. Semantic Analysis: Type Checking
+  - E. Correctness: Formal Verification
+  - F. Source Language References (C89/90)
 3. [Middleend (Optimization)]
 4. [Backend (Code Gen)](#2-backend)
   - A. Selection
@@ -30,6 +33,10 @@ Assuming Proebstings Law[^0], which is really being aware of:
 then compiler-related optimizations yield a doubling in program speedup every
 18 years. So perhaps there's more ROI to focus at the top[^1] and bottom[^2].
 </details>
+
+TODO: i will look at some of the major optimizations, but due to proebstings law,
+compiler correctness seems to be a more fruitful activity, since din is being
+used instrumentally as a research project.
 
 Compiler construction is usually broken down into three phases: frontend, middleend
 and backend. Just like how the more larger problem of translation between problems
@@ -180,9 +187,9 @@ TODO: the hand-written implementation is what you would naturally derive
 <function>       ::= KEYWORD_INT KEYWORD_MAIN PUNC_LEFTPAREN KEYWORD_VOID
                      PUNC_RIGHTPAREN PUNC_LEFTBRACE <statement> PUNC_RIGHTBRACE
 
-<statement>      ::= KEYWORD_RETURN <exp> PUNC_SEMICOLON
-<exp>            ::= LITERAL_INT
-                   | <exp> <binop> <exp>
+<statement>      ::= KEYWORD_RETURN <expr> PUNC_SEMICOLON
+<expr>            ::= LITERAL_INT
+                    | <expr> <binop> <expr>
 
 <binop>          ::= PLUS
                    | MINUS
@@ -195,29 +202,61 @@ TODO: the hand-written implementation is what you would naturally derive
 The syntactic grammar specified above via BNF is a subset of the C language,
 which will allow us to motivate the transition from recursive descent to pratt
 parsing. It only recognizes and parses programs that return arithmetic expressions.
+Note that the grammar's ordering is speecified according to precedence. You're
+going to recognize `<program>` before an `expr`, right?
 
 The `<program>` production refers to `<function>`, which, in turn, refers to
 `<statement>`, but these can be easily rewritten as one single RE. The one
-production which REs could not specify is the `<exp>` production which can refer
-to itself an arbitaryamount of times.
+production which REs could not specify is the `<exp>` production; it refers to
+itself an arbitary amount of times.
 
 **Recursive Descent: Specification**
-A recursive descent parser is a fancy name for parsing tokens into trees, the same
-way you lex characters into tokens. The entire parser is a series of
-mutually-recursive functions; one per specified production in the BNF grammar.
 
-Note: recursion in the logical sense: implemented with the host language's
-stack frames, or your explicit stack data struture.
+A recursive descent parser is what we call parsers that parse tokens the same way
+you lex characters into tokens. They have three synonyms:
+- *recursive descent*: because they *descend* down the grammar's spec
+- *top-down* parsers: because they start from the *top* and go *down*
 
-LL(1): single token lookahead
-LL(2): double token lookahead (why is this messy for hand-written parsers?)
-  - why hand-written gets complex for k > 1?
-    --> inherently top-down parsers are predictive?? somehow top-down ==> LL(1)??
-  - differentiate assignment?
-  - must see `=` token?
-LL(k)
+Recursive descent/top down parsers are *predictive* parsers because they recognize
+and produce the correct production based on, usually, a single character of lookahead
+without any backtracking
 
-*Recursive Descent: Implementation*:
+Parsers which implement recursive descent lend well to a hand-written implementation,
+since you have a single function per non-terminal. Whether you are recursing with
+the host language's stack frames or an explicit stack data structure, you just
+have to make sure to avoid the non-halting scenario from incorrect base/inductive
+case ordering.
+
+**Recursive Descent: Implementation**
+```
+<expr> ::= <expr> <binop> <expr>
+         | LITERAL_INT
+```
+
+*Problem 1: Left recursion: does not halt*
+Given a simple BNF grammar for a calculator (just expressions) like the one above,
+the first line is problematic if we directly translate it with a recursive
+implementation.
+
+The naive workaround (at leaast to me) is to rearrange the order of `<expr>`'s
+rules to recognize `LITERAL_INT` tokens first, before arbitrary expressions.
+But if the parser was implemented that way, how does it know it captured the
+entire expression? That was the entire purpose of ordering the grammar's
+productions according to precedence.
+
+```rust
+fn parse_expr(tokens: &[Token]) -> Expr {
+  let e = parse_expr() // there ain't no base case ==> ∞ does not halt ∞
+  let op = parse_binop()
+}
+
+```
+
+As [matklad explains](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing),
+academia points out that left-recursive grammars are the the Achilles heel of
+recursive descent grammars, which, theoretically, motivates LR parsing techniques.
+Practically, you can stick with LL parsing pattern. Just use a loop.
+
 ```rust
 fn parse_expr(tokens: &[Token]) -> Expr {
   match tokens {
@@ -248,28 +287,180 @@ fn parse_expr(tokens: &[Token]) -> Expr {
         // 4. return
         Ok((root, r_tokens))
       },
-      TokenType::PuncLeftParen => todo!()
+      _ => panic!()
     }
   }
 }
 ```
 
-*Problem 1: Left recursion*
-
-`Parser does not halt (no base case with recursion)`
-
-just while loop it bro
-
+This implementation now halts and seems to produce the correct answer for
+expressions like:
+- `9 + 10 + 11`
+- `9 - 10 - 11`
+- `9 * 10 * 11`
+- `9 / 10 / 11`
 
 *Problem 2: Precedence*
 
-`Parser halts with wrong answer (does not bind correctly *across* operators)`
+The parser now halts for all inputs, but does it produce the correct answer for
+all inputs? Yeahh...no; it does not handle precedence *across* operators well.
 
-just mismash the gramamr bro
+- `9 * 10 + 11`
+- `9 / 10 - 11`
+
+Society has decided as convention that we're going to perform multiplications
+and divisions before additions and subtractions. This is as arbitrary as
+what side of the road a country drives on, or what endianness an ISA interprets
+machine words.
+
+The parser above recognizes and produces right-heavy parse tree by default. The
+parse tree's semantics do not match society's agreed upon semantics for arithmetic.
+If we evaluate the parse tree via software interpretation, or generate assembly
+for hardware interpretation, we're going to get incorrect answers.
+
+```
+                                 *
+                                / \
+  9 * 10 + 11 -> |parser| ->   9   +
+                                  / \
+                                 10 11
+
+                                 /
+                                / \
+  9 / 10 - 11 -> |parser| ->   9   -
+                                  / \
+                                 10 11
+```
+
+The solution for this is to stratify the exp production even further according to
+precedence levels.
+
+```
+<term>   ::= <factor>
+           | <term> (PLUS|MINUS) <factor>
+<factor> ::= <atom>
+           | <term> (STAR|SLASH) <atom>
+<atom>   ::= LITERAL_INT
+           | PUNC_LEFT_PAREN <expr> PUNC_RIGHT_PAREN
+```
+
+The key for intuition is translate  `<term>` and `<factor>` into their
+implementations. They're going to recognize and parse the left sub-tree which
+has a stronger precedence level than the current level of recursion. `parse_term`
+is going to recur on `parse_factor` first, and `parse_factor` will recur on
+`parse_atom` first for their left sub-trees. Then, they will loop
+
+step through an execution trace of a top-down parser
+with a single character lookahead, given input 9 * 10 + 11.
+
+The intuitive structure of implementation gets completely lost with this grammar.
+This grammar is ok for parser generator, but the nature of it goes against the
+whole point of hand writing your parser.
+
+TODO: the solution below (implementing a stratified grammar across term/factor)
+fixes associative solution too.
+- just rock with for a bit, and update it later.
+
+```rust
+
+fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
+    parse_term(tokens)
+}
+
+fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
+    let (left, r) = parse_factor(tokens)?;
+    println!("moose {:?}", left);
+
+    match r {
+        [] => Ok((left, r)),
+        r => {
+            let mut root = left;
+            let mut r_tokens = r;
+
+            while let Ok((op, r)) = parse_term_op(r_tokens) {
+                let (right, r) = parse_factor(r)?;
+
+                root = Expr::Binary {
+                    op,
+                    l: Box::new(root),
+                    r: Box::new(right),
+                };
+
+                r_tokens = r;
+            }
+
+            Ok((root, r_tokens))
+        }
+    }
+}
+
+fn parse_term_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::Plus => Ok((Op::Add, r)),
+            TokenType::Minus => Ok((Op::Sub, r)),
+            _ => {
+                // println!("{:?}", f);
+                Err(io::Error::new(io::ErrorKind::Other, "bla"))
+            }
+        },
+    }
+}
+
+fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
+    let (left, r) = parse_atom(tokens)?;
+
+    match r {
+        [] => Ok((left, r)),
+        r => {
+            let mut root = left;
+            let mut r_tokens = r;
+
+            while let Ok((op, r)) = parse_factor_op(r_tokens) {
+                let (right, r) = parse_atom(r)?;
+
+                root = Expr::Binary {
+                    op,
+                    l: Box::new(root),
+                    r: Box::new(right),
+                };
+                println!("wolf {:?}", root);
+
+                r_tokens = r;
+            }
+
+            Ok((root, r_tokens))
+        }
+    }
+}
+
+fn parse_factor_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::Star => Ok((Op::Mult, r)),
+            TokenType::Slash => Ok((Op::Div, r)),
+            _ => {
+                // println!("{:?}", f);
+                Err(io::Error::new(io::ErrorKind::Other, "bla"))
+            }
+        },
+    }
+}
+
+fn parse_atom(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => Ok((Expr::Num(f.lexeme.parse().unwrap()), r)),
+    }
+}
+```
+
 
 *Problem 3: Associativity*
 
-`Parser halts with wrong answer (does not bind correctly *within* operators)`
+`Parser halts with wrong answer: (does not bind correctly *within* operators)`
 
 Test Case 1: Addition (Pass)
 ```
