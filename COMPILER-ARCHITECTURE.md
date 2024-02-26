@@ -1,23 +1,23 @@
 # Compiler Architecture
 **Contents**
 
-1. [Representations]
+1. [Big Picture]
 2. [Frontend (Parsing)](#1-frontend)
-  - A. Academic Recognition: Formalizations with Automata
-  - B. Lexical Analysis: Lexing
-  - C. Syntactic Analysis: Parsing
-  - D. Semantic Analysis: Type Checking
-  - E. Correctness: Formal Verification
-  - F. Source Language References (C89/90)
+    - A. Academic Recognition: Formalizations with Automata
+    - B. Lexical Analysis: Lexing
+    - C. Syntactic Analysis: Parsing
+    - D. Semantic Analysis: Type Checking
+    - E. Correctness: Formal Verification
+    - F. Source Language References (C89/90)
 3. [Middleend (Optimization)]
 4. [Backend (Code Gen)](#2-backend)
-  - A. Selection
-  - B. Scheduling
-  - C. Allocation
-  - D. [Target Language 1 References: LLVM](#d-target-language-1-llvm)
-  - E. [Target Language 2 References: RISC-V](#e-target-language-2-risc-v)
+    - A. Selection
+    - B. Scheduling
+    - C. Allocation
+    - D. [Target Language 1 References: LLVM](#d-target-language-1-llvm)
+    - E. [Target Language 2 References: RISC-V](#e-target-language-2-risc-v)
 5. [References](#3-references)
-  - [A. Languages and Compilers](#a-languages-and-compilers)
+    - [A. Languages and Compilers](#a-languages-and-compilers)
 
 # 1. Big Picture
 The two golden rules of compiler construction (any computing system really), is:
@@ -545,7 +545,40 @@ program in the programming language; no further errors in the program should be
 reported by the compiler.
 
 
-### E. Source Language References (C89/90)
+### E. Correctness (Formal Verification)
+
+History of compiler correctness:
+
+- **ECOOP 2003**: *The verifying compiler: A grand challenge for computing research (Hoare)*
+  - Paper: [here](https://link.springer.com/chapter/10.1007/978-3-540-45213-3_4)
+- **FM 2006**: *Formal Verification of a C Compiler Front-end (Blazy, Daygaye, Leroy)*
+  - Paper: [here](https://xavierleroy.org/bibrefs/Leroy-compcert-06.html)
+- **POPL 2006**: *Formal certification of a compiler back-end, or: programming a compiler with a proof assistant*
+  - Paper: [here](https://xavierleroy.org/bibrefs/Leroy-compcert-06.html)
+  - Cornell CS 6120 Discussion: [here](https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/comp-cert/)
+- **PLDI 2011**: *Finding and Understanding Bugs in C Compilers (Yang, Chen, Eide, Regehr)*
+  - Paper: [here](https://users.cs.utah.edu/~regehr/papers/pldi11-preprint.pdf)
+  - Cornell CS 6120 Discussion: [here](https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/bug-finding/)
+- **ICFP 2019**: *The Next 700 Compiler Correctness Theorems (Patterson, Ahmed)*
+  - Paper: [here](https://www.khoury.northeastern.edu/home/amal/papers/next700ccc.pdf)
+  - Cornell PLDG Discussion: [here](https://priyasrikumar.com/next700ccc.pdf)
+
+
+**Verification vs Validation**
+
+- verified validator => verified compiler
+
+References
+- OPLSS: https://www.cs.uoregon.edu/research/summerschool/archives.html
+- Cornell CS 6120 Blog
+  - 2019: [here](https://www.cs.cornell.edu/courses/cs6120/2019fa/blog/)
+  - 2020: [here](https://www.cs.cornell.edu/courses/cs6120/2020fa/blog/)
+  - 2022: [here](https://www.cs.cornell.edu/courses/cs6120/2022sp/blog/)
+  - 2023: [here](https://www.cs.cornell.edu/courses/cs6120/2023fa/blog/)
+- Cornell PLDG Archive: [here](https://pl.cs.cornell.edu/pldg/)
+
+
+### F. Source Language References (C89/90)
 - [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
 - The C Programming Language (K&R)
 - If You Must Learn C (Ragde)
