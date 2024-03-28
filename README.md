@@ -1,33 +1,35 @@
 # din
 ![](./din.gif)
 
-a CPU compiler (C89/90 -> RISC-V); [a project of one's own](https://paulgraham.com/own.html)
+a software 1.0 compiler: C89/90 -> RISC-V
+
+`din`'s primary goals are academic. This design point is reflected in 1. the
+pedagogic nature of architecture documents and 2. using toy programs as benchmarks,
+instead of real workloads.
 
 ### Architecture
-- [SYSTEM-ARCHITECTURE.md](./ARCHITECTURE.md)
-- [COMPILER-ARCHITECTURE.md](./COMPILER-ARCHITECTURE.md)
-- [CHIP-ARCHITECTURE.md](./CHIP-ARCHITECTURE.md)
+- [ARCHITECTURE](./ARCHITECTURE)
+- [COMPILER](./COMPILER)
+- [CHIP](./CHIP)
 
 ### Benchmarks
-Although the best choice of benchmarks are real applications[^0] and avoiding
-toy programs and synthetic benchmarks below, the purpose of this project is to learn
-more about the design and implementation of compilers/chips that power general purpose workloads.
+|                     | din  | gcc | clang |
+| -------------       | ---- | --- | ----  |
+| fannkuch-redux      |      |     |       |
+| n-body              |      |     |       |
+| spectral-norm       |      |     |       |
+| mandelbrot          |      |     |       |
+| pidigits            |      |     |       |
+| regex-redux         |      |     |       |
+| fasta               |      |     |       |
+| k-nucleotide        |      |     |       |
+| reverse complement  |      |     |       |
+| binary trees        |      |     |       |
 
-https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/c.html
-
-- [ ] fannkuch-redux
-- [ ] n-body
-- [ ] spectral-norm
-- [ ] mandelbrot
-- [ ] pidigits
-- [ ] regex-redux
-- [ ] fasta
-- [ ] k-nucleotide
-- [ ] reverse complement
-- [ ] binary trees
+Source: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/c.html
 
 ### Roadmap
-- [ ] intepreting C
+- [ ] interpreting C
 - [ ] compiling to RISC-V, ran on third party RISC-V simulator
 - [ ] compiling to RISC-V, ran on Rust-implemented RISC-V simulator
 - [ ] compiling to RISC-V, ran on Verilog-implemented RISC-V FPGA
