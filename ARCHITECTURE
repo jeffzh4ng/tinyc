@@ -1,0 +1,63 @@
+# Architecture
+This is a high-level document which talks about hardware/software codesign: the
+semantic gap. It explores various tradeoffs when optimizing for different
+design points. For more specifics on parsing, code gen, or pipelined architectures,
+take a look at [COMPILER](./COMPILER) or [CHIP](./CHIP).
+
+### What is computation
+We solve high level problems by writing programs in which universal turing machines
+can interpret. In this timeline of the world, our physical machines simulate
+electrons to perform nand calculus, rather than lambda calculus.
+
+Compilers and chips act in unison in order to bridge the semantic chasm that lies
+between our high level thought and our low level electron cousins. The difference
+between a compiler and a chip is that of function: a compiler translates while
+a chip evaluates. Yes, a chip is really just an interpreter[0] implemented with gates
+If you write a software interpreter, you're simulating on a simulator. This is the
+intuition why software interpreted languages are slower.
+
+```
+--------------------- <-- SaaS: Web app, Mobile app
+| Problem           |
+--------------------- <-- ADT/AA: Sequences, Trees, Graphs
+| Algorithm         |
+--------------------- <-- HLL: C/C++/Java/Python        Runtime: Unix/Linux
+| Compiler & OS     |
+--------------------- <-- ISA: x86/ARM/RISC-V
+| Microarchitecture |
+--------------------- <-- RTL: Verilog/VHDL
+| Gates             |
+---------------------
+| Electrons         |
+---------------------
+```
+
+People often describe this system software and hardware as the soul of the machine,
+which provides the bicycles our minds ride.
+
+[0]: And actually, if you take a look inside the most RISCy CISC chips and the
+     most CISCy RISC chips, you'll see a  __________. A chip's processor really
+     implements a simpler language, whose interface we call Instruction Set
+     Architectures (ISAs).
+
+     It seems like the industry still has science-envy, and wants to taxonify
+     artificial creations. This is only useful for hackernews and reddit flame
+     wars. In reality, the line blurs between OOP/FP, SQL/NoSQL, RISC/CISC,
+     training/inference, when authors copy and steal the best set of features
+     from each other.
+
+**Software vs Hardware**
+The question of software vs hardware is to computation as nature vs nurture is
+to humans[1] (And in this context, by software I'm referring to system software,
+not application software). One lens to interpret the problem is with
+hardware/software codesign. There's a very strong flywheel argument that better
+hardware enables better applications, which demand for better hardware. The
+success stories of C/x86 enabling workloads like UNIX and CUDA/?? enabling
+workloads like Alexnet/GPT suggest that you need both great software and hardware.
+
+[1] Some cognitive psychologist's are intrigued to look at human nature (Piaget),
+    while others are more inclined to take a lok at human nurture (Vygotsky).
+    Others (Kegan), want peace and helix between the two. Digressing even more,
+    on philosophy of science, didn't this same pattern emerge with epistemology
+    itself? Seems like Kant did the same thing between the rationalists and
+    empiricists.
