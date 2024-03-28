@@ -3,9 +3,8 @@
 
 a software 1.0 compiler: C89/90 -> RISC-V
 
-`din`'s primary goals are academic. This design point is reflected in 1. the
-pedagogic nature of architecture documents and 2. using toy programs as benchmarks,
-instead of real workloads.
+`din`'s primary goals are academic. The goal is to beat `gcc -O1` in the benches
+provided below.
 
 ### Architecture
 - [ARCHITECTURE](./ARCHITECTURE)
@@ -29,9 +28,17 @@ instead of real workloads.
 Source: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/c.html
 
 ### Roadmap
-- [ ] interpreting C
 - [ ] compiling to RISC-V, ran on third party RISC-V simulator
+  - [ ] arithmetic
+  - [ ] arithmetic, control flow
+  - [ ] arithmetic, control flow, functions
+  - [ ] arithmetic, control flow, functions, malloc/free
+  - [ ] arithmetic, control flow, functions, malloc/free, beat `gcc -O1`
+    - [ ] strength reduction
+    - [ ] register allocation
+    - [ ] deadcode elimination
+    - [ ] partial redundancy elimination
+    - [ ] SSA
+    - [ ] SIMD
 - [ ] compiling to RISC-V, ran on Rust-implemented RISC-V simulator
 - [ ] compiling to RISC-V, ran on Verilog-implemented RISC-V FPGA
-
-[^0]: like Google search, for example
