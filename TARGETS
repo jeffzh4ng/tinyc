@@ -1,0 +1,41 @@
+# Targets
+
+**Contents**
+1. ISA
+2. Microarchitecture
+  - von Neumann Architecture
+  - von Neumann Architecture Parallelized
+3. Implementation
+
+
+# 1. ISA
+
+# 2. Microarchitecture
+
+## Von Neumann Architecture
+Intuition from multi machine architecture (k8s/temporal/linkerd/tailscale):
+-> whenever your problem looks like orchestration workers:
+- you're going to have a control plane and a data plane.
+
+- control plane aka brawn: fetch/decode
+- data plane aka brain: ALU
+- state: memory
+
+For machines specifically: von Neuman architecture (load/store)
+1. control:
+  - interpretatin of stored value (instruction or data)depends on control signals
+    (IP/OP) from control unit
+  --> what part you are in the FSM depends on the control signals
+                                            |--------|
+control plane:   |fetch/decode| ------------|        |
+                                            | memory |
+data plane:      |ALU| ---------------------|        |
+                registers                   |--------|
+
+**Single Cycle**
+**Multi Cycle**
+**Pipelined**
+
+## Von Neumann Architecture Parallelized
+
+# 3. Implementation
