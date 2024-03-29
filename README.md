@@ -1,7 +1,7 @@
 # din
 ![](./din.gif)
 
-a software 1.0 compiler: C89/90 -> RISC-V
+a software 1.0 compiler: C89/90 -> {RISC-V/CUDA}
 
 `din`'s primary goals are academic. The goal is to beat `gcc -O1` in the benches
 provided below.
