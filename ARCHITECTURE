@@ -5,12 +5,13 @@ design points. For more specifics on parsing, code gen, or pipelined architectur
 take a look at [COMPILER](./COMPILER) or [CHIP](./CHIP).
 
 **Contents**
-1. Preface: What is computation?
-2. ISA: semantic gap
-3. Microarchitecture: latency vs throughput
+1. Preface
+2. ISA: Semantic Gap (RISC vs CISC)
+3. Microarchitecture: Design Points (Latency vs Throughput)
 4. References
 
-### 1. Preface: What is computation
+### 1. Preface
+**Computation**
 We solve high level problems by writing programs in which universal turing machines
 interpret. In this timeline of the world, our physical machines are implemented
 such that they orchestrate electrons to simulate nand calculus, rather than lambda.
@@ -47,51 +48,36 @@ which provides the bicycles our minds ride.
 **Software vs Hardware**
 The question of software vs hardware is to computation as nature vs nurture is
 to humans (And in this context, by software I'm referring to system software,
-not application software). One lens to interpret the problem is with
-hardware/software codesign. There's a very strong flywheel-type argument that better
-hardware enables better applications, which demand for better hardware. The
-success stories of C/x86 enabling workloads like UNIX, and CUDA enabling ones such
-as Alexnet/GPT, as well the failures of Itanium, suggest that you need both great
-software and hardware.
+not application software). Scaling laws such as Moore's Law, Dennard Scaling, and
+Proebsting's Law suggests that most of the performance is enabled by packing more
+transistors on chips. However, there's a very strong flywheel-type argument that
+successful applications are required in order to drive more investment into hardware,
+such as the symbiosis with Windows/x86, and GPT/CUDA.
 
-<details>
-<summary>Food for thought</summary>
-Assuming Proebstings Law[^0], which is really being aware of:
-1. compiler optimizations yield 4% speedup/year
-2. rule of 72
+                  20e9                                          * M1
+                                                                * 
+                                                                  
+                                                              *  
+                                                              *   
+                                                            *    
+                                                            *    
+                                                            *     
+                                                          **      
+                                                        *        
+                                                        **        
+                                                      *          
+                                                    **           
+                                                    **            
+                                                ***              
+                                              ***  PDP-11              
+                                            ***                   
+                                        **** IBM 360                     
+                                *******                          
+                   1e4    ******* ENIAC                               
 
-then compiler-related optimizations yield a doubling in program speedup every
-18 years. This pills one to think there's more room at the bottom[1] rather than
-at the top.
-</details>
+Bells Law: Calculators -> Mainframes -> Minis -> Workstations -> PC -> Mobile -> IoT
 
-**RISC vs CISC**
-The flame war between the two camps ends up like any other debate over the
-science of the artificial: ill-defined. For instance, at the HLL level, talking
-about "paradigms" such as OOP vs FP is very ill-defined because many popular
-languages pick and steal the best set of features from each other, such that you
-can write code in either style within the same language.
-
-Only when you analyze languages as *collections of features* will you truly be
-able to reasoning about language design. Most HLL share a common set of features
-such as being eager, sequential, and aliases as values, and differentiate with
-other features.
-- {risc/cisc} + cpus are both in this standard model
-- cuda gpus are not sequential, but parallel
-
-[0]: And actually, if you take a look inside the most RISCy CISC chips and the
-     most CISCy RISC chips, you'll see a  __________. A chip's processor really
-     implements a simpler language, whose interface we call Instruction Set
-     Architectures (ISAs).
-
-     It seems like the field still has science-envy, and wants to taxonify
-     artificial creations. This is only useful for hackernews and reddit flame
-     wars. In reality, the line blurs between OOP/FP, SQL/NoSQL, RISC/CISC,
-     training/inference, when authors copy and steal the best set of features
-     from each other.
-[1]: see https://web.archive.org/web/20170105015142/http://www.its.caltech.edu/~feynman/plenty.html
-
-### 1. ISA
+### 2. ISA: Semantic Gap (RISC vs CISC)
 **Semantic Gap**
 Figure 1.
 --------------------- <-- HLL: C/C++/Java/Python        Runtime: Unix/Linux
@@ -128,72 +114,79 @@ Small semantic gap designs have simple compilers, and complex chips. Large seman
 designs have complex compilers, and simple chips. The division of labor concept
 also affects not just the ISA, but also the microarchitecture.
 
-- then RISC, John Cocke IBM 801, mid 70's (microcode??)
-  - ignoring cultural reasons for now (teaching, and licensing)
-  - https://www.ibm.com/history/john-cocke
-  - https://news.ycombinator.com/item?id=33055361
+**RISC vs CISC**
+The flame war between the two camps ends up like any other debate over the
+science of the artificial: ill-defined. For instance, at the HLL level, talking
+about "paradigms" such as OOP vs FP is very ill-defined because many popular
+languages pick and steal the best set of features from each other, such that you
+can write code in either style within the same language.
+
+Only when you analyze languages as *collections of features* will you truly be
+able to reasoning about language design. Most HLL share a common set of features
+such as being eager, sequential, and aliases as values, and differentiate with
+other features.
+- TODO:
+- {risc/cisc} + cpus are both in this standard model
+- cuda gpus are not sequential, but parallel
+
+[0]: And actually, if you take a look inside the most RISCy CISC chips and the
+     most CISCy RISC chips, you'll see a  __________. A chip's processor really
+     implements a simpler language, whose interface we call Instruction Set
+     Architectures (ISAs).
+
+     It seems like the field still has science-envy, and wants to taxonify
+     artificial creations. This is only useful for hackernews and reddit flame
+     wars. In reality, the line blurs between OOP/FP, SQL/NoSQL, RISC/CISC,
+     training/inference, when authors copy and steal the best set of features
+     from each other.
+[1]: see https://web.archive.org/web/20170105015142/http://www.its.caltech.edu/~feynman/plenty.html
 
 **Instructions**
-  - simple vs complex
-  - fixed vs variable
-  - unform decode vs non-uniform decode
-  - few addressing modes vs lots of addresing modes
+stored program architectures
+- stack
+- accumulator
+- general-purpose regiser
+  - register memory
+  - load store
 
-### 3. Microarchitecture: Latency vs Throughput
+### 3. Microarchitecture: Latency vs Throughput (TODO)
+- cpus, implicit ilp (hardware has complexity): moore's law and dennard scaling slowing down
+- gpus, explicit dlp, tlp (programmer has complexity): amdahl's law caps perf benefits
+  - flynn's taxonomy
+    - SISD: ILP
+    - SIMD: DLP
+      - vector architectures
+      - multimedia extensions to standard ISAs
+      - GPUs
+    - MISD: none??
+    - MIMD
+      - tightly coupled: TLP
+      - loosely coupled: RLP
+
+- single core era: hardware took care of complexity
+- multi core era: hardware pushed complexity to software
+  --> shared state, message passing, data flow
+
+registers
+- tension between
+  - program's desire of wanting more registers and
+  - designer's desire to minimize to keep clock cycles fast
+  - TODO: A very large number of registers may increase the clock cycle time simply because
+  it takes electronic signals longer when they must travel farth.
+  - what does this actually look like?
+
 hybrid uarch today
-  - hardwired vs microcoded. TODO: shao
+  - hardwired vs microcoded
     - wrong metal pictur of microcoded is some type of firmware. NO.
     - more useful
       - microcode are "exception handlers"
       - happens rarely
 
-- Division of labor
-- single core era: hardware took care of complexity
-- multi core era: hardware pushed complexity to software
-  --> shared state, message passing, data flow
-
-**CPUs: latency-optimized machines**
+**CPUs: latency-optimized machines and ILP**
 - latency hiding
 - latency reduction
 
 - Latency-optimized will speculate on branch prediction and execute out-of-order (even if it throws away the work later... its better to take a chance to save a few nanoseconds at a time). 
-
-- For the past fifty years, machines were designed for general-purpose computing,
-largely enabled by smaller, and more efficient transistors.
-- Semiconductor guys all got cracked up on Moore's Law.
-- a "law" here doesn't refer to nature. it refers to a broader socioeconomic phenonemon
-  that has self-fulfulling prophesies
-- the truths about the world are simply the best lies
-- economically, take a look at soros' theory of reflexivity.
-
-
-
-                  20e9                                          * M1
-                                                                * 
-                                                                  
-                                                              *  
-                                                              *   
-                                                            *    
-                                                            *    
-                                                            *     
-                                                          **      
-                                                        *        
-                                                        **        
-                                                      *          
-                                                    **           
-                                                    **            
-                                                ***              
-                                              ***  PDP-11              
-                                            ***                   
-                                        **** IBM 360                     
-                                *******                          
-                   1e4    ******* ENIAC                               
-
-Bells Law: Calculators -> Mainframes -> Minis -> Workstations -> PC -> Mobile -> IoT
-
-- moore's law enables bells law
-- end?
-  - amdahl's law
 
 From the programmer's perspective, ISAs designed for general-purpose computing
 specify two important semantic properties:
@@ -205,7 +198,7 @@ It's what the end programmer implicitly assumes when programming in their favori
 high level language[^14]. To hammer the point home, realize that x86, the ISA,
 is just an interface — they are indeed just specifications
 
-**GPUs: throughput-optimized machines**
+**GPUs: throughput-optimized machines and DLP/TLP**
 - Throughput-optimized computing doesn't want to waste any work, and instead has 10x SMT to have many, many threads ready to do work while waiting for branches / memory / etc. etc.
 
 - actually very similar to von neumann architecture. might have heard of GPGPUS
@@ -225,5 +218,5 @@ is just an interface — they are indeed just specifications
 - Engineering a Compiler (Cooper, Torczon)
 
 **Computer Architecture**
-- Computer Organization and Design RISC-V Edition: The Hardware Software Interface (Patterson, Hennessy)
-- Digital Design and Computer Architecture, RISC-V Edition (Harris, Harris)
+- Hennesey and Patterson: Computer Architecture
+- Harris and Harris: Computer Architecture
