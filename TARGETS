@@ -1,18 +1,51 @@
 # Targets
 
 **Contents**
-1. ISA
-2. Microarchitecture
-  - von Neumann Architecture
-  - von Neumann Architecture Parallelized
-3. Implementation
+1. Architecture
+  - ISA
+  - uarch
+2. Targets
+  - RV32I
+  - OpenGL
+3. References
 
 
-# 1. ISA
+# Architecture
+ISA and uarch prinicples. No digital design.
 
-# 2. Microarchitecture
+## ISA
+P&H: Ch2.
+H&P: Appendix A. and Ch 1.3
 
-## Von Neumann Architecture
+A. stored program architecture classification
+- stack
+- accumulator
+- general-purpose regiser
+  - memory access (register-memory vs load-store)
+  - 2AC vs 3AC
+
+B. Addressing Modes
+
+C. Data Sizes
+
+D. Arithmetic/Logical Instructions
+
+E. Control Instructions
+
+F. Instruction Encoding
+
+G. Register Count
+
+## uarch
+### Processor
+- P&H: Ch 4
+- H&P: Ch 2. Appendix C
+- stored program
+  - single cycle
+  - multicycle
+  - out of order
+  - super scalar
+
 Intuition from multi machine architecture (k8s/temporal/linkerd/tailscale):
 -> whenever your problem looks like orchestration workers:
 - you're going to have a control plane and a data plane.
@@ -32,10 +65,36 @@ control plane:   |fetch/decode| ------------|        |
 data plane:      |ALU| ---------------------|        |
                 registers                   |--------|
 
-**Single Cycle**
-**Multi Cycle**
-**Pipelined**
+### Parallel Architectures
+P&H: Ch6, Appendix B
+H&P: Ch4, Ch7, Appendix G
 
-## Von Neumann Architecture Parallelized
+**Processor**
+**Memory**
 
-# 3. Implementation
+### Memory
+- P&H: Ch 5.
+- H&P: Ch 3. Appendix B
+
+## RV32I
+A.
+B.
+C.
+D.
+E.
+F.
+G
+
+## OpenGL
+
+https://fgiesen.wordpress.com/2011/07/01/a-trip-through-the-graphics-pipeline-2011-part-1/
+https://litherum.blogspot.com/2023/10/implementing-gpus-programming-model-on.html?m=1
+https://learnopengl.com/
+https://vksegfault.github.io/posts/simd-usage-cpp-csharp-rust/
+https://github.com/TheNumbat/Lists
+
+# 3. References
+- Waterman and Patterson
+- Patterson and Hennesey
+- Hennesey and Patterson
+- Gupta, Culler, and Singh

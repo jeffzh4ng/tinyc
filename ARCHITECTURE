@@ -1,17 +1,18 @@
 # Architecture
-This is a high-level document which talks about hardware/software codesign: the
-semantic gap. It explores various tradeoffs when optimizing for different
-design points. For more specifics on parsing, code gen, or pipelined architectures,
-take a look at [COMPILER](./COMPILER) or [CHIP](./CHIP).
+This is a high-level document which talks about topics around hardware/software
+codesign such as different execution models and the semantic gap between high
+level languages and instruction set architectures.
+
+For more specifics on source/target languages, compiler construction techiques
+such as parsing and generation, or uarch principles such as pipelining and memory
+hierarchy, take a look at [COMPILER](./COMPILER) or [CHIP](./CHIP).
 
 **Contents**
 1. Preface
-2. ISA: Semantic Gap (RISC vs CISC)
-3. Microarchitecture: Design Points (Latency vs Throughput)
-4. References
+2. Execution Models
+3. Semantic Gap
 
 ### 1. Preface
-**Computation**
 We solve high level problems by writing programs in which universal turing machines
 interpret. In this timeline of the world, our physical machines are implemented
 such that they orchestrate electrons to simulate nand calculus, rather than lambda.
@@ -42,19 +43,13 @@ engineering, the line always blurs — we even have JIT compilation.
 | Electrons         |
 ---------------------
 
-People often describe this system software and hardware as the soul of the machine,
-which provides the bicycles our minds ride.
+**Scaling Laws**
+Scaling laws such as Moore's Law, Dennard Scaling, and Bell's Law are
+self-prophesizing psychosocial pills that the valley swallows. We've seen better
+hardware unlock new software which drives more investment into hardware such as
+x86/Unix and CUDA/GPT.
 
-**Software vs Hardware**
-The question of software vs hardware is to computation as nature vs nurture is
-to humans (And in this context, by software I'm referring to system software,
-not application software). Scaling laws such as Moore's Law, Dennard Scaling, and
-Proebsting's Law suggests that most of the performance is enabled by packing more
-transistors on chips. However, there's a very strong flywheel-type argument that
-successful applications are required in order to drive more investment into hardware,
-such as the symbiosis with Windows/x86, and GPT/CUDA.
-
-                  20e9                                          * M1
+                  16e9                                          * M1
                                                                 * 
                                                                   
                                                               *  
@@ -75,81 +70,16 @@ such as the symbiosis with Windows/x86, and GPT/CUDA.
                                 *******                          
                    1e4    ******* ENIAC                               
 
-Bells Law: Calculators -> Mainframes -> Minis -> Workstations -> PC -> Mobile -> IoT
+### 2. Execution Models
+- design points
+  - latency
+    - hiding -> OOO?
+    - reduction -> branch prediction
+    - this collection of features: CPU
+    - ILP: implicit
+  - throughput
+    -- Throughput-optimized computing doesn't want to waste any work, and instead has 10x SMT to have many, many threads ready to do work while waiting for branches / memory / etc. etc.
 
-### 2. ISA: Semantic Gap (RISC vs CISC)
-**Semantic Gap**
-Figure 1.
---------------------- <-- HLL: C/C++/Java/Python        Runtime: Unix/Linux
-| Compiler & OS     |
---------------------- <-- ISA: x86/ARM/RISC-V
-| Microarchitecture |
---------------------- <-- RTL: Verilog/VHDL
-
-Recall figure 1, which is a simplified model of the computing stack. If you zoom
-in, there's actually room to play around with the ISA's abstraction level: does
-it get placed closer to the HLL or to the RTL? Take a look at figure 2.
-
-
-Figure 2.
------------------------ HLL: C               ----------------------- HLL: C
-
------------------------ ISA: x86
-
-
-
-
-                                             ----------------------- ISA: RISC-V
-
-
------------------------- RTL: Verilog        ----------------------- RTL: Verilog
-
-
-We say the design on the left, where the ISA sits closer to the HLL has a small
-semantic gap, whereas the design on the right, where the ISA sits closer to
-the RTL has a large semantic gap. Clearly, the size of the semantic gap is from
-the programmer's perspective.
-
-Small semantic gap designs have simple compilers, and complex chips. Large semantic
-designs have complex compilers, and simple chips. The division of labor concept
-also affects not just the ISA, but also the microarchitecture.
-
-**RISC vs CISC**
-The flame war between the two camps ends up like any other debate over the
-science of the artificial: ill-defined. For instance, at the HLL level, talking
-about "paradigms" such as OOP vs FP is very ill-defined because many popular
-languages pick and steal the best set of features from each other, such that you
-can write code in either style within the same language.
-
-Only when you analyze languages as *collections of features* will you truly be
-able to reasoning about language design. Most HLL share a common set of features
-such as being eager, sequential, and aliases as values, and differentiate with
-other features.
-- TODO:
-- {risc/cisc} + cpus are both in this standard model
-- cuda gpus are not sequential, but parallel
-
-[0]: And actually, if you take a look inside the most RISCy CISC chips and the
-     most CISCy RISC chips, you'll see a  __________. A chip's processor really
-     implements a simpler language, whose interface we call Instruction Set
-     Architectures (ISAs).
-
-     It seems like the field still has science-envy, and wants to taxonify
-     artificial creations. This is only useful for hackernews and reddit flame
-     wars. In reality, the line blurs between OOP/FP, SQL/NoSQL, RISC/CISC,
-     training/inference, when authors copy and steal the best set of features
-     from each other.
-[1]: see https://web.archive.org/web/20170105015142/http://www.its.caltech.edu/~feynman/plenty.html
-
-**Instructions**
-stored program architectures
-- stack
-- accumulator
-- general-purpose regiser
-  - register memory
-  - load store
-
-### 3. Microarchitecture: Latency vs Throughput (TODO)
 - cpus, implicit ilp (hardware has complexity): moore's law and dennard scaling slowing down
 - gpus, explicit dlp, tlp (programmer has complexity): amdahl's law caps perf benefits
   - flynn's taxonomy
@@ -167,56 +97,39 @@ stored program architectures
 - multi core era: hardware pushed complexity to software
   --> shared state, message passing, data flow
 
-registers
-- tension between
-  - program's desire of wanting more registers and
-  - designer's desire to minimize to keep clock cycles fast
-  - TODO: A very large number of registers may increase the clock cycle time simply because
-  it takes electronic signals longer when they must travel farth.
-  - what does this actually look like?
+### 3. Semantic Gap
+--------------------- <-- HLL: C/C++/Java/Python        Runtime: Unix/Linux
+| Compiler & OS     |
+--------------------- <-- ISA: x86/ARM/RISC-V
+| Microarchitecture |
+--------------------- <-- RTL: Verilog/VHDL
 
-hybrid uarch today
-  - hardwired vs microcoded
-    - wrong metal pictur of microcoded is some type of firmware. NO.
-    - more useful
-      - microcode are "exception handlers"
-      - happens rarely
+The model above actually turns out to be a simplified model of the computing stack.
+If you zoom in, there's actually room to play around with the ISA's abstraction
+level: does it get placed closer to the HLL or to the RTL? Take a look below.
 
-**CPUs: latency-optimized machines and ILP**
-- latency hiding
-- latency reduction
+----------------------- HLL: C               ----------------------- HLL: C
 
-- Latency-optimized will speculate on branch prediction and execute out-of-order (even if it throws away the work later... its better to take a chance to save a few nanoseconds at a time). 
+----------------------- ISA: x86
 
-From the programmer's perspective, ISAs designed for general-purpose computing
-specify two important semantic properties:
-  1. stored program
-  2. sequential instruction processing
 
-We call these two high level properties the *von Neumann execution model*[^13].
-It's what the end programmer implicitly assumes when programming in their favorite
-high level language[^14]. To hammer the point home, realize that x86, the ISA,
-is just an interface — they are indeed just specifications
 
-**GPUs: throughput-optimized machines and DLP/TLP**
-- Throughput-optimized computing doesn't want to waste any work, and instead has 10x SMT to have many, many threads ready to do work while waiting for branches / memory / etc. etc.
 
-- actually very similar to von neumann architecture. might have heard of GPGPUS
-- CUDA
-- designed for pixels. not graphs.
-- accelerators with graph/grid architecture we will see in nayru
-- noob GPU tutorials:
-  https://fgiesen.wordpress.com/2011/07/01/a-trip-through-the-graphics-pipeline-2011-part-1/
-  https://litherum.blogspot.com/2023/10/implementing-gpus-programming-model-on.html?m=1
-  https://learnopengl.com/
-  https://vksegfault.github.io/posts/simd-usage-cpp-csharp-rust/
-  numbat graphics stuff: https://github.com/TheNumbat/Lists
+                                             ----------------------- ISA: RISC-V
 
-### 4. References
-**Languages and Compilers**
-- Cornell CS 4120 SP23 Lecture Notes (Myers)
-- Engineering a Compiler (Cooper, Torczon)
 
-**Computer Architecture**
-- Hennesey and Patterson: Computer Architecture
-- Harris and Harris: Computer Architecture
+------------------------ RTL: Verilog        ----------------------- RTL: Verilog
+
+The design on the left has a small semantic gap, and the onen the right has a
+large semantic gap. Small semantic gap designs have simple compilers, and complex
+chips. Large semantic designs have complex compilers, and simple chips.
+
+All decisions made at the ISA, uarch, and gate level are all impacted by the size
+of the semantic gap, and the common collection of features at all three levels
+are given a label such as "RISC" or "CISC", even though there's a lot of overlap.
+This is not different from how HLL's are given paradigms such "FP" and "OOP",
+even though all languages share a standard model: eager, sequential, and aliases
+as values. Regardless, the major CISC ISA for the past fifty years has been
+x86-64, which has dominated sever workloads. The major RISC ISA has been Armv7/v8,
+which has dominated mobile workloads. din targets RISC-V, which is aims to be a
+universal ISA for all workloads with its open and modular design.

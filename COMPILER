@@ -8,12 +8,13 @@
     - 3. Semantic Analysis: Typing
     - _. Source References: C89/90
 2. [Middleend (Optimization)]
-3. [Backend (Code Gen)]
+3. [Backend (Generation)]
     - 1. Selection
     - 2. Scheduling
     - 3. Allocation
     - _. Target 1 References: RISC-V
     - _. Target 2 References: LLVM
+4. References
 
 # 0. Big Picture: Representations
 The two golden rules of compiler construction (any computing system really), is:
@@ -640,7 +641,6 @@ design points:
 
 # 3. Backend: lowering by generating
 
-
 ## 1. Selection
 
 ## 2. Scheduling
@@ -652,8 +652,6 @@ design points:
 - graph coloring: TODO: jonathan blow. says equivalent of academic theory that doesn't
   work in emprical practice
 
-## _. Target Language 1: RISC-V
-- The RISC-V Reader (Waterman, Patterson)
-- reference card (green, homage to IBM 360)
-
-## _. Target Language 2: LLVM
+# 4. References
+- Cornell CS 4120 SP23 Lecture Notes (Myers)
+- Engineering a Compiler (Cooper, Torczon)
