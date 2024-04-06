@@ -1,4 +1,4 @@
-use din::{eval, lexer, parser, typer};
+use din::compiler::{eval, lexer, parser, typer};
 use std::fs;
 
 fn main() {

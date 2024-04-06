@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::rep::{Expr, Op, Program, Statement, Val};
+use super::rep::{Expr, Op, Program, Statement, Val};
 
 type Env = HashMap<String, Val>;
 
@@ -137,7 +137,7 @@ fn div(lv: Val, rv: Val) -> Val {
 mod test_valid_arithmetic {
     use std::fs;
 
-    use crate::{lexer, parser, typer};
+    use crate::compiler::{lexer, parser, typer};
 
     use super::*;
 
@@ -260,7 +260,7 @@ mod test_valid_arithmetic {
 mod test_valid_arithmetic_precedence {
     use std::fs;
 
-    use crate::{lexer, parser, typer};
+    use crate::compiler::{lexer, parser, typer};
 
     use super::*;
 

@@ -2,8 +2,8 @@ use proptest::prelude::*;
 
 use std::io;
 
-use crate::lexer::{Token, TokenType};
-use crate::rep::{Expr, MainFunction, Op, Program, Statement};
+use crate::compiler::lexer::{Token, TokenType};
+use crate::compiler::rep::{Expr, MainFunction, Op, Program, Statement};
 
 pub fn parse_program(tokens: Vec<Token>) -> Result<Program, io::Error> {
     let main_function = parse_function(tokens)?;
@@ -219,7 +219,7 @@ fn mtch(tokens: &[Token], tt: TokenType) -> Result<(&Token, &[Token]), io::Error
 #[cfg(test)]
 mod test_valid_arithmetic {
     use super::*;
-    use crate::lexer;
+    use crate::compiler::lexer;
     use insta;
     use std::fs;
 
@@ -299,7 +299,7 @@ mod test_valid_arithmetic_precedence {
     use std::fs;
 
     use super::*;
-    use crate::lexer;
+    use crate::compiler::lexer;
 
     #[test]
     fn test_mult_add() {

@@ -1,9 +1,0 @@
----
-source: src/parser.rs
-expression: tree
----
-main_function:
-  statement:
-    Return:
-      Num: 0
-
