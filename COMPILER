@@ -1,23 +1,28 @@
 # Compiler Architecture
 
+https://github.com/lowRISC/riscv-llvm/blob/master/0001-Revert-upstreamed-RISC-V-changes.patch
+
 **Contents**
 0. [Big Picture (Representations)]
 1. [Frontend (Parsing)]
+    - 0. Recognition Formalized
     - 1. Lexical Analysis: Lexing
     - 2. Syntactic Analysis: Parsing
     - 3. Semantic Analysis: Typing
+    - 4. Parsing Correctness
     - _. Source References: C89/90
 2. [Middleend (Optimization)]
+    - 1. Performance
 3. [Backend (Generation)]
     - 1. Selection
     - 2. Scheduling
     - 3. Allocation
-    - _. Target 1 References: RISC-V
-    - _. Target 2 References: LLVM
+    - 4. Generation Correctness
+    - 5. Target References: RV32I
 4. References
 
 # 0. Big Picture: Representations
-The two golden rules of compiler construction (any computing system really), is:
+The two golden rules of compiler construction is:
 1. correctness: preserve source semantics
 2. performance: optimize if possible
 
@@ -58,7 +63,7 @@ TODO:
 https://mcyoung.xyz/2021/06/01/linker-script/
   
 
-# 1. Frontend: lifting by parsing
+# 1. Frontend: parsing
 ```rust
 fn lex(&[char]) -> Vec<Token>
 fn parse(Vec<Token>) -> Tree
@@ -90,7 +95,7 @@ construction is to perserve semantics, afterall.
 If you'd like a quick overview of the theory, feel free to expand section A below.
 Otherwise, we will move on to section B with Pratt Parsing.
 
-### A. Recognition: Formalized with Automata
+### 0. Recognition: Formalized
 <details>
 <summary>Expand</summary>
 Lexing, parsing, and typing sit on a strong foundation of computional theory. The
@@ -549,7 +554,6 @@ TODO
 
 
 ### 3. Semantic Analysis: Type Checking
-
 Lexical analysis detects lexical errors (ill-formed tokens), syntactic analysis
 detects syntax errors, and semantic analysis detects semantic errors, such as
 static type errors, undefined variables, and uninitialized variables.
@@ -561,25 +565,88 @@ reported by the compiler.
 
 ### E. Correctness
 
-### Correctness
---> forall. vs <100%
+### Parsing Correctness
+**Snapshot Testing**
+https://www.cs.cornell.edu/~asampson/blog/turnt.html
 
-**Testing**
-- unit testing
-- snapshot testing
-- property-based testing
-- fuzz testing
-- formal verification of input/output behavior??
-- more details in ARCHITECTURE.md
-
-TODO: triple test?
-
-**Type Theory**
-- aka: How to embed logic within a computer
+**Fuzzing**
+regehr
+- https://blog.regehr.org/archives/26
+- https://blog.regehr.org/archives/28
+- https://blog.regehr.org/archives/39
+- https://blog.regehr.org/archives/47
+- https://blog.regehr.org/archives/213
+- https://blog.regehr.org/archives/226
+- https://blog.regehr.org/archives/232
+- https://blog.regehr.org/archives/238
+- https://blog.regehr.org/archives/247
+- https://blog.regehr.org/archives/249
+- https://blog.regehr.org/archives/259
+- https://blog.regehr.org/archives/295
+- https://blog.regehr.org/archives/337
+- https://blog.regehr.org/archives/340
+- https://blog.regehr.org/archives/370
+- https://blog.regehr.org/archives/380
+- https://blog.regehr.org/archives/381
+- https://blog.regehr.org/archives/382
+- https://blog.regehr.org/archives/478
+- https://blog.regehr.org/archives/388
+- https://blog.regehr.org/archives/482
+- https://blog.regehr.org/archives/492
+- https://blog.regehr.org/archives/501
+- https://blog.regehr.org/archives/510
+- https://blog.regehr.org/archives/523
+- https://blog.regehr.org/archives/563
+- https://blog.regehr.org/archives/572
+- https://blog.regehr.org/archives/591
+- https://blog.regehr.org/archives/595
+- https://blog.regehr.org/archives/639
+- https://blog.regehr.org/archives/681
+- https://blog.regehr.org/archives/689
+- https://blog.regehr.org/archives/710
+- https://blog.regehr.org/archives/713
+- https://blog.regehr.org/archives/660
+- https://blog.regehr.org/archives/748
+- https://blog.regehr.org/archives/761
+- https://blog.regehr.org/archives/782
+- https://blog.regehr.org/archives/804
+- https://blog.regehr.org/archives/820
+- https://blog.regehr.org/archives/742
+- https://blog.regehr.org/archives/856
+- https://blog.regehr.org/archives/880
+- https://blog.regehr.org/archives/896
+- https://blog.regehr.org/archives/917
+- https://blog.regehr.org/archives/955
+- https://blog.regehr.org/archives/1036
+- https://blog.regehr.org/archives/1039
+- https://blog.regehr.org/archives/1047
+- https://blog.regehr.org/archives/1052
+- https://blog.regehr.org/archives/1061
+- https://blog.regehr.org/archives/1161
+- https://blog.regehr.org/archives/1180
+- https://blog.regehr.org/archives/1238
+- https://blog.regehr.org/archives/1246
+- https://blog.regehr.org/archives/1278
+- https://blog.regehr.org/archives/1284
+- https://blog.regehr.org/archives/1287
+- https://blog.regehr.org/archives/1419
+- https://blog.regehr.org/archives/1428
+- https://blog.regehr.org/archives/1436
+- https://blog.regehr.org/archives/1438
+- https://blog.regehr.org/archives/1467
+- https://blog.regehr.org/archives/1476
+- https://blog.regehr.org/archives/1496
+- https://blog.regehr.org/archives/1520
+- https://blog.regehr.org/archives/1565
+- https://blog.regehr.org/archives/1605
+- https://blog.regehr.org/archives/1678
+- https://blog.regehr.org/archives/1679
+- https://blog.regehr.org/archives/1687
+- https://blog.regehr.org/archives/1700
+- https://blog.regehr.org/archives/1796
+- https://www.cs.cornell.edu/~asampson/blog/reduction.html
 
 **Verification**
-History of compiler correctness:
-
 - **ECOOP 2003**: *The verifying compiler: A grand challenge for computing research (Hoare)*
   - Paper: [here](https://link.springer.com/chapter/10.1007/978-3-540-45213-3_4)
 - **FM 2006**: *Formal Verification of a C Compiler Front-end (Blazy, Daygaye, Leroy)*
@@ -594,11 +661,6 @@ History of compiler correctness:
   - Paper: [here](https://www.khoury.northeastern.edu/home/amal/papers/next700ccc.pdf)
   - Cornell PLDG Discussion: [here](https://priyasrikumar.com/next700ccc.pdf)
 
-
-**Verification vs Validation**
-
-- verified validator => verified compiler
-
 References
 - OPLSS: https://www.cs.uoregon.edu/research/summerschool/archives.html
 - Cornell CS 6120 Blog
@@ -608,21 +670,48 @@ References
   - 2023: [here](https://www.cs.cornell.edu/courses/cs6120/2023fa/blog/)
 - Cornell PLDG Archive: [here](https://pl.cs.cornell.edu/pldg/)
 
+Compcert
+-  it only accepts C89 (now C11), targets generic x64 and optimizes at the level of GCC's
+O1, would you take it?
+  - don't see  news for catching up on optimization levels
 
 ### Source References: C89/90
 - [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
 - The C Programming Language (K&R)
 - If You Must Learn C (Ragde)
+- Teaching C (Regher) https://blog.regehr.org/archives/1393
 
 ---
 
-# 2. Middleend: ____ by optimizing
-formalization: [[]] = [[]] denotes translation (*expressive*) tarpit?
-[[for(pre;cond;post) {body}]] = [pre; while(cond) {body;st}]]
-intuition: information guides the representation at each level.
--> each representation loses information
--> this intuition carries beyond the ISA, into hardware level
--> AST has more information to help with type checking, error production, etc
+# 2. Middleend: optimization
+### Performance
+https://en.wikipedia.org/wiki/Whetstone_(benchmark)
+http://www.roylongbottom.org.uk/whetstone.pdf
+
+https://en.wikipedia.org/wiki/Dhrystone
+https://dl.acm.org/doi/10.1145/358274.358283
+https://github.com/lac-dcc/jotai-benchmarks
+https://github.com/quepas/Compiler-benchmark-suites
+https://github.com/embench/embench-iot
+https://www.youtube.com/watch?v=CNj0x_R20tY
+https://www.youtube.com/watch?v=cdDT-CQmcVg&t=382s
+
+'03: nvidia and 3dmark https://www.google.com/search?q=3dmark+03+nvidia&oq=3dmark+03+nvidia&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRifBdIBCDIwNzdqMWo5qAIAsAIB&sourceid=chrome&ie=UTF-8#ip=1
+'24: intel and spec https://www.tomshardware.com/pc-components/cpus/spec-invalidates-2600-intel-cpu-benchmarks-says-companys-compiler-used-unfair-optimizations-that-boosted-performance
+https://www.spec.org/cpu2017/results/res2023q1/cpu2017-20221223-33220.html
+https://youtu.be/hS-Kc394Oos?list=PL85jopFZCnbOXRTuaRhLyYknnb3QIXhGJ&t=738
+
+regehr
+- https://blog.regehr.org/archives/320
+- https://blog.regehr.org/archives/324
+- https://blog.regehr.org/archives/1109
+- https://blog.regehr.org/archives/1122
+- https://blog.regehr.org/archives/1515
+- https://blog.regehr.org/archives/1603
+- https://blog.regehr.org/archives/1619
+- https://blog.regehr.org/archives/1722
+- https://blog.regehr.org/archives/1837
+- https://blog.regehr.org/archives/2265
 
 Representation Options:
 - CFG: ???
@@ -631,15 +720,7 @@ Representation Options:
 - p-code: JVM  (stack-based. no register)
 - CPS: functional languages??
 
-design points:
---> what would be the best rep for RISC-V metal?
---> what would be the best rep for TT metal?
---> if the IR is arch-specific
-  - maybe better optimizations
-  - but less generic
----
-
-# 3. Backend: lowering by generating
+# 3. Backend: generation
 
 ## 1. Selection
 
@@ -653,5 +734,5 @@ design points:
   work in emprical practice
 
 # 4. References
-- Cornell CS 4120 SP23 Lecture Notes (Myers)
 - Engineering a Compiler (Cooper, Torczon)
+- Cornell CS 4120 SP23 Lecture Notes (Myers)
