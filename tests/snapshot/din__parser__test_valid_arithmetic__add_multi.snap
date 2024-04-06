@@ -1,0 +1,19 @@
+---
+source: src/parser.rs
+expression: tree
+---
+main_function:
+  statement:
+    Return:
+      Binary:
+        op: Add
+        l:
+          Binary:
+            op: Add
+            l:
+              Num: 9
+            r:
+              Num: 10
+        r:
+          Num: 11
+
