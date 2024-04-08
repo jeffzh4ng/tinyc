@@ -1,4 +1,4 @@
-use crate::compiler::rep::{Expr, Program, Statement};
+use crate::ir::{Expr, Program, Statement};
 
 // c is statically, "weakly" typed
 // loopholes
@@ -23,7 +23,8 @@ fn type_expr(e: &Expr) -> bool {
 mod tests {
     use std::fs;
 
-    use crate::compiler::{lexer, parser, rep::Op};
+    use super::super::{lexer, parser};
+    use crate::ir::Op;
 
     use super::*;
 

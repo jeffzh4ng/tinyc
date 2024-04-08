@@ -1,5 +1,4 @@
-use din::compiler::{eval, lexer, parser, typer};
-use std::fs;
+use din::{generator, parser};
 
 fn main() {
     println!(
@@ -10,27 +9,12 @@ fn main() {
     ⠀⠀⣼⣆⠀⠀⠀⠀⣰⣧⠀⠀
     ⠀⣼⣿⣿⣆⠀⠀⣰⣿⣿⣧⠀
     ⠾⠟⠿⠿⠿⠧⠼⠿⠿⠿⠻⠷
-    din: C89/90 -> RISC V
+    din: C89/90 -> RV32I
     "
     );
 
-    let chars = fs::read("tests/valid/arithmetic_precedence/mult_add_precedence_multi.c")
-        .expect("Should have been able to read the file")
-        .iter()
-        .map(|b| *b as char)
-        .collect::<Vec<_>>();
-
-    let tokens = lexer::scan(&chars);
-    println!("tokens: {:?}", tokens);
-
-    let tree = parser::parse_program(tokens).unwrap();
-    println!("tree: {:?}", tree);
-
-    if !typer::type_program(&tree) {
-        // return error
-        todo!()
-    }
-
-    let res = eval::eval_program(tree);
-    println!("result: {:?}", res);
+    let file = "tests/regression/din/valid/arithmetic_precedence/mult_add_precedence_multi.c";
+    let flag = "rv32i";
+    let ast = parser::parse(file);
+    let mc = generator::gen(ast, flag);
 }
