@@ -1,0 +1,15 @@
+# Targets
+
+**Contents**
+1. ISA
+2. References
+
+# 1. ISA
+
+# References
+- [Tiny RISC-V](https://www.csl.cornell.edu/courses/ece5745/handouts/ece5745-tinyrv-isa.txt)
+- [RISC-V Reader](http://riscvbook.com/)
+- [Waterman's PhD Thesis](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-1.pdf)
+- [RV32I Unprivileged Spec (Ratified)](https://github.com/riscv/riscv-isa-manual/releases/tag/Ratified-IMAFDQC)
+- [RV32I Privileged Spec (Ratified)](https://github.com/riscv/riscv-isa-manual/releases/tag/Priv-v1.12)
+- [Cornell 7491](https://www.cs.cornell.edu/courses/cs7491/2020sp/)
