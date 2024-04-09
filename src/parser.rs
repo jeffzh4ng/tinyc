@@ -2,8 +2,8 @@ use proptest::prelude::*;
 
 use std::io;
 
-use super::super::ir::{Expr, MainFunction, Op, Program, Statement};
-use super::lexer::{Token, TokenType};
+use crate::ir::{Expr, MainFunction, Op, Program, Statement};
+use crate::lexer::{Token, TokenType};
 
 pub fn parse_program(tokens: Vec<Token>) -> Result<Program, io::Error> {
     let main_function = parse_function(tokens)?;
