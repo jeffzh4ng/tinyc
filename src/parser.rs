@@ -39,7 +39,6 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
 
 fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     let (left, r) = parse_factor(tokens)?;
-    println!("moose {:?}", left);
 
     match r {
         [] => Ok((left, r)),

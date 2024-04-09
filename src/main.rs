@@ -14,7 +14,7 @@ fn main() {
     "
     );
 
-    let src = "tests/regression/din/valid/hello.c";
+    let src = "tests/regression/din/arithmetic/lit.c";
     let trgt = gen::Target::Rv32i;
     let dest = "./out";
 
