@@ -245,106 +245,175 @@ fn skip_whitespace(input: &[char]) -> &[char] {
 }
 
 #[cfg(test)]
-fn vecs_match<T: PartialEq>(a: &Vec<T>, b: &Vec<T>) -> bool {
-    #[rustfmt::skip]
-    let matching = a
-        .iter()
-        .zip(b.iter())
-        .filter(|&(a, b)| a == b)
-        .count();
-
-    matching == a.len() && matching == b.len()
-}
-
-#[cfg(test)]
-mod test_valid {
+mod test_valid_arithmetic {
+    use super::*;
     use insta;
     use std::fs;
 
-    use super::*;
-
-    const TEST_DIR: &str = "tests/regression/din/valid";
+    const TEST_DIR: &str = "tests/regression/din/arithmetic";
 
     #[test]
-    fn hello() {
+    fn lit() {
         #[rustfmt::skip]
-        println!("moose: {}/hello.c", TEST_DIR);
-
-        let input = fs::read(format!("{}/hello.c", TEST_DIR))
+        let input = fs::read(format!("{TEST_DIR}/lit.c"))
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
         let output = scan(input.as_slice());
-        insta::assert_yaml_snapshot!(output);
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordTypeInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: return
+          typ: StatementReturn
+        - lexeme: "0"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
     }
 
     #[test]
-    fn arithmetic_add() {
+    fn add() {
         #[rustfmt::skip]
-        let input = fs::read(format!("{}/arithmetic/add.c", TEST_DIR))
+        let input = fs::read(format!("{TEST_DIR}/add.c"))
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
         let output = scan(input.as_slice());
-        insta::assert_yaml_snapshot!(output);
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordTypeInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: return
+          typ: StatementReturn
+        - lexeme: "9"
+          typ: LiteralInt
+        - lexeme: +
+          typ: Plus
+        - lexeme: "10"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
     }
 
     #[test]
-    fn arithmetic_add_multi() {
+    fn add_multi() {
         #[rustfmt::skip]
-        let input = fs::read(format!("{}/arithmetic/add_multi.c", TEST_DIR))
+        let input = fs::read(format!("{TEST_DIR}/add_multi.c"))
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
         let output = scan(input.as_slice());
-        insta::assert_yaml_snapshot!(output);
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordTypeInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: return
+          typ: StatementReturn
+        - lexeme: "9"
+          typ: LiteralInt
+        - lexeme: +
+          typ: Plus
+        - lexeme: "10"
+          typ: LiteralInt
+        - lexeme: +
+          typ: Plus
+        - lexeme: "11"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
     }
 
-    #[test]
-    fn arithmetic_sub() {
-        #[rustfmt::skip]
-        let input = fs::read(format!("{}/arithmetic/sub.c", TEST_DIR))
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+    // #[test]
+    // fn sub() {
+    //     #[rustfmt::skip]
+    //     let input = fs::read(format!("{}/sub.c", TEST_DIR))
+    //         .expect("Should have been able to read the file")
+    //         .iter()
+    //         .map(|b| *b as char)
+    //         .collect::<Vec<_>>();
 
-        let output = scan(input.as_slice());
-        insta::assert_yaml_snapshot!(output);
-    }
+    //     let output = scan(input.as_slice());
+    //     insta::assert_yaml_snapshot!(output, @"");
+    // }
 
-    #[test]
-    fn arithmetic_mult() {
-        #[rustfmt::skip]
-        let input = fs::read(format!("{}/arithmetic/mult.c", TEST_DIR))
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+    // #[test]
+    // fn mult() {
+    //     #[rustfmt::skip]
+    //     let input = fs::read(format!("{}/arithmetic/mult.c", TEST_DIR))
+    //         .expect("Should have been able to read the file")
+    //         .iter()
+    //         .map(|b| *b as char)
+    //         .collect::<Vec<_>>();
 
-        let output = scan(input.as_slice());
-        insta::assert_yaml_snapshot!(output);
-    }
+    //     let output = scan(input.as_slice());
+    //     insta::assert_yaml_snapshot!(output);
+    // }
 
-    #[test]
-    fn arithmetic_div() {
-        #[rustfmt::skip]
-        let input = fs::read(format!("{}/arithmetic/div.c", TEST_DIR))
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+    // #[test]
+    // fn div() {
+    //     #[rustfmt::skip]
+    //     let input = fs::read(format!("{}/arithmetic/div.c", TEST_DIR))
+    //         .expect("Should have been able to read the file")
+    //         .iter()
+    //         .map(|b| *b as char)
+    //         .collect::<Vec<_>>();
 
-        let output = scan(input.as_slice());
-        insta::assert_yaml_snapshot!(output);
-    }
+    //     let output = scan(input.as_slice());
+    //     insta::assert_yaml_snapshot!(output);
+    // }
 }
+
+// #[cfg(test)]
+// fn vecs_match<T: PartialEq>(a: &Vec<T>, b: &Vec<T>) -> bool {
+//     #[rustfmt::skip]
+//     let matching = a
+//         .iter()
+//         .zip(b.iter())
+//         .filter(|&(a, b)| a == b)
+//         .count();
+
+//     matching == a.len() && matching == b.len()
+// }
 
 // #[cfg(test)]
 // mod test_invalid {}
