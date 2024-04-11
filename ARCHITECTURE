@@ -2,6 +2,7 @@
 For readers coming in without a Rust background, here's a brief ontology of the
 toolchain.
 
+## Rust Package Layout
 *Crates* are the atomic compilation of `rustc`. They correspond to one platform
 object file. Crates can either be library crates or binary crates. This
 bifurcation is inherited[0] from the usage of object files.
@@ -14,9 +15,8 @@ also supports decentralized git-based models. And yes, crates.io, ontologically
 speaking, would have better been named to cargo.io[1] or packages.io.
 
 The `cargo` tool borrows Rails' convention over configuration, which shows in a
-package's file system layout. With the following layout, `cargo`'s build commands
-work seamlessly: `cargo bench` runs the `benches/` crate, and `cargo test` runs
-the `examples/` and `tests` crates.
+package's file system layout. With the following layout, `cargo test` and
+`cargo bench` work seamlessly.
 
 - `src/`
      - `src/lib.rs`: default library crate
@@ -26,6 +26,9 @@ the `examples/` and `tests` crates.
 - `benches/`: benchmarks
 - `Cargo.toml`: manifest
 - `Cargo.lock`: lockfile
+
+## din's Compiler Layout
+The compiler's entire architecture can be read under 100 lines in `src/main.rs`.
 
 [0]: Hoare's decision. He points out that a lot of "binaries" on your machine act
      more like "libaries" since they're not completely done linking, waiting to

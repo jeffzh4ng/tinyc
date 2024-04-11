@@ -14,9 +14,9 @@ fn main() {
     "
     );
 
-    let src = "tests/regression/din/arithmetic/lit.c";
+    let src = "tests/fixtures/din/legal/arithmetic/lit.c";
     let trgt = "rv32i";
-    let dest = "./out";
+    let dest = "./tmp.s";
 
     let chars = fs::read(src)
         .expect("Should have been able to read the file")
