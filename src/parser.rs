@@ -1,4 +1,4 @@
-use proptest::prelude::*;
+// use proptest::prelude::*;
 
 use std::io;
 
@@ -216,13 +216,13 @@ fn mtch(tokens: &[Token], tt: TokenType) -> Result<(&Token, &[Token]), io::Error
 }
 
 #[cfg(test)]
-mod test_valid_arithmetic {
+mod test_legal_arithmetic {
     use super::*;
     use crate::lexer;
     use insta;
     use std::fs;
 
-    const TEST_DIR: &str = "tests/regression/din/arithmetic";
+    const TEST_DIR: &str = "tests/fixtures/din/legal/arithmetic";
 
     #[test]
     fn lit() {

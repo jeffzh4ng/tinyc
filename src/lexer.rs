@@ -245,12 +245,12 @@ fn skip_whitespace(input: &[char]) -> &[char] {
 }
 
 #[cfg(test)]
-mod test_valid_arithmetic {
+mod test_legal_arithmetic {
     use super::*;
     use insta;
     use std::fs;
 
-    const TEST_DIR: &str = "tests/regression/din/arithmetic";
+    const TEST_DIR: &str = "tests/fixtures/din/legal/arithmetic";
 
     #[test]
     fn lit() {
