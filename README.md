@@ -3,8 +3,6 @@
 
 a software 1.0 compiler: C89/90 -> RV32I
 
-https://github.com/c-testsuite/c-testsuite?tab=readme-ov-file
-
 `din` is an ambitiously academic batch-style compiler for a 0.25 man year of work
 that compiles the unsafest language with the safest. With that said, there are
 three goals:
@@ -33,7 +31,7 @@ be zero versioned with [zer0ver](https://0ver.org/).
 
 ### Research
 - [SOURCE](./docs/SOURCE)
-- [IR](./docs/IR)
+- [INTER](./docs/INTER)
 - [TARGET](./docs/TARGET)
 - [UARCH](./docs/UARCH)
 

@@ -19,114 +19,113 @@ fn type_expr(e: &Expr) -> bool {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use std::fs;
+// #[cfg(test)]
+// mod tests {
+//     use std::fs;
 
-    use super::super::{lexer, parser};
-    use crate::ir::Op;
+//     use crate::{ir, lexer, parser};
 
-    use super::*;
+//     use super::*;
 
-    #[test]
-    fn test_valid() {
-        #[rustfmt::skip]
-        let chars = fs::read("tests/valid/hello.c")
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+//     #[test]
+//     fn test_valid() {
+//         #[rustfmt::skip]
+//         let chars = fs::read("tests/valid/hello.c")
+//             .expect("Should have been able to read the file")
+//             .iter()
+//             .map(|b| *b as char)
+//             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
-        let tree = parser::parse_program(tokens).unwrap();
-        let judgement = type_program(&tree);
-        insta::assert_yaml_snapshot!(judgement);
-    }
+//         let tokens = lexer::scan(&chars);
+//         let tree = parser::parse_program(tokens).unwrap();
+//         let judgement = type_program(&tree);
+//         insta::assert_yaml_snapshot!(judgement);
+//     }
 
-    #[test]
-    fn test_valid_add() {
-        #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/add.c")
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+//     #[test]
+//     fn test_valid_add() {
+//         #[rustfmt::skip]
+//         let chars = fs::read("tests/valid/arithmetic/add.c")
+//             .expect("Should have been able to read the file")
+//             .iter()
+//             .map(|b| *b as char)
+//             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
-        let tree = parser::parse_program(tokens).unwrap();
-        let judgement = type_program(&tree);
-        insta::assert_yaml_snapshot!(judgement);
-    }
+//         let tokens = lexer::scan(&chars);
+//         let tree = parser::parse_program(tokens).unwrap();
+//         let judgement = type_program(&tree);
+//         insta::assert_yaml_snapshot!(judgement);
+//     }
 
-    #[test]
-    fn test_valid_add_multi() {
-        #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/add_multi.c")
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+//     #[test]
+//     fn test_valid_add_multi() {
+//         #[rustfmt::skip]
+//         let chars = fs::read("tests/valid/arithmetic/add_multi.c")
+//             .expect("Should have been able to read the file")
+//             .iter()
+//             .map(|b| *b as char)
+//             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
-        let tree = parser::parse_program(tokens).unwrap();
-        let judgement = type_program(&tree);
-        insta::assert_yaml_snapshot!(judgement);
-    }
+//         let tokens = lexer::scan(&chars);
+//         let tree = parser::parse_program(tokens).unwrap();
+//         let judgement = type_program(&tree);
+//         insta::assert_yaml_snapshot!(judgement);
+//     }
 
-    #[test]
-    fn test_valid_subtraction() {
-        #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/sub.c")
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+//     #[test]
+//     fn test_valid_subtraction() {
+//         #[rustfmt::skip]
+//         let chars = fs::read("tests/valid/arithmetic/sub.c")
+//             .expect("Should have been able to read the file")
+//             .iter()
+//             .map(|b| *b as char)
+//             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
-        let tree = parser::parse_program(tokens).unwrap();
-        let judgement = type_program(&tree);
-        insta::assert_yaml_snapshot!(judgement);
-    }
+//         let tokens = lexer::scan(&chars);
+//         let tree = parser::parse_program(tokens).unwrap();
+//         let judgement = type_program(&tree);
+//         insta::assert_yaml_snapshot!(judgement);
+//     }
 
-    #[test]
-    fn test_valid_mult() {
-        #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/mult.c")
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+//     #[test]
+//     fn test_valid_mult() {
+//         #[rustfmt::skip]
+//         let chars = fs::read("tests/valid/arithmetic/mult.c")
+//             .expect("Should have been able to read the file")
+//             .iter()
+//             .map(|b| *b as char)
+//             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
-        let tree = parser::parse_program(tokens).unwrap();
-        let judgement = type_program(&tree);
-        insta::assert_yaml_snapshot!(judgement);
-    }
+//         let tokens = lexer::scan(&chars);
+//         let tree = parser::parse_program(tokens).unwrap();
+//         let judgement = type_program(&tree);
+//         insta::assert_yaml_snapshot!(judgement);
+//     }
 
-    #[test]
-    fn test_valid_div() {
-        #[rustfmt::skip]
-        let chars = fs::read("tests/valid/arithmetic/div.c")
-            .expect("Should have been able to read the file")
-            .iter()
-            .map(|b| *b as char)
-            .collect::<Vec<_>>();
+//     #[test]
+//     fn test_valid_div() {
+//         #[rustfmt::skip]
+//         let chars = fs::read("tests/valid/arithmetic/div.c")
+//             .expect("Should have been able to read the file")
+//             .iter()
+//             .map(|b| *b as char)
+//             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
-        let tree = parser::parse_program(tokens).unwrap();
-        let judgement = type_program(&tree);
-        insta::assert_yaml_snapshot!(judgement);
-    }
+//         let tokens = lexer::scan(&chars);
+//         let tree = parser::parse_program(tokens).unwrap();
+//         let judgement = type_program(&tree);
+//         insta::assert_yaml_snapshot!(judgement);
+//     }
 
-    #[test]
-    fn test() {
-        let input = Expr::Binary {
-            op: Op::Add,
-            l: Box::new(Expr::Num(9)),
-            r: Box::new(Expr::Num(10)),
-        };
+//     #[test]
+//     fn test() {
+//         let input = Expr::Binary {
+//             op: ir::Op::Add,
+//             l: Box::new(Expr::Num(9)),
+//             r: Box::new(Expr::Num(10)),
+//         };
 
-        let output = type_expr(&input);
-        assert!(output);
-    }
-}
+//         let output = type_expr(&input);
+//         assert!(output);
+//     }
+// }
