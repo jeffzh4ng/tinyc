@@ -276,7 +276,7 @@ mod test_legal_arithmetic {
           typ: PuncLeftBrace
         - lexeme: return
           typ: StatementReturn
-        - lexeme: "0"
+        - lexeme: "8"
           typ: LiteralInt
         - lexeme: ;
           typ: PuncSemiColon

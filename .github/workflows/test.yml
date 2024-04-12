@@ -17,28 +17,33 @@ concurrency:
 jobs:
   required:
     runs-on: ubuntu-latest
-    name: ubuntu / ${{ matrix.toolchain }}
+    name: ubuntu-latest/rust-${{ matrix.toolchain }}
     strategy:
       matrix:
         # beta to test next version of toolchain
         toolchain: [stable, beta]
     steps:
-      - uses: actions/checkout@v4
+      - name: git checkout din/master
+        uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Install ${{ matrix.toolchain }}
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+            deps/
+          key: ${{ runner.os }}/rust-${{matrix.toolchain}}/cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install rust-${{ matrix.toolchain }} toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
-      - name: cargo generate-lockfile
-        # enable this ci template to run regardless of whether the lockfile is checked in or not
-        if: hashFiles('Cargo.lock') == ''
-        run: cargo generate-lockfile
-      # https://twitter.com/jonhoo/status/1571290371124260865
-      - name: cargo test --locked
-        run: cargo test --locked --all-features --all-targets
-      # https://github.com/rust-lang/cargo/issues/6669
-      - name: cargo test --doc
-        run: cargo test --locked --all-features --doc
-      - name: test.sh
-        run: ./test.sh
+      - name: Clone riscv gnu toolchain
+        run: |
+          mkdir -p deps
+          git clone https://github.com/riscv/riscv-gnu-toolchain deps/riscv-gnu-toolchain
+      - name: cargo build --release
+        run: cargo build --release

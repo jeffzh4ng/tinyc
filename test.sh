@@ -3,7 +3,7 @@ assert() {
   input="$1"
   expected="$2"
 
-  ./target/debug/din < "$input" > tmp.s || exit
+  ./target/release/din < "$input" > tmp.s || exit
   riscv64-unknown-elf-gcc tmp tmp.s
   spike pk tmp
   actual="$?"
