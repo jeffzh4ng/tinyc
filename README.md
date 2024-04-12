@@ -1,7 +1,7 @@
 # din
 ![](./din.gif)
 
-a software 1.0 compiler: C89/90 -> RV32I
+**a software 1.0 compiler: C89/90 -> RV32I**
 
 `din` is an ambitiously academic batch-style compiler for a 0.25 man year of work
 that compiles the unsafest language with the safest. There's three goals:
