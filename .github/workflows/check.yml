@@ -19,7 +19,7 @@ concurrency:
 jobs:
   fmt:
     runs-on: ubuntu-latest
-    name: stable / fmt
+    name: stable/fmt
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,7 +33,7 @@ jobs:
 
   clippy:
     runs-on: ubuntu-latest
-    name: ${{ matrix.toolchain }} / clippy
+    name: ${{ matrix.toolchain }}/clippy
     permissions:
       contents: read
       checks: write
@@ -57,7 +57,7 @@ jobs:
     # cargo-hack checks combinations of feature flags to ensure that features are all additive
     # which is required for feature unification
     runs-on: ubuntu-latest
-    name: ubuntu / stable / features
+    name: ubuntu/stable/features
     steps:
       - uses: actions/checkout@v4
         with:
@@ -79,7 +79,7 @@ jobs:
     strategy:
       matrix:
         msrv: ["1.56.1"] # 2021 edition requires 1.56
-    name: ubuntu / ${{ matrix.msrv }}
+    name: ubuntu/msrv:${{ matrix.msrv }}
     steps:
       - uses: actions/checkout@v4
         with:

@@ -219,7 +219,6 @@ fn mtch(tokens: &[Token], tt: TokenType) -> Result<(&Token, &[Token]), io::Error
 mod test_legal_arithmetic {
     use super::*;
     use crate::lexer;
-    use insta;
     use std::fs;
 
     const TEST_DIR: &str = "tests/fixtures/din/legal/arithmetic";

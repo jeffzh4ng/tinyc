@@ -247,7 +247,6 @@ fn skip_whitespace(input: &[char]) -> &[char] {
 #[cfg(test)]
 mod test_legal_arithmetic {
     use super::*;
-    use insta;
     use std::fs;
 
     const TEST_DIR: &str = "tests/fixtures/din/legal/arithmetic";
