@@ -29,6 +29,7 @@ package's file system layout. With the following layout, `cargo test` and
 
 ## din's Compiler Layout
 The compiler's entire architecture can be read under 100 lines in `src/main.rs`.
+All Rust code follows the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/about.html).
 
 [0]: Hoare's decision. He points out that a lot of "binaries" on your machine act
      more like "libaries" since they're not completely done linking, waiting to

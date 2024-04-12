@@ -4,8 +4,7 @@
 a software 1.0 compiler: C89/90 -> RV32I
 
 `din` is an ambitiously academic batch-style compiler for a 0.25 man year of work
-that compiles the unsafest language with the safest. With that said, there are
-three goals:
+that compiles the unsafest language with the safest. There's three goals:
 
 The first goal is to reach a base level of confidence in compiler correctness
 by compiling [egos2000](), [xv6](), [git](), [sqlite](), and as much of
@@ -30,10 +29,10 @@ With that said, `din` will be 1.0 when it can compile Linux. Until then, it will
 be zero versioned with [zer0ver](https://0ver.org/).
 
 ### Research
-- [SOURCE](./docs/SOURCE)
-- [INTER](./docs/INTER)
-- [TARGET](./docs/TARGET)
-- [UARCH](./docs/UARCH)
+- [SOURCE](./examples/SOURCE)
+- [INTER](./examples/INTER)
+- [TARGET](./examples/TARGET)
+- [UARCH](./examples/UARCH)
 
 ### References
 - Cooper, Torczon

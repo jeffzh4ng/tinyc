@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 // note: variations are explicitly typed. Collapsing categories like keywords
 //       into one variant while outsourcing variation to lexeme field on Token
 //       will produce more work for syntactic analysis, since lexeme : String
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Copy, Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum TokenType {
     // introductions (values)
     LiteralInt, // RE: [0-9]+
@@ -39,7 +39,7 @@ pub enum TokenType {
     PuncSemiColon,
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Token {
     pub lexeme: String,
     pub typ: TokenType,
