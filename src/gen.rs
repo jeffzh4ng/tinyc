@@ -9,7 +9,7 @@ pub enum Target {
     Llvm,
 }
 
-pub fn gen(ast: ir::Program, t: &str) -> Vec<String> {
+pub fn gen(ast: ir::Program, _t: &str) -> Vec<String> {
     let target = Target::Rv32i;
 
     match target {
@@ -23,11 +23,13 @@ fn gen_rv32i(tree: ir::Program) -> Vec<String> {
         ir::Statement::Return(e) => gen_expr(e),
     };
 
-    let mut output: Vec<String> = Vec::new();
-    output.push("  .global main".into());
-    output.push("main:".into());
-    output.push(expr_mc);
-    output.push("  ret".into());
+    let output: Vec<String> = vec![
+        "  .global main".into(),
+        "main:".into(),
+        expr_mc,
+        "  ret".into(),
+    ];
+
     output
 }
 
@@ -35,6 +37,6 @@ fn gen_expr(e: ir::Expr) -> String {
     match e {
         ir::Expr::Num(n) => format!("  li a0 {n}"), // TODO: Expr::Num(n) still inherting rust's semantics via 128.
         ir::Expr::String(_) => todo!(),
-        ir::Expr::Binary { op, l, r } => todo!(),
+        ir::Expr::Binary { op: _, l: _, r: _ } => todo!(),
     }
 }

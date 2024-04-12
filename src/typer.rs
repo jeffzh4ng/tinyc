@@ -7,7 +7,7 @@ use crate::ir::{Expr, Program, Statement};
 
 pub fn type_program(p: &Program) -> bool {
     match &p.main_function.statement {
-        Statement::Return(e) => type_expr(&e),
+        Statement::Return(e) => type_expr(e),
     }
 }
 
@@ -15,7 +15,7 @@ fn type_expr(e: &Expr) -> bool {
     match e {
         Expr::Num(_) => true,
         Expr::String(_) => todo!(),
-        Expr::Binary { op, l, r } => type_expr(l) && type_expr(r),
+        Expr::Binary { op: _, l, r } => type_expr(l) && type_expr(r),
     }
 }
 
