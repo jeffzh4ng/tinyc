@@ -10,7 +10,7 @@ The first goal is to reach a base level of confidence in compiler correctness
 by compiling [egos2000](), [xv6](), [git](), [sqlite](), and as much of
 [c-testsuite](https://github.com/c-testsuite/c-testsuite) as possible. Linux is
 left as a challenge for when the next Apple wants to hire me for the third C/C++
-compiler after gcc and clang.
+compiler after `gcc` and `clang`.
 
 The second goal is to reach a base level of performance by beating `gcc -O1` on
 dhrystone and embench with similar optimizations as `qbe`. SPEC is left as another

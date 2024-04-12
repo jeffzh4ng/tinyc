@@ -6,6 +6,7 @@ authors = ["Jeff Zhang"]
 description = "a software 1.0 compiler: C89/90 -> RV32I"
 readme = "README.md"
 repository = "https://github.com/jeffzh4ng/din"
+license = "MIT OR Apache-2.0"
 keywords = ["compiler", "riscv"]
 categories = ["compilers"]
 
