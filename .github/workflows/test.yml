@@ -53,3 +53,5 @@ jobs:
       - if: ${{ steps.cache-din.outputs.cache-hit != 'true' }}
         name: build din with release profile
         run: cargo build --release
+      - name: test
+        run: ls /opt/riscv
