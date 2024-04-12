@@ -1,7 +1,7 @@
 .PHONY: build test clean
 
 build:
-	cargo build
+	cargo build --release
 
 test: build
 	./test.sh

@@ -35,7 +35,7 @@ fn gen_rv32i(tree: ir::Program) -> Vec<String> {
 
 fn gen_expr(e: ir::Expr) -> String {
     match e {
-        ir::Expr::Num(n) => format!("  li a0 {n}"), // TODO: Expr::Num(n) still inherting rust's semantics via 128.
+        ir::Expr::Num(n) => format!("  li a0, {n}"), // TODO: Expr::Num(n) still inherting rust's semantics via 128.
         ir::Expr::String(_) => todo!(),
         ir::Expr::Binary { op: _, l: _, r: _ } => todo!(),
     }
