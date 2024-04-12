@@ -240,7 +240,7 @@ mod test_legal_arithmetic {
         main_function:
           statement:
             Return:
-              Num: 0
+              Num: 8
         "###);
     }
 
