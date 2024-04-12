@@ -54,4 +54,4 @@ jobs:
         name: build din with release profile
         run: cargo build --release
       - name: test
-        run: ls /opt/riscv
+        run: tree /opt/riscv
