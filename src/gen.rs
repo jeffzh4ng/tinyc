@@ -9,8 +9,10 @@ pub enum Target {
     Llvm,
 }
 
-pub fn gen(ast: ir::Program, t: Target) -> Vec<String> {
-    match t {
+pub fn gen(ast: ir::Program, t: &str) -> Vec<String> {
+    let target = Target::Rv32i;
+
+    match target {
         Target::Rv32i => gen_rv32i(ast),
         Target::Llvm => todo!(),
     }
