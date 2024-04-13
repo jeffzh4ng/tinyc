@@ -1,9 +1,5 @@
 use crate::ir;
 
-// int main() {
-//     return 9 * 10 + 11 * 12;
-//   }
-
 pub enum Target {
     Rv32i,
     Llvm,

@@ -30,6 +30,4 @@ fn main() {
 
     let mut f = fs::File::create(dest).expect("Unable to create file");
     f.write_all(mc.as_bytes()).expect("Unable to write data");
-
-    // gcc to assemble and link
 }
