@@ -1,21 +1,21 @@
-use crate::ir::{Expr, Program, Statement};
+use crate::parser;
 
 // c is statically, "weakly" typed
 // loopholes
 // - casting
 // - void*
 
-pub fn type_program(p: &Program) -> bool {
+pub fn type_program(p: &parser::Program) -> bool {
     match &p.main_function.statement {
-        Statement::Return(e) => type_expr(e),
+        parser::Statement::Return(e) => type_expr(e),
     }
 }
 
-fn type_expr(e: &Expr) -> bool {
+fn type_expr(e: &parser::Expr) -> bool {
     match e {
-        Expr::Num(_) => true,
-        Expr::String(_) => todo!(),
-        Expr::Binary { op: _, l, r } => type_expr(l) && type_expr(r),
+        parser::Expr::Num(_) => true,
+        parser::Expr::String(_) => todo!(),
+        parser::Expr::Binary { op: _, l, r } => type_expr(l) && type_expr(r),
     }
 }
 
