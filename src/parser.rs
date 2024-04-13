@@ -1,10 +1,8 @@
 // use proptest::prelude::*;
 
-use std::io;
-
 use crate::lexer::{Token, TokenType};
-
 use serde::{Deserialize, Serialize};
+use std::io;
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Program {

@@ -14,7 +14,7 @@ fn main() {
     "
     );
 
-    let src = "tests/fixtures/din/legal/arithmetic/add.c";
+    let src = "tests/fixtures/din/legal/arithmetic/add_multi.c";
     let trgt = "rv32i";
     let dest = "./tmp.s";
 
