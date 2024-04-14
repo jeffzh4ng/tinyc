@@ -96,7 +96,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
+        let tokens = lexer::lex(&chars);
         let tree = parser::parse(tokens).unwrap();
         let stack_code = super::gen(tree);
         insta::assert_yaml_snapshot!(stack_code, @r###"
@@ -122,7 +122,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
+        let tokens = lexer::lex(&chars);
         let tree = parser::parse(tokens).unwrap();
         let stack_code = super::gen(tree);
         insta::assert_yaml_snapshot!(stack_code, @r###"
@@ -148,7 +148,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let tokens = lexer::scan(&chars);
+        let tokens = lexer::lex(&chars);
         let tree = parser::parse(tokens).unwrap();
         let stack_code = super::gen(tree);
         insta::assert_yaml_snapshot!(stack_code, @r###"

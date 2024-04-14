@@ -1,5 +1,5 @@
 use din::{generator, lexer, parser};
-use std::{fs, io::Write};
+use std::{env, fs, io::Write};
 
 fn main() {
     println!(
@@ -14,9 +14,7 @@ fn main() {
     "
     );
 
-    let src = std::env::args()
-        .nth(1)
-        .expect("error: no source file given");
+    let src = env::args().nth(1).expect("error: no source file given");
     println!("Compiling source: {src}");
 
     let chars = fs::read(src)
@@ -25,7 +23,7 @@ fn main() {
         .map(|b| *b as char)
         .collect::<Vec<_>>();
 
-    let tokens = lexer::scan(&chars);
+    let tokens = lexer::lex(&chars);
     let tree = parser::parse(tokens).unwrap();
     let assembly = generator::gen(tree);
 

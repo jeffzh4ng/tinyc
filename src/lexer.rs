@@ -49,7 +49,7 @@ pub struct Token {
 // struct Position {}
 
 // TODO: just filter out whitespace instead of having a helper function
-pub fn scan(input: &[char]) -> Vec<Token> {
+pub fn lex(input: &[char]) -> Vec<Token> {
     let cs = skip_whitespace(input);
 
     // literals and identifiers have arbitrary length
@@ -65,7 +65,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::Plus,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             '-' => {
                 let t = Token {
@@ -73,7 +73,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::Minus,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             '*' => {
                 let t = Token {
@@ -81,7 +81,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::Star,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             '/' => {
                 let t = Token {
@@ -89,7 +89,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::Slash,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             '(' => {
                 let t = Token {
@@ -97,7 +97,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::PuncLeftParen,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             ')' => {
                 let t = Token {
@@ -105,7 +105,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::PuncRightParen,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             '{' => {
                 let t = Token {
@@ -113,7 +113,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::PuncLeftBrace,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             '}' => {
                 let t = Token {
@@ -121,7 +121,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::PuncRightBrace,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             ';' => {
                 let t = Token {
@@ -129,7 +129,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::PuncSemiColon,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
             _ => {
                 let t = Token {
@@ -137,7 +137,7 @@ pub fn scan(input: &[char]) -> Vec<Token> {
                     typ: TokenType::Plus,
                 };
 
-                std::iter::once(t).chain(scan(r)).collect()
+                std::iter::once(t).chain(lex(r)).collect()
             }
         },
     }
@@ -168,7 +168,7 @@ fn scan_int(input: &[char]) -> Vec<Token> {
                     typ: TokenType::LiteralInt,
                 };
 
-                std::iter::once(t).chain(scan(new_r)).collect()
+                std::iter::once(t).chain(lex(new_r)).collect()
             }
             _ => {
                 // panic
@@ -221,7 +221,7 @@ fn scan_id(input: &[char]) -> Vec<Token> {
                     },
                 };
 
-                std::iter::once(t).chain(scan(new_r)).collect()
+                std::iter::once(t).chain(lex(new_r)).collect()
             }
             _ => {
                 // panic
@@ -260,7 +260,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = scan(input.as_slice());
+        let output = lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -293,7 +293,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = scan(input.as_slice());
+        let output = lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -330,7 +330,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = scan(input.as_slice());
+        let output = lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
