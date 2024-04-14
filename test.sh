@@ -4,7 +4,7 @@ assert() {
   input="$1"
   expected="$2"
 
-  ./target/release/din < "$input" > tmp.s || exit
+  ./target/release/din "$input" > tmp.s || exit
   riscv64-unknown-elf-gcc -o tmp tmp.s
   spike pk tmp
   actual="$?"
@@ -18,5 +18,7 @@ assert() {
 }
 
 assert "./tests/fixtures/din/legal/arithmetic/lit.c" 8
+assert "./tests/fixtures/din/legal/arithmetic/add.c" 19
+assert "./tests/fixtures/din/legal/arithmetic/add_multi.c" 30
 
 echo OK

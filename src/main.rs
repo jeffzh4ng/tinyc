@@ -14,9 +14,10 @@ fn main() {
     "
     );
 
-    println!("Compiling source: tests/fixtures/din/legal/arithmetic/add_multi.c");
-    let src = "tests/fixtures/din/legal/arithmetic/add_multi.c";
-    let dest = "./tmp.s";
+    let src = std::env::args()
+        .nth(1)
+        .expect("error: no source file given");
+    println!("Compiling source: {src}");
 
     let chars = fs::read(src)
         .expect("Should have been able to read the file")
@@ -28,6 +29,7 @@ fn main() {
     let tree = parser::parse(tokens).unwrap();
     let assembly = generator::gen(tree);
 
+    let dest = "./tmp.s";
     println!("Generating target: {dest}");
     let mut f = fs::File::create(dest).expect("Unable to create file");
     f.write_all(assembly.join("\n").as_bytes())

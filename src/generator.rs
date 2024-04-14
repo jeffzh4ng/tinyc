@@ -15,6 +15,7 @@ pub fn gen(tree: parser::Program) -> Vec<String> {
         "  lw a0,0(sp)".to_owned(),
         "  addi sp,sp,8".to_owned(),
         "  ret".to_owned(),
+        "".to_owned(),
     ];
 
     output
@@ -108,6 +109,7 @@ mod test_legal_arithmetic {
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
+        - ""
         "###);
     }
 
@@ -133,6 +135,7 @@ mod test_legal_arithmetic {
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
+        - ""
         "###);
     }
 
@@ -158,6 +161,7 @@ mod test_legal_arithmetic {
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
+        - ""
         "###);
     }
 }
