@@ -27,8 +27,8 @@ because of Proebsting's Law, my efforts will probably shift to hacking on
 software 2.0 compilers. Gotta follow those exponentials people.
 
 ### Roadmap
-A project's roadmap to 1.0 is great legend. Those who apply the Lindy Effect, or,
-conversely, Sturgeon's Law, onto themselves say there's no sign of that road, let
+A project's roadmap to 1.0 is great legend. Those who apply the Lindy Effect (or
+conversely, Sturgeon's Law) onto themselves say there's no sign of that road, let
 alone civilization. Those who remain hopeful say it has always existed — you just
 need to search hard enough. With that said, `din` will be 1.0 when it can compile
 Linux but until then, it will be zero versioned with [zer0ver](https://0ver.org/).

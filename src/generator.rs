@@ -33,7 +33,7 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             // 2. push the immediate
             output.push("# 2. push the immediate".to_owned());
             output.push("addi sp,sp,-8".to_owned());
-            output.push(format!("sw t1,0(sp)")); // i128?
+            output.push("sw t1,0(sp)".to_owned()); // i128?
             output.push("".to_owned());
 
             output

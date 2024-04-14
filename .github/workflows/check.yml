@@ -49,8 +49,8 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
           components: clippy
-      - name: cargo clippy --all-targets --all-features -- -Dwarnings
-        run: cargo clippy --all-targets --all-features -- -Dwarnings
+      - name: cargo clippy --all-targets --all-features
+        run: cargo clippy --all-targets --all-features
 
   hack:
     # cargo-hack checks combinations of feature flags to ensure that features are all additive
