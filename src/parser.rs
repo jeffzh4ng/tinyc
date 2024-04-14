@@ -65,7 +65,7 @@ pub enum Op {
     AddAdd, // works on strings
 }
 
-pub fn parse_program(tokens: Vec<Token>) -> Result<Program, io::Error> {
+pub fn parse(tokens: Vec<Token>) -> Result<Program, io::Error> {
     let main_function = parse_function(tokens)?;
     Ok(Program { main_function })
 }
@@ -293,7 +293,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::scan(&chars);
-        let tree = parse_program(tokens).unwrap();
+        let tree = parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -313,7 +313,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::scan(&chars);
-        let tree = parse_program(tokens).unwrap();
+        let tree = parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -338,7 +338,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::scan(&chars);
-        let tree = parse_program(tokens).unwrap();
+        let tree = parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:

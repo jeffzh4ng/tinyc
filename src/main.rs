@@ -1,4 +1,4 @@
-use din::{lexer, parser, register_generator, stack_generator};
+use din::{generator, lexer, parser};
 use std::{fs, io::Write};
 
 fn main() {
@@ -14,8 +14,8 @@ fn main() {
     "
     );
 
+    println!("Compiling source: tests/fixtures/din/legal/arithmetic/add_multi.c");
     let src = "tests/fixtures/din/legal/arithmetic/add_multi.c";
-    let trgt = "rv32i";
     let dest = "./tmp.s";
 
     let chars = fs::read(src)
@@ -25,12 +25,11 @@ fn main() {
         .collect::<Vec<_>>();
 
     let tokens = lexer::scan(&chars);
-    let tree = parser::parse_program(tokens).unwrap();
+    let tree = parser::parse(tokens).unwrap();
+    let assembly = generator::gen(tree);
 
-    let stack_code = stack_generator::gen(tree);
-    let reg_code = register_generator::gen(stack_code, trgt).join("\n");
-
+    println!("Generating target: {dest}");
     let mut f = fs::File::create(dest).expect("Unable to create file");
-    f.write_all(reg_code.as_bytes())
+    f.write_all(assembly.join("\n").as_bytes())
         .expect("Unable to write data");
 }

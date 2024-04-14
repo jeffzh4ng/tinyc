@@ -10,9 +10,9 @@ The first goal is to reach a base level of confidence in compiler correctness
 by smoking `din` with 2kloc/10kloc operating systems ([egos2000](), [xv6]()),
 torturing it with [c-testsuite](https://github.com/c-testsuite/c-testsuite).
 Because the correctness needs to be bootstrapped from zero, `din`'s passes will
-look like HLL -> AST -> 1AC stack machine -> 3AC register machine. Compiling
-Linux will be left as a challenge for when someone wants to hire me to help
-with the third C/C++ compiler after `gcc` and `clang`.
+look like HLL -> AST -> 3AC register machine (emulating 1AC stack machine).
+Compiling Linux will be left as a challenge for when someone wants to hire me to
+help with the third C/C++ compiler after `gcc` and `clang`.
 
 The second goal, (after a base level of correctness has been achieved) is to
 employ 20% of the optimizations that will give din 80% of the speed, in order
@@ -54,3 +54,4 @@ Linux but until then, it will be zero versioned with [zer0ver](https://0ver.org/
 - [The Architecture of Open Source Applications: LLVM (Lattner)](https://aosabook.org/en/v1/llvm.html)
 - [Introduction to the LLVM Compiler (Lattner)](https://llvm.org/pubs/2008-10-04-ACAT-LLVM-Intro.html)
 - [The Conceptual Structure of GCC](https://www.cse.iitb.ac.in/grc/intdocs/gcc-conceptual-structure.html#The-GCC-IRs)
+- [GCC Internals](https://gcc.gnu.org/onlinedocs/gccint/)
