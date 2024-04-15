@@ -494,6 +494,69 @@ mod test_legal_arithmetic_precedence {
                   Num: 10
         "###);
     }
+
+    #[test]
+    fn mult_add_precedence() {
+        let chars = fs::read(format!("{TEST_DIR}/mult_add_precedence.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              Binary:
+                op: Add
+                l:
+                  Binary:
+                    op: Mult
+                    l:
+                      Num: 9
+                    r:
+                      Num: 10
+                r:
+                  Num: 11
+        "###);
+    }
+
+    #[test]
+    fn mult_add_precedence_multi() {
+        let chars = fs::read(format!("{TEST_DIR}/mult_add_precedence_multi.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              Binary:
+                op: Add
+                l:
+                  Binary:
+                    op: Mult
+                    l:
+                      Num: 9
+                    r:
+                      Num: 10
+                r:
+                  Binary:
+                    op: Mult
+                    l:
+                      Num: 11
+                    r:
+                      Num: 12
+        "###);
+    }
 }
 
 // proptest! {
