@@ -49,9 +49,9 @@ Linux but until then, it will be zero versioned with [zer0ver](https://0ver.org/
 - Patterson & Hennesey
 
 **Architectures**
+- [An Incremental Approach to Compiler Construction](http://scheme2006.cs.uchicago.edu/11-ghuloum.pdf)
 - [rustc High Level Compiler Architecture](https://rustc-dev-guide.rust-lang.org/part-2-intro.html)
 - [rustc Source Code Representation](https://rustc-dev-guide.rust-lang.org/part-3-intro.html)
-- [The Architecture of Open Source Applications: LLVM (Lattner)](https://aosabook.org/en/v1/llvm.html)
-- [Introduction to the LLVM Compiler (Lattner)](https://llvm.org/pubs/2008-10-04-ACAT-LLVM-Intro.html)
+- [The Architecture of Open Source Applications: LLVM](https://aosabook.org/en/v1/llvm.html)
 - [The Conceptual Structure of GCC](https://www.cse.iitb.ac.in/grc/intdocs/gcc-conceptual-structure.html#The-GCC-IRs)
 - [GCC Internals](https://gcc.gnu.org/onlinedocs/gccint/)

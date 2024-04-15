@@ -285,7 +285,6 @@ mod test_legal_arithmetic {
 
     #[test]
     fn lit() {
-        #[rustfmt::skip]
         let chars = fs::read(format!("{TEST_DIR}/lit.c"))
             .expect("Should have been able to read the file")
             .iter()
@@ -304,8 +303,7 @@ mod test_legal_arithmetic {
     }
 
     #[test]
-    fn test_add() {
-        #[rustfmt::skip]
+    fn add() {
         let chars = fs::read(format!("{TEST_DIR}/add.c"))
             .expect("Should have been able to read the file")
             .iter()
@@ -329,8 +327,7 @@ mod test_legal_arithmetic {
     }
 
     #[test]
-    fn test_add_multi() {
-        #[rustfmt::skip]
+    fn add_multi() {
         let chars = fs::read(format!("{TEST_DIR}/add_multi.c"))
             .expect("Should have been able to read the file")
             .iter()
@@ -358,19 +355,19 @@ mod test_legal_arithmetic {
         "###);
     }
 
-    // #[test]
-    // fn test_sub() {
-    //     #[rustfmt::skip]
-    //     let chars = fs::read(format!("{TEST_DIR}sub.c"))
-    //         .expect("Should have been able to read the file")
-    //         .iter()
-    //         .map(|b| *b as char)
-    //         .collect::<Vec<_>>();
+    #[test]
+    fn sub() {
+        #[rustfmt::skip]
+        let chars = fs::read(format!("{TEST_DIR}/sub.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
 
-    //     let tokens = lexer::scan(&chars);
-    //     let tree = parse_program(tokens).unwrap();
-    //     insta::assert_yaml_snapshot!(tree);
-    // }
+        let tokens = lexer::lex(&chars);
+        let tree = parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree);
+    }
 
     // #[test]
     // fn test_mult() {

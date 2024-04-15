@@ -20,5 +20,6 @@ assert() {
 assert "./tests/fixtures/din/legal/arithmetic/lit.c" 8
 assert "./tests/fixtures/din/legal/arithmetic/add.c" 19
 assert "./tests/fixtures/din/legal/arithmetic/add_multi.c" 30
+assert "./tests/fixtures/din/legal/arithmetic/sub.c" 56
 
 echo OK

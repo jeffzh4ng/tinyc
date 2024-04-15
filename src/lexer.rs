@@ -362,18 +362,42 @@ mod test_legal_arithmetic {
         "###);
     }
 
-    // #[test]
-    // fn sub() {
-    //     #[rustfmt::skip]
-    //     let input = fs::read(format!("{}/sub.c", TEST_DIR))
-    //         .expect("Should have been able to read the file")
-    //         .iter()
-    //         .map(|b| *b as char)
-    //         .collect::<Vec<_>>();
+    #[test]
+    fn sub() {
+        #[rustfmt::skip]
+        let input = fs::read(format!("{}/sub.c", TEST_DIR))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
 
-    //     let output = scan(input.as_slice());
-    //     insta::assert_yaml_snapshot!(output, @"");
-    // }
+        let output = lex(input.as_slice());
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordTypeInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: return
+          typ: StatementReturn
+        - lexeme: "88"
+          typ: LiteralInt
+        - lexeme: "-"
+          typ: Minus
+        - lexeme: "32"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
+    }
 
     // #[test]
     // fn mult() {

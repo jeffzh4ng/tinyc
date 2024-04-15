@@ -27,9 +27,9 @@ fn main() {
     let tree = parser::parse(tokens).unwrap();
     let assembly = generator::gen(tree);
 
-    let dest = "./tmp.s";
-    println!("Generating target: {dest}");
-    let mut f = fs::File::create(dest).expect("Unable to create file");
+    let trgt = "./tmp.s";
+    println!("Generating target: {trgt}");
+    let mut f = fs::File::create(trgt).expect("Unable to create file");
     f.write_all(assembly.join("\n").as_bytes())
         .expect("Unable to write data");
 }
