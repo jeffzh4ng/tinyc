@@ -5,19 +5,20 @@ use crate::parser;
 // - casting
 // - void*
 
-pub fn type_program(p: &parser::Program) -> bool {
-    match &p.main_function.statement {
-        parser::Statement::Return(e) => type_expr(e),
-    }
-}
+// pub fn type_program(p: &parser::Program) -> bool {
+//     match &p.main_function.statement {
+//         parser::Stmt::Return(e) => type_expr(e),
+//         parser::Stmt::If { cond, then, els } => todo!(),
+//     }
+// }
 
-fn type_expr(e: &parser::Expr) -> bool {
-    match e {
-        parser::Expr::Num(_) => true,
-        parser::Expr::String(_) => todo!(),
-        parser::Expr::Binary { op: _, l, r } => type_expr(l) && type_expr(r),
-    }
-}
+// fn type_expr(e: &parser::Expr) -> bool {
+//     match e {
+//         parser::Expr::Num(_) => true,
+//         parser::Expr::String(_) => todo!(),
+//         parser::Expr::BinaryE { op: _, l, r } => type_expr(l) && type_expr(r),
+//     }
+// }
 
 // #[cfg(test)]
 // mod tests {

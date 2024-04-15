@@ -11,11 +11,16 @@ pub struct Program {
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct MainFunction {
-    pub statement: Statement,
+    pub statement: Stmt,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
-pub enum Statement {
+pub enum Stmt {
+    If {
+        cond: Box<Expr>,
+        then: Box<Stmt>,
+        els: Box<Stmt>,
+    },
     Return(Expr),
 }
 
@@ -36,12 +41,21 @@ pub enum Expr {
     // },
 
     // eliminations (operations)
-    Binary { op: Op, l: Box<Expr>, r: Box<Expr> },
-    // If {
-    //     cond: Box<Expr>,
-    //     then: Box<Expr>,
-    //     els: Box<Expr>,
-    // },
+    BinE {
+        op: BinOp,
+        l: Box<Expr>,
+        r: Box<Expr>,
+    },
+    RelE {
+        op: RelOp,
+        l: Box<Expr>,
+        r: Box<Expr>,
+    },
+    LogE {
+        op: LogOp,
+        l: Box<Expr>,
+        r: Box<Expr>,
+    },
     // Var(String),
     // LambdaApp {
     //     a_param: Box<Expr>,
@@ -50,19 +64,28 @@ pub enum Expr {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
-pub enum Val {
-    Num(i128),
-    Bool(bool),
-    Lam { param: String, body: Expr },
+pub enum RelOp {
+    Eq,
+    Neq,
+    Lteq,
+    Lt,
+    Gteq,
+    Gt,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
-pub enum Op {
+pub enum LogOp {
+    And,
+    Or,
+}
+
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub enum BinOp {
     Add,
     Sub,
     Mult,
     Div,
-    AddAdd, // works on strings
+    // AddAdd, // works on strings
 }
 
 pub fn parse(tokens: Vec<Token>) -> Result<Program, io::Error> {
@@ -86,11 +109,11 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
     Ok(MainFunction { statement })
 }
 
-fn parse_statement(tokens: &[Token]) -> Result<(Statement, &[Token]), io::Error> {
+fn parse_statement(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
     let (_, r) = mtch(tokens, TokenType::StatementReturn)?;
     let (expr, r) = parse_expr(r)?;
     let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
-    Ok((Statement::Return(expr), r))
+    Ok((Stmt::Return(expr), r))
 }
 
 fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
@@ -109,7 +132,7 @@ fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
             while let Ok((op, r)) = parse_term_op(r_tokens) {
                 let (right, r) = parse_factor(r)?;
 
-                root = Expr::Binary {
+                root = Expr::BinE {
                     op,
                     l: Box::new(root),
                     r: Box::new(right),
@@ -123,12 +146,12 @@ fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     }
 }
 
-fn parse_term_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
+fn parse_term_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
         [f, r @ ..] => match f.typ {
-            TokenType::Plus => Ok((Op::Add, r)),
-            TokenType::Minus => Ok((Op::Sub, r)),
+            TokenType::Plus => Ok((BinOp::Add, r)),
+            TokenType::Minus => Ok((BinOp::Sub, r)),
             foo => {
                 println!("{:?}", foo);
                 Err(io::Error::new(io::ErrorKind::Other, "bla")) // MOOSE. KEEP STRONG. DON'T GET DISTRACTED!!!
@@ -149,7 +172,7 @@ fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
             while let Ok((op, r)) = parse_factor_op(r_tokens) {
                 let (right, r) = parse_atom(r)?;
 
-                root = Expr::Binary {
+                root = Expr::BinE {
                     op,
                     l: Box::new(root),
                     r: Box::new(right),
@@ -164,12 +187,12 @@ fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     }
 }
 
-fn parse_factor_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
+fn parse_factor_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
         [f, r @ ..] => match f.typ {
-            TokenType::Star => Ok((Op::Mult, r)),
-            TokenType::Slash => Ok((Op::Div, r)),
+            TokenType::Star => Ok((BinOp::Mult, r)),
+            TokenType::Slash => Ok((BinOp::Div, r)),
             _ => {
                 // println!("{:?}", f);
                 Err(io::Error::new(io::ErrorKind::Other, "bla"))

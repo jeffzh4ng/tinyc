@@ -3,7 +3,13 @@ use crate::parser;
 pub fn gen(tree: parser::Program) -> Vec<String> {
     println!("{:?}", tree.main_function.statement);
     let expr = match tree.main_function.statement {
-        parser::Statement::Return(e) => gen_expr(e),
+        parser::Stmt::Return(e) => gen_expr(e),
+        parser::Stmt::If { cond, then, els } => {
+            // check if cond is truthy
+            // if truthy, gen instructions for then
+            // if not truthy, gen instructions for els
+            todo!()
+        }
     };
 
     let output: Vec<String> = vec![
@@ -45,7 +51,7 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             output
         }
         parser::Expr::String(_) => todo!(),
-        parser::Expr::Binary { op, l, r } => {
+        parser::Expr::BinE { op, l, r } => {
             let left_expr = gen_expr(*l);
             let right_expr = gen_expr(*r);
 
@@ -64,11 +70,11 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
 
             // 2. operate on the operands
             let instr = match op {
-                parser::Op::Add => "add t3,t1,t2".to_owned(),
-                parser::Op::Sub => "sub t3,t2,t1".to_owned(),
-                parser::Op::Mult => "mul t3,t1,t2".to_owned(),
-                parser::Op::Div => "div t3,t2,t1".to_owned(),
-                parser::Op::AddAdd => todo!(),
+                parser::BinOp::Add => "add t3,t1,t2".to_owned(),
+                parser::BinOp::Sub => "sub t3,t2,t1".to_owned(),
+                parser::BinOp::Mult => "mul t3,t1,t2".to_owned(),
+                parser::BinOp::Div => "div t3,t2,t1".to_owned(),
+                // parser::Op::AddAdd => todo!(),
             };
             output.push("# 2. operate on the operands".to_owned());
             output.push(instr);
@@ -85,5 +91,7 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
 
             output
         }
+        parser::Expr::RelE { op, l, r } => todo!(),
+        parser::Expr::LogE { op, l, r } => todo!(),
     }
 }
