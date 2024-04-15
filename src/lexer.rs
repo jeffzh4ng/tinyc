@@ -23,7 +23,7 @@ pub enum TokenType {
     KeywordVoid,
 
     // statements
-    StatementReturn,
+    StmtReturn,
 
     // eliminations (operations)
     Plus,
@@ -208,7 +208,7 @@ fn scan_id(input: &[char]) -> Vec<Token> {
                     }),
                     "return" => Some(Token {
                         lexeme: String::from("return"),
-                        typ: TokenType::StatementReturn,
+                        typ: TokenType::StmtReturn,
                     }),
                     _ => None,
                 };
@@ -273,7 +273,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StatementReturn
+          typ: StmtReturn
         - lexeme: "8"
           typ: LiteralInt
         - lexeme: ;
@@ -306,7 +306,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StatementReturn
+          typ: StmtReturn
         - lexeme: "9"
           typ: LiteralInt
         - lexeme: +
@@ -343,7 +343,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StatementReturn
+          typ: StmtReturn
         - lexeme: "9"
           typ: LiteralInt
         - lexeme: +
@@ -384,7 +384,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StatementReturn
+          typ: StmtReturn
         - lexeme: "88"
           typ: LiteralInt
         - lexeme: "-"
@@ -421,7 +421,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StatementReturn
+          typ: StmtReturn
         - lexeme: "9"
           typ: LiteralInt
         - lexeme: "*"
@@ -458,7 +458,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StatementReturn
+          typ: StmtReturn
         - lexeme: "100"
           typ: LiteralInt
         - lexeme: /

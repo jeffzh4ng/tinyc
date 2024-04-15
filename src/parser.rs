@@ -110,7 +110,7 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
 }
 
 fn parse_statement(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
-    let (_, r) = mtch(tokens, TokenType::StatementReturn)?;
+    let (_, r) = mtch(tokens, TokenType::StmtReturn)?;
     let (expr, r) = parse_expr(r)?;
     let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
     Ok((Stmt::Return(expr), r))
@@ -339,7 +339,7 @@ mod test_legal_arithmetic {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Add
                 l:
                   Num: 9
@@ -363,10 +363,10 @@ mod test_legal_arithmetic {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Add
                 l:
-                  Binary:
+                  BinE:
                     op: Add
                     l:
                       Num: 9
@@ -393,7 +393,7 @@ mod test_legal_arithmetic {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Sub
                 l:
                   Num: 88
@@ -418,7 +418,7 @@ mod test_legal_arithmetic {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Mult
                 l:
                   Num: 9
@@ -443,7 +443,7 @@ mod test_legal_arithmetic {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Div
                 l:
                   Num: 100
@@ -475,10 +475,10 @@ mod test_legal_arithmetic_precedence {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Add
                 l:
-                  Binary:
+                  BinE:
                     op: Add
                     l:
                       Num: 9
@@ -504,10 +504,10 @@ mod test_legal_arithmetic_precedence {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Sub
                 l:
-                  Binary:
+                  BinE:
                     op: Sub
                     l:
                       Num: 30
@@ -533,10 +533,10 @@ mod test_legal_arithmetic_precedence {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Add
                 l:
-                  Binary:
+                  BinE:
                     op: Mult
                     l:
                       Num: 9
@@ -562,17 +562,17 @@ mod test_legal_arithmetic_precedence {
         main_function:
           statement:
             Return:
-              Binary:
+              BinE:
                 op: Add
                 l:
-                  Binary:
+                  BinE:
                     op: Mult
                     l:
                       Num: 9
                     r:
                       Num: 10
                 r:
-                  Binary:
+                  BinE:
                     op: Mult
                     l:
                       Num: 11
