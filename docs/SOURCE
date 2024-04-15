@@ -6,23 +6,16 @@
 3. Semantic Analysis: Typing
 
 **References**
-TODO more papers: https://www.cs.cornell.edu/courses/cs6120/2023fa/
 - K&R
 - Harbison, Steele
 - [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
 
-While academia formalizes frontend recognition (lexical, syntactic, and semantic
-analysis) with well-defined compiler compilers and ____. `din`'s lexer, parser,
-and type checker are hand-written, similar to `gcc` and `clang`.
+Academia formalizes frontend lifting from concrete to abstract syntax via lexical,
+syntactic and semantic analysis. The result is well-defined compiler compilers that
+take in a series of *symbols from an alphabet* as input and produce a series of
+*productions from a grammar*.
 
-<details>
-<summary>Recognition Formalized (Expand)</summary>
-Lexing, parsing, and typing sit on a strong foundation of computional theory. The
-core problem of the compiler's frontend is to *recognize* a series of symbols (called
-productions) from an alphabet by deriving a series of productions specified by a
-grammar. You can think of recognition as *judgement*, and the series of productions
-as *parsing*.
-
+```
 Lexical analysis:
 - alphabet (input): characters
 - productions (output): tokens
@@ -43,38 +36,14 @@ Semantic analysis
 - language: context-sensitive
   - spec: ??
   - impl: ??
+```
 
-There are well-defined algorithms to convert specs into implementations. For
-instance, with syntactic analysis, you can convert REs -> NFAs -> DFA -> min(DFA)
-via Thompson's, subset, and Kleene's construction (respectively).
-
-RE/FA aren't *expressive* enough for a certain set of languages, called context-free
-languages. There are fancy results such as the Pumping Lemma to determine if a
-language is regular not. A more practical litmus test is to check if your parser
-needs to recognize if a series of open and closed parentheses is balanced or not.
-Intuitively, *finite automata* aren't strong enough to perform this analysis, as an
-unbounded number of states is required.
-
-This motivates the next jump up the Chomsky hierarchy, to context-free languages,
-which are specified with BNF grammars and are implemented with *pushdown automata*.
-They are similar to DFAs, with the addition of *recursion*, by adding references
-to other productions within a production itself. These references are called
-*non-terminals*, whereas the literal (regular) references are called *terminals*.
-
-The formalizations of frontend analysis result in so called "compiler
-compilers" which take in your lexical and syntactic grammars, and produce
-the programs (lexers and parsers), which *you* then use for your compiler. This
-is not so different from higher order programming.
-
-TODO: type theory
-
-- The grammar is called “context-free” because whether the production applies doesn't depend on the surrounding context α and β.
-
-The only theory din leverages is the research behind the different types of
-top down parsing (recursive descent) to handle operation associativity and
-precedence with non-Lisp-like-S-expression-syntax, which, so happens to be
-din's case, as it's source language is C.
-</details>
+Compiler parsing has strong ties to computational theory and linguistics. There's
+this Chomsky hierarchy that models the different levels of *expressitivity* in
+grammars. Languages which RE/FA are too weak to recognize (for instance, unbounded
+balanced parenthesis), motivate the jump to BNF/PA. A lot of interesting foundations
+whight can be useful for language designers, but there's nothing practical wrt
+compiler construction for pre-existing languages.
 
 ---
 
@@ -104,7 +73,11 @@ PUNC_RIGHTBRAC   ::= }
 PUNC_SEMICOLON   ::= ;
 ```
 
-- notice how this spec doesn't recurse --> it's regular
+---
+
+
+
+
 
 ### 2. Syntactic Analysis: Parsing
 **Syntactic Grammar**
@@ -125,11 +98,8 @@ PUNC_SEMICOLON   ::= ;
 <!-- <val> ::= literalint -->
 ```
 
-The syntactic grammar specified above via BNF is a subset of the C language,
-which will allow us to motivate the transition from recursive descent to pratt
-parsing. It only recognizes and parses programs that return arithmetic expressions.
-Note that the grammar's ordering is speecified according to precedence. You're
-going to recognize `<program>` before an `expr`, right?
+The syntactic grammar specified above via BNF is a subset of the C language.
+It only recognizes and parses programs that return arithmetic expressions.
 
 The `<program>` production refers to `<function>`, which, in turn, refers to
 `<statement>`, but these can be easily rewritten as one single RE. The one
@@ -464,14 +434,15 @@ TODO
 - https://www.engr.mun.ca/~theo/Misc/exp_parsing.htm#RDP
 [Pratt Parsing References: ](https://www.oilshell.org/blog/2017/03/31.html)
 
+---
+
+
+
+
 
 ### 3. Semantic Analysis: Type Checking
-Lexical analysis detects lexical errors (ill-formed tokens), syntactic analysis
-detects syntax errors, and semantic analysis detects semantic errors, such as
-static type errors, undefined variables, and uninitialized variables.
-
-Once semantic analysis is complete and successful, the program must be a legal
-program in the programming language; no further errors in the program should be
-
-reported by the compiler.
----
+Lexical analysis passes judgement on ill-formed tokens, while syntactic analysis
+passes judgement on ill-formed grammars. Now, we reach the semantic analysis phase,
+which passes judgement on well-typed programs. Once semantic analysis is complete
+and successful, the program must be a legal program in the programming language.
+No further errors in the program should bereported by the compiler.

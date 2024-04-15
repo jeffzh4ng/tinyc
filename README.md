@@ -8,11 +8,11 @@ that compiles the unsafest language with the safest. There's three goals
 
 The first goal is to reach a base level of confidence in compiler correctness
 by smoking `din` with 2kloc/10kloc operating systems ([egos2000](), [xv6]()),
-torturing it with [c-testsuite](https://github.com/c-testsuite/c-testsuite).
-Because the correctness needs to be bootstrapped from zero, `din`'s passes will
-look like HLL -> AST -> 3AC register machine (emulating 1AC stack machine).
-Compiling Linux will be left as a challenge for when someone wants to hire me to
-help with the third C/C++ compiler after `gcc` and `clang`.
+and stressing it with `gcc`'s torture test suite. Because the correctness needs
+to be bootstrapped from zero, `din`'s passes will look like HLL -> AST -> 3AC
+register machine (emulating 1AC stack machine). Compiling Linux will be left as
+a challenge for when someone wants to hire me to help with the third C/C++
+compiler after `gcc` and `clang`.
 
 The second goal, (after a base level of correctness has been achieved) is to
 employ 20% of the optimizations that will give din 80% of the speed, in order
@@ -34,10 +34,10 @@ need to search hard enough. With that said, `din` will be 1.0 when it can compil
 Linux but until then, it will be zero versioned with [zer0ver](https://0ver.org/).
 
 ### Research
-- [SOURCE](./examples/SOURCE)
-- [INTER](./examples/INTER)
-- [TARGET](./examples/TARGET)
-- [UARCH](./examples/UARCH)
+- [SOURCE](./docs/SOURCE)
+- [INTER](./docs/INTER)
+- [TARGET](./docs/TARGET)
+- [UARCH](./docs/UARCH)
 
 ### References
 **Textbooks**
@@ -49,7 +49,6 @@ Linux but until then, it will be zero versioned with [zer0ver](https://0ver.org/
 - Patterson & Hennesey
 
 **Architectures**
-- [An Incremental Approach to Compiler Construction](http://scheme2006.cs.uchicago.edu/11-ghuloum.pdf)
 - [rustc High Level Compiler Architecture](https://rustc-dev-guide.rust-lang.org/part-2-intro.html)
 - [rustc Source Code Representation](https://rustc-dev-guide.rust-lang.org/part-3-intro.html)
 - [The Architecture of Open Source Applications: LLVM](https://aosabook.org/en/v1/llvm.html)
