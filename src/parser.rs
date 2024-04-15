@@ -366,22 +366,69 @@ mod test_legal_arithmetic {
 
         let tokens = lexer::lex(&chars);
         let tree = parse(tokens).unwrap();
-        insta::assert_yaml_snapshot!(tree);
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              Binary:
+                op: Sub
+                l:
+                  Num: 88
+                r:
+                  Num: 32
+        "###);
     }
 
-    // #[test]
-    // fn test_mult() {
-    //     #[rustfmt::skip]
-    //     let chars = fs::read(format!("{TEST_DIR}mult.c"))
-    //         .expect("Should have been able to read the file")
-    //         .iter()
-    //         .map(|b| *b as char)
-    //         .collect::<Vec<_>>();
+    #[test]
+    fn mult() {
+        #[rustfmt::skip]
+        let chars = fs::read(format!("{TEST_DIR}/mult.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
 
-    //     let tokens = lexer::scan(&chars);
-    //     let tree = parse_program(tokens).unwrap();
-    //     insta::assert_yaml_snapshot!(tree);
-    // }
+        let tokens = lexer::lex(&chars);
+        let tree = parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              Binary:
+                op: Mult
+                l:
+                  Num: 9
+                r:
+                  Num: 10
+        "###);
+    }
+
+    #[test]
+    fn div() {
+        #[rustfmt::skip]
+        let chars = fs::read(format!("{TEST_DIR}/div.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              Binary:
+                op: Div
+                l:
+                  Num: 100
+                r:
+                  Num: 9
+        "###);
+    }
 }
 
 // #[cfg(test)]

@@ -63,8 +63,8 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             let instr = match op {
                 parser::Op::Add => "add t3,t1,t2".to_owned(),
                 parser::Op::Sub => "sub t3,t2,t1".to_owned(),
-                parser::Op::Mult => "mult t3,t1,t2".to_owned(),
-                parser::Op::Div => "div t3,t1,t2".to_owned(),
+                parser::Op::Mult => "mul t3,t1,t2".to_owned(),
+                parser::Op::Div => "div t3,t2,t1".to_owned(),
                 parser::Op::AddAdd => todo!(),
             };
             output.push("# 2. operate on the operands".to_owned());
@@ -182,6 +182,56 @@ mod test_legal_arithmetic {
         - ".section .text"
         - "main:"
         - "  # 1. load the immediate\n  li t1,88\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,32\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  sub t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
+        - "  lw a0,0(sp)"
+        - "  addi sp,sp,8"
+        - "  ret"
+        - ""
+        "###);
+    }
+
+    #[test]
+    fn mult() {
+        let chars = fs::read(format!("{TEST_DIR}/mult.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = parser::parse(tokens).unwrap();
+        let trgt = super::gen(tree);
+        insta::assert_yaml_snapshot!(trgt, @r###"
+        ---
+        - ".text"
+        - ".globl main"
+        - ".section .text"
+        - "main:"
+        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  mul t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
+        - "  lw a0,0(sp)"
+        - "  addi sp,sp,8"
+        - "  ret"
+        - ""
+        "###);
+    }
+
+    #[test]
+    fn div() {
+        let chars = fs::read(format!("{TEST_DIR}/div.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = parser::parse(tokens).unwrap();
+        let trgt = super::gen(tree);
+        insta::assert_yaml_snapshot!(trgt, @r###"
+        ---
+        - ".text"
+        - ".globl main"
+        - ".section .text"
+        - "main:"
+        - "  # 1. load the immediate\n  li t1,100\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  div t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"

@@ -399,31 +399,79 @@ mod test_legal_arithmetic {
         "###);
     }
 
-    // #[test]
-    // fn mult() {
-    //     #[rustfmt::skip]
-    //     let input = fs::read(format!("{}/arithmetic/mult.c", TEST_DIR))
-    //         .expect("Should have been able to read the file")
-    //         .iter()
-    //         .map(|b| *b as char)
-    //         .collect::<Vec<_>>();
+    #[test]
+    fn mult() {
+        #[rustfmt::skip]
+        let input = fs::read(format!("{TEST_DIR}/mult.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
 
-    //     let output = scan(input.as_slice());
-    //     insta::assert_yaml_snapshot!(output);
-    // }
+        let output = lex(input.as_slice());
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordTypeInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: return
+          typ: StatementReturn
+        - lexeme: "9"
+          typ: LiteralInt
+        - lexeme: "*"
+          typ: Star
+        - lexeme: "10"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
+    }
 
-    // #[test]
-    // fn div() {
-    //     #[rustfmt::skip]
-    //     let input = fs::read(format!("{}/arithmetic/div.c", TEST_DIR))
-    //         .expect("Should have been able to read the file")
-    //         .iter()
-    //         .map(|b| *b as char)
-    //         .collect::<Vec<_>>();
+    #[test]
+    fn div() {
+        #[rustfmt::skip]
+        let input = fs::read(format!("{TEST_DIR}/div.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
 
-    //     let output = scan(input.as_slice());
-    //     insta::assert_yaml_snapshot!(output);
-    // }
+        let output = lex(input.as_slice());
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordTypeInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: return
+          typ: StatementReturn
+        - lexeme: "100"
+          typ: LiteralInt
+        - lexeme: /
+          typ: Slash
+        - lexeme: "9"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
+    }
 }
 
 // #[cfg(test)]

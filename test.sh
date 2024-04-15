@@ -21,5 +21,8 @@ assert "./tests/fixtures/din/legal/arithmetic/lit.c" 8
 assert "./tests/fixtures/din/legal/arithmetic/add.c" 19
 assert "./tests/fixtures/din/legal/arithmetic/add_multi.c" 30
 assert "./tests/fixtures/din/legal/arithmetic/sub.c" 56
+assert "./tests/fixtures/din/legal/arithmetic/mult.c" 90
+assert "./tests/fixtures/din/legal/arithmetic/div.c" 11
+
 
 echo OK
