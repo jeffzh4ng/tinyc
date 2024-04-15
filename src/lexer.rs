@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 // - macros
 // - whitespace: spaces, tabs, newlines
 
-// see: ARCHITECTURE.md for a more specified lexical grammar
+// see: docs/SOURCE for a more specified lexical grammar
 
 // note: variations are explicitly typed. Collapsing categories like keywords
 //       into one variant while outsourcing variation to lexeme field on Token
@@ -246,7 +246,6 @@ fn skip_whitespace(input: &[char]) -> &[char] {
 
 #[cfg(test)]
 mod test_legal_arithmetic {
-    use super::*;
     use std::fs;
 
     const TEST_DIR: &str = "tests/fixtures/din/legal/arithmetic";
@@ -260,7 +259,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = lex(input.as_slice());
+        let output = super::lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -293,7 +292,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = lex(input.as_slice());
+        let output = super::lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -330,7 +329,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = lex(input.as_slice());
+        let output = super::lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -371,7 +370,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = lex(input.as_slice());
+        let output = super::lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -408,7 +407,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = lex(input.as_slice());
+        let output = super::lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -445,7 +444,7 @@ mod test_legal_arithmetic {
             .map(|b| *b as char)
             .collect::<Vec<_>>();
 
-        let output = lex(input.as_slice());
+        let output = super::lex(input.as_slice());
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
@@ -513,105 +512,5 @@ mod test_legal_arithmetic {
 //         let expected_output = "7".chars().collect::<Vec<_>>();
 
 //         assert!(vecs_match(&output.to_vec(), &expected_output))
-//     }
-// }
-
-// #[cfg(test)]
-// mod test_arithmetic {
-//     use super::*;
-
-//     #[test]
-//     fn simple() {
-//         let input = "9 + 8".chars().collect::<Vec<_>>();
-//         let output = scan(input.as_slice());
-//         #[rustfmt::skip]
-//         let expected_output = vec![
-//             Token { lexeme: String::from("9"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("+"), typ: TokenType::Plus },
-//             Token { lexeme: String::from("8"), typ: TokenType::LiteralInt },
-//         ];
-
-//         assert!(vecs_match(&output, &expected_output))
-//     }
-
-//     #[test]
-//     fn simple_two() {
-//         let input = "90 + 80".chars().collect::<Vec<_>>();
-//         let output = scan(input.as_slice());
-//         #[rustfmt::skip]
-//         let expected_output = vec![
-//             Token { lexeme: String::from("90"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("+"), typ: TokenType::Plus },
-//             Token { lexeme: String::from("80"), typ: TokenType::LiteralInt },
-//         ];
-
-//         assert!(vecs_match(&output, &expected_output))
-//     }
-
-//     #[test]
-//     fn complex() {
-//         let input = "2 + 3 * 5 - 8 / 3".chars().collect::<Vec<_>>();
-//         let output = scan(input.as_slice());
-//         #[rustfmt::skip]
-//         let expected_output = vec![
-//             Token { lexeme: String::from("2"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("+"), typ: TokenType::Plus },
-//             Token { lexeme: String::from("3"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("*"), typ: TokenType::Star },
-//             Token { lexeme: String::from("5"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("-"), typ: TokenType::Minus },
-//             Token { lexeme: String::from("8"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("/"), typ: TokenType::Slash },
-//             Token { lexeme: String::from("3"), typ: TokenType::LiteralInt },
-//         ];
-
-//         assert!(vecs_match(&output, &expected_output))
-//     }
-
-//     #[test]
-//     fn complex_two() {
-//         let input = "22 + 33 * 55 - 88 / 33".chars().collect::<Vec<_>>();
-//         let output = scan(input.as_slice());
-//         #[rustfmt::skip]
-//         let expected_output = vec![
-//             Token { lexeme: String::from("22"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("+"), typ: TokenType::Plus },
-//             Token { lexeme: String::from("33"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("*"), typ: TokenType::Star },
-//             Token { lexeme: String::from("55"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("-"), typ: TokenType::Minus },
-//             Token { lexeme: String::from("88"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("/"), typ: TokenType::Slash },
-//             Token { lexeme: String::from("33"), typ: TokenType::LiteralInt },
-//         ];
-
-//         assert!(vecs_match(&output, &expected_output))
-//     }
-
-//     #[test]
-//     fn complex_three() {
-//         let input = r#"
-//         23 +
-//         18 -
-//         45 * 2
-//         / 18
-//         "#
-//         .chars()
-//         .collect::<Vec<_>>();
-//         let output = scan(input.as_slice());
-//         #[rustfmt::skip]
-//         let expected_output = vec![
-//             Token { lexeme: String::from("23"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("+"), typ: TokenType::Plus },
-//             Token { lexeme: String::from("18"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("-"), typ: TokenType::Minus },
-//             Token { lexeme: String::from("45"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("*"), typ: TokenType::Star },
-//             Token { lexeme: String::from("2"), typ: TokenType::LiteralInt },
-//             Token { lexeme: String::from("/"), typ: TokenType::Slash },
-//             Token { lexeme: String::from("18"), typ: TokenType::LiteralInt },
-//         ];
-
-//         assert!(vecs_match(&output, &expected_output))
 //     }
 // }

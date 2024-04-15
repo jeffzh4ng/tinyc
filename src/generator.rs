@@ -37,7 +37,10 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             output.push("# 2. push the immediate".to_owned());
             output.push("addi sp,sp,-8".to_owned());
             output.push("sw t1,0(sp)".to_owned()); // i128?
-            output.push("".to_owned());
+            output.push(
+                "##############################################################################"
+                    .to_owned(),
+            );
 
             output
         }
@@ -75,7 +78,10 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             output.push("# 3. push the operands".to_owned());
             output.push("addi sp,sp,-8".to_owned());
             output.push("sw t3,0(sp)".to_owned());
-            output.push("".to_owned());
+            output.push(
+                "##############################################################################"
+                    .to_owned(),
+            );
 
             output
         }
@@ -106,7 +112,7 @@ mod test_legal_arithmetic {
         - ".globl main"
         - ".section .text"
         - "main:"
-        - "  # 1. load the immediate\n  li t1,8\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  "
+        - "  # 1. load the immediate\n  li t1,8\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################"
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
@@ -131,7 +137,7 @@ mod test_legal_arithmetic {
         - ".globl main"
         - ".section .text"
         - "main:"
-        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
+        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################"
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
@@ -156,7 +162,7 @@ mod test_legal_arithmetic {
         - ".globl main"
         - ".section .text"
         - "main:"
-        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  \n  # 1. load the immediate\n  li t1,11\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
+        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,11\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################"
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
@@ -181,7 +187,7 @@ mod test_legal_arithmetic {
         - ".globl main"
         - ".section .text"
         - "main:"
-        - "  # 1. load the immediate\n  li t1,88\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,32\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  sub t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
+        - "  # 1. load the immediate\n  li t1,88\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,32\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  sub t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################"
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
@@ -206,7 +212,7 @@ mod test_legal_arithmetic {
         - ".globl main"
         - ".section .text"
         - "main:"
-        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  mul t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
+        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  mul t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################"
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"
@@ -231,7 +237,65 @@ mod test_legal_arithmetic {
         - ".globl main"
         - ".section .text"
         - "main:"
-        - "  # 1. load the immediate\n  li t1,100\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  \n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  div t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  "
+        - "  # 1. load the immediate\n  li t1,100\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  div t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################"
+        - "  lw a0,0(sp)"
+        - "  addi sp,sp,8"
+        - "  ret"
+        - ""
+        "###);
+    }
+}
+
+#[cfg(test)]
+mod test_legal_arithmetic_precedence {
+    use crate::{lexer, parser};
+    use std::fs;
+
+    const TEST_DIR: &str = "tests/fixtures/din/legal/arithmetic_precedence";
+
+    #[test]
+    fn add_associative() {
+        let chars = fs::read(format!("{TEST_DIR}/add_associative.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = parser::parse(tokens).unwrap();
+        let trgt = super::gen(tree);
+        insta::assert_yaml_snapshot!(trgt, @r###"
+        ---
+        - ".text"
+        - ".globl main"
+        - ".section .text"
+        - "main:"
+        - "  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,11\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  add t3,t1,t2\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################"
+        - "  lw a0,0(sp)"
+        - "  addi sp,sp,8"
+        - "  ret"
+        - ""
+        "###);
+    }
+
+    #[test]
+    fn sub_associative() {
+        let chars = fs::read(format!("{TEST_DIR}/sub_associative.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = parser::parse(tokens).unwrap();
+        let trgt = super::gen(tree);
+        insta::assert_yaml_snapshot!(trgt, @r###"
+        ---
+        - ".text"
+        - ".globl main"
+        - ".section .text"
+        - "main:"
+        - "  # 1. load the immediate\n  li t1,30\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,9\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  sub t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################\n  # 1. load the immediate\n  li t1,10\n  \n  # 2. push the immediate\n  addi sp,sp,-8\n  sw t1,0(sp)\n  ##############################################################################\n  # 1. pop the operands\n  lw t1,0(sp)\n  addi sp,sp,8\n  lw t2,0(sp)\n  addi sp,sp,8\n  \n  # 2. operate on the operands\n  sub t3,t2,t1\n  \n  # 3. push the operands\n  addi sp,sp,-8\n  sw t3,0(sp)\n  ##############################################################################"
         - "  lw a0,0(sp)"
         - "  addi sp,sp,8"
         - "  ret"

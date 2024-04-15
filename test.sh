@@ -24,5 +24,7 @@ assert "./tests/fixtures/din/legal/arithmetic/sub.c" 56
 assert "./tests/fixtures/din/legal/arithmetic/mult.c" 90
 assert "./tests/fixtures/din/legal/arithmetic/div.c" 11
 
+assert "./tests/fixtures/din/legal/arithmetic_precedence/add_associative.c" 30
+assert "./tests/fixtures/din/legal/arithmetic_precedence/sub_associative.c" 11
 
 echo OK

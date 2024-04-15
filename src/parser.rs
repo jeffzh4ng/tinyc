@@ -129,9 +129,9 @@ fn parse_term_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
         [f, r @ ..] => match f.typ {
             TokenType::Plus => Ok((Op::Add, r)),
             TokenType::Minus => Ok((Op::Sub, r)),
-            _ => {
-                // println!("{:?}", f);
-                Err(io::Error::new(io::ErrorKind::Other, "bla"))
+            foo => {
+                println!("{:?}", foo);
+                Err(io::Error::new(io::ErrorKind::Other, "bla")) // MOOSE. KEEP STRONG. DON'T GET DISTRACTED!!!
             }
         },
     }
@@ -268,7 +268,7 @@ fn mtch(tokens: &[Token], tt: TokenType) -> Result<(&Token, &[Token]), io::Error
                 // Use an if-guard to compare values
                 Ok((f, r))
             } else {
-                println!("moose: {:?} {:?}", f, tt);
+                println!("expected: {:?} got: {:?}", tt, f);
                 Err(io::Error::new(io::ErrorKind::Other, "bla"))
             }
         }
@@ -277,7 +277,6 @@ fn mtch(tokens: &[Token], tt: TokenType) -> Result<(&Token, &[Token]), io::Error
 
 #[cfg(test)]
 mod test_legal_arithmetic {
-    use super::*;
     use crate::lexer;
     use std::fs;
 
@@ -292,7 +291,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::lex(&chars);
-        let tree = parse(tokens).unwrap();
+        let tree = super::parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -311,7 +310,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::lex(&chars);
-        let tree = parse(tokens).unwrap();
+        let tree = super::parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -335,7 +334,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::lex(&chars);
-        let tree = parse(tokens).unwrap();
+        let tree = super::parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -365,7 +364,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::lex(&chars);
-        let tree = parse(tokens).unwrap();
+        let tree = super::parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -390,7 +389,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::lex(&chars);
-        let tree = parse(tokens).unwrap();
+        let tree = super::parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -415,7 +414,7 @@ mod test_legal_arithmetic {
             .collect::<Vec<_>>();
 
         let tokens = lexer::lex(&chars);
-        let tree = parse(tokens).unwrap();
+        let tree = super::parse(tokens).unwrap();
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
@@ -431,28 +430,71 @@ mod test_legal_arithmetic {
     }
 }
 
-// #[cfg(test)]
-// mod test_valid_arithmetic_precedence {
-//     use std::fs;
+#[cfg(test)]
+mod test_legal_arithmetic_precedence {
+    use crate::lexer;
+    use std::fs;
 
-//     use super::*;
-//     use crate::lexer;
+    const TEST_DIR: &str = "tests/fixtures/din/legal/arithmetic_precedence";
 
-//     #[test]
-//     fn test_mult_add() {
-//         #[rustfmt::skip]
-//         let chars = fs::read("tests/valid/arithmetic_precedence/mult_add_precedence.c")
-//             .expect("Should have been able to read the file")
-//             .iter()
-//             .map(|b| *b as char)
-//             .collect::<Vec<_>>();
+    #[test]
+    fn add_associative() {
+        let chars = fs::read(format!("{TEST_DIR}/add_associative.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
 
-//         let scan = lexer::scan(&chars);
-//         let tokens = scan;
-//         let tree = parse_program(tokens).unwrap();
-//         insta::assert_yaml_snapshot!(tree);
-//     }
-// }
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              Binary:
+                op: Add
+                l:
+                  Binary:
+                    op: Add
+                    l:
+                      Num: 9
+                    r:
+                      Num: 10
+                r:
+                  Num: 11
+        "###);
+    }
+
+    #[test]
+    fn sub_associative() {
+        let chars = fs::read(format!("{TEST_DIR}/sub_associative.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              Binary:
+                op: Sub
+                l:
+                  Binary:
+                    op: Sub
+                    l:
+                      Num: 30
+                    r:
+                      Num: 9
+                r:
+                  Num: 10
+        "###);
+    }
+}
 
 // proptest! {
 //     #[test]
