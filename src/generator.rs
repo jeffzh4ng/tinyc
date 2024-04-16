@@ -74,7 +74,6 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
                 parser::BinOp::Sub => "sub t3,t2,t1".to_owned(),
                 parser::BinOp::Mult => "mul t3,t1,t2".to_owned(),
                 parser::BinOp::Div => "div t3,t2,t1".to_owned(),
-                // parser::Op::AddAdd => todo!(),
             };
             output.push("# 2. operate on the operands".to_owned());
             output.push(instr);

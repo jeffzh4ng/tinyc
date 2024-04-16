@@ -24,12 +24,19 @@ pub enum TokenType {
 
     // statements
     StmtReturn,
+    StmtIf,
 
     // eliminations (operations)
     Plus,
     Minus,
     Star,
     Slash,
+    LeftAngleBracket,
+    RightAngleBracket,
+    Equals,
+    Bang,
+    Ampersand,
+    Bar,
 
     // punctuation
     PuncLeftParen,
@@ -87,6 +94,54 @@ pub fn lex(input: &[char]) -> Vec<Token> {
                 let t = Token {
                     lexeme: String::from("/"),
                     typ: TokenType::Slash,
+                };
+
+                std::iter::once(t).chain(lex(r)).collect()
+            }
+            '<' => {
+                let t = Token {
+                    lexeme: String::from("<"),
+                    typ: TokenType::LeftAngleBracket,
+                };
+
+                std::iter::once(t).chain(lex(r)).collect()
+            }
+            '>' => {
+                let t = Token {
+                    lexeme: String::from(">"),
+                    typ: TokenType::RightAngleBracket,
+                };
+
+                std::iter::once(t).chain(lex(r)).collect()
+            }
+            '=' => {
+                let t = Token {
+                    lexeme: String::from("="),
+                    typ: TokenType::Equals,
+                };
+
+                std::iter::once(t).chain(lex(r)).collect()
+            }
+            '!' => {
+                let t = Token {
+                    lexeme: String::from("!"),
+                    typ: TokenType::Bang,
+                };
+
+                std::iter::once(t).chain(lex(r)).collect()
+            }
+            '&' => {
+                let t = Token {
+                    lexeme: String::from("&"),
+                    typ: TokenType::Ampersand,
+                };
+
+                std::iter::once(t).chain(lex(r)).collect()
+            }
+            '|' => {
+                let t = Token {
+                    lexeme: String::from("|"),
+                    typ: TokenType::Bar,
                 };
 
                 std::iter::once(t).chain(lex(r)).collect()
@@ -199,15 +254,19 @@ fn scan_id(input: &[char]) -> Vec<Token> {
 
                 let keyword = match f.as_str() {
                     "int" => Some(Token {
-                        lexeme: String::from("int"),
+                        lexeme: "int".to_string(),
                         typ: TokenType::KeywordTypeInt,
                     }),
                     "main" => Some(Token {
-                        lexeme: String::from("main"),
+                        lexeme: "main".to_string(),
                         typ: TokenType::KeywordMain,
                     }),
+                    "if" => Some(Token {
+                        lexeme: "if".to_string(),
+                        typ: TokenType::StmtIf,
+                    }),
                     "return" => Some(Token {
-                        lexeme: String::from("return"),
+                        lexeme: "return".to_string(),
                         typ: TokenType::StmtReturn,
                     }),
                     _ => None,

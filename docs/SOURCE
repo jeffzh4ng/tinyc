@@ -9,30 +9,32 @@
 - K&R
 - Harbison, Steele
 - [C Standards (Drafts)](https://github.com/sys-research/c-standard-drafts)
+- Lattner: What Every C Programmer Should Know About Undefined Behavior
+- Regehr: A Guide to Undefined Behavior in C and C++
 
 Academia formalizes frontend lifting from concrete to abstract syntax via lexical,
 syntactic and semantic analysis. The result is well-defined compiler compilers that
 take in a series of *symbols from an alphabet* as input and produce a series of
-*productions from a grammar*.
+*rules (productions) from a grammar*.
 
 ```
 Lexical analysis:
 - alphabet (input): characters
-- productions (output): tokens
+- rules (output): tokens
 - language: regular
   - spec: regular expressions (RE)
   - impl: deterministic finite automata (DFA)
 
 Syntactic analysis:
 - alphabet (input): tokens
-- productions (output): tree
+- rules (output): tree
 - language: context-free
   - spec: Backus-Naur Form (BNF)
   - impl: pushdown automata (PA)
 
 Semantic analysis
 - alphabet (input): tree
-- productions (output): attributed tree
+- rules (output): attributed tree
 - language: context-sensitive
   - spec: ??
   - impl: ??
@@ -57,7 +59,8 @@ ID               ::= [a−zA−Z][a−zA−Z0−9]*
 // keywords
 KEYWORD_INT      ::= int
 KEYWORD_VOID     ::= void
-KEYWORD_RETURN   ::= return
+STMT_RETURN      ::= return
+STMT_IF          ::= if
 
 // eliminations
 PLUS             ::= +
@@ -87,7 +90,7 @@ PUNC_SEMICOLON   ::= ;
                      PUNC_RIGHTPAREN PUNC_LEFTBRACE <statement> PUNC_RIGHTBRACE
 
 <statement>      ::= KEYWORD_RETURN <expr> PUNC_SEMICOLON
-<expr>            ::= LITERAL_INT
+<expr>           ::= LITERAL_INT
                     | <expr> <binop> <expr>
 
 <binop>          ::= PLUS
@@ -103,19 +106,14 @@ It only recognizes and parses programs that return arithmetic expressions.
 
 The `<program>` production refers to `<function>`, which, in turn, refers to
 `<statement>`, but these can be easily rewritten as one single RE. The one
-production which REs could not specify is the `<exp>` production; it refers to
-itself an arbitary amount of times.
+rule which REs cannot specify is the `<exp>` production; it refers to itself
+an arbitary amount of times.
 
-**Recursive Descent: Specification**
-
-A recursive descent parser is what we call parsers that parse tokens the same way
-you lex characters into tokens. They have three synonyms:
-- *recursive descent*: because they *descend* down the grammar's spec
-- *top-down* parsers: because they start from the *top* and go *down*
-
-Recursive descent/top down parsers are *predictive* parsers because they recognize
-and produce the correct production based on, usually, a single character of lookahead
-without any backtracking
+**Recursive Descent**
+Recursive descent parsers parse tokens the same way you lex characters into tokens.
+They *descend* down the grammar's spec, and because of that, are also called
+top down parsers. They are *predictive* parsers because they recognize and produce
+the correct rule based on a single character of lookahead without any backtracking.
 
 Parsers which implement recursive descent lend well to a hand-written implementation,
 since you have a single function per non-terminal. Whether you are recursing with
@@ -123,7 +121,6 @@ the host language's stack frames or an explicit stack data structure, you just
 have to make sure to avoid the non-halting scenario from incorrect base/inductive
 case ordering.
 
-**Recursive Descent: Implementation**
 ```
 <expr> ::= <expr> <binop> <expr>
          | LITERAL_INT
@@ -132,26 +129,13 @@ case ordering.
 *Problem 1: Left recursion: does not halt*
 Given a simple BNF grammar for a calculator (just expressions) like the one above,
 the first line is problematic if we directly translate it with a recursive
-implementation.
-
-The naive workaround (at leaast to me) is to rearrange the order of `<expr>`'s
-rules to recognize `LITERAL_INT` tokens first, before arbitrary expressions.
-But if the parser was implemented that way, how does it know it captured the
-entire expression? That was the entire purpose of ordering the grammar's
-productions according to precedence.
-
-```rust
-fn parse_expr(tokens: &[Token]) -> Expr {
-  let e = parse_expr() // there ain't no base case ==> ∞ does not halt ∞
-  let op = parse_binop()
-}
-
-```
+implementation, and we can't reorder the rules so that `LITERAL_INT`'s precedence
+above `<expr> <binop> <expr>`
 
 As [matklad explains](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing),
 academia points out that left-recursive grammars are the the Achilles heel of
 recursive descent grammars, which, theoretically, motivates LR parsing techniques.
-Practically, you can stick with LL parsing pattern. Just use a loop.
+However, practically, you can just stick with LL parsing pattern by using a loop.
 
 ```rust
 fn parse_expr(tokens: &[Token]) -> Expr {
@@ -174,10 +158,19 @@ fn parse_expr(tokens: &[Token]) -> Expr {
         let mut cur_node = &mut root;
         let mut r_tokens = r;
 
-        // 3. while there still exists ops in input
-        //    fill in right childs
-        while let Ok((_, r)) = parse_binop(r) {
-          // check: last loop ==> construct Expr::Num, not Expr::Binary
+        // 3. while there still exists ops in input, fill in right childs
+        //    (pseudocode for readability: does not pass borrowchecker)
+        while let Ok((op, r)) = parse_binop(r_tokens) {
+          let lit = parse_lit(r, TokenType::LiteralInt);
+
+          if let Ok((op, r)) = parse_binop {
+            // same as step 1
+            cur_node = Box::new(Expr::Binary { op, l: Box::new(Expr::Num(lit)), r: Box::New(Expr::Num(-1))})
+          } else {
+            cur_node = Box::new(Expr::Num(lit))
+          }
+
+          r_tokens = r
         }
 
         // 4. return
@@ -189,31 +182,32 @@ fn parse_expr(tokens: &[Token]) -> Expr {
 }
 ```
 
-This implementation now halts and seems to produce the correct answer for
-expressions like:
+The implementation now halts and produces the correct answer for the following
+expressions:
+
 - `9 + 10 + 11`
 - `9 - 10 - 11`
 - `9 * 10 * 11`
 - `9 / 10 / 11`
 
 *Problem 2: Precedence*
+While the parser now halts for all inputs, it does not produce the correct
+answer for all. While it does handle associativity *within* operator, it does not
+handle precedence *across* operators. Parsing the following expressions will result
+in right-leaning trees, which do not match the semantics of convention around
+arithmetic. Multiplications and divisions must happen before additions and
+subtractions, without any overriding parentheses.
 
-The parser now halts for all inputs, but does it produce the correct answer for
-all inputs? Yeahh...no; it does not handle precedence *across* operators well.
+Associativity
+```
+                                 -
+                                / \
+  9 - 10 - 11 -> |parser| ->   9   -
+                                  / \
+                                 10 11
+```
 
-- `9 * 10 + 11`
-- `9 / 10 - 11`
-
-Society has decided as convention that we're going to perform multiplications
-and divisions before additions and subtractions. This is as arbitrary as
-what side of the road a country drives on, or what endianness an ISA interprets
-machine words.
-
-The parser above recognizes and produces right-heavy parse tree by default. The
-parse tree's semantics do not match society's agreed upon semantics for arithmetic.
-If we evaluate the parse tree via software interpretation, or generate assembly
-for hardware interpretation, we're going to get incorrect answers.
-
+Precedence
 ```
                                  *
                                 / \
@@ -228,9 +222,19 @@ for hardware interpretation, we're going to get incorrect answers.
                                  10 11
 ```
 
-The solution for this is to stratify the exp production even further according to
-precedence levels.
+If we were writing an interpreter, which would lend itself naturally to a recursive
+solution, we would visit the tree in a depth-first fashion. However, this
+depth-first order still applies to `din`, because the generator is implemented
+with the same pattern. Because of this, we want the *tighter* operations to be
+at the bottom of the tree.
 
+There are two solutions:
+    1. Modify/obfuscate the grammar by stratifying the <exp> rule even further
+       according to it's precedence levels.
+    2. Modify the implementation with pratt parsing which uses precedence and
+       associativity as first-class citizens.
+
+**Sol 1: Recursive Descent (Stratified)**
 ```
 <term>   ::= <factor>
            | <term> (PLUS|MINUS) <factor>
@@ -240,32 +244,23 @@ precedence levels.
            | PUNC_LEFT_PAREN <expr> PUNC_RIGHT_PAREN
 ```
 
-The key for intuition is translate  `<term>` and `<factor>` into their
-implementations. They're going to recognize and parse the left sub-tree which
-has a stronger precedence level than the current level of recursion. `parse_term`
-is going to recur on `parse_factor` first, and `parse_factor` will recur on
-`parse_atom` first for their left sub-trees. Then, they will loop
+The functions for `<term>` and `<factor>` will recognize and parse the left
+sub-tree  which has a stronger precedence level than the current level of recursion.
+`parse_term()` is going to recur on `parse_factor()` first, and `parse_factor()`
+will recur on `parse_atom()` first for their left sub-trees.
 
-step through an execution trace of a top-down parser
-with a single character lookahead, given input 9 * 10 + 11.
-
-The intuitive structure of implementation gets completely lost with this grammar.
-This grammar is ok for parser generator, but the nature of it goes against the
-whole point of hand writing your parser.
-
-TODO: the solution below (implementing a stratified grammar across term/factor)
-fixes associative solution too.
-- just rock with for a bit, and update it later.
+You can see how the grammar and implementation gets obfuscated. In order to
+parse an expressions with just terms like 9 + 10, `parse_term()` will need 
+call `parse_factor()` as proxy, to call `parse_atom()`. The implementation
+becomes a waterfall of parse functions.
 
 ```rust
-
 fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     parse_term(tokens)
 }
 
 fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     let (left, r) = parse_factor(tokens)?;
-    println!("moose {:?}", left);
 
     match r {
         [] => Ok((left, r)),
@@ -290,20 +285,6 @@ fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     }
 }
 
-fn parse_term_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
-    match tokens {
-        [] => todo!(),
-        [f, r @ ..] => match f.typ {
-            TokenType::Plus => Ok((Op::Add, r)),
-            TokenType::Minus => Ok((Op::Sub, r)),
-            _ => {
-                // println!("{:?}", f);
-                Err(io::Error::new(io::ErrorKind::Other, "bla"))
-            }
-        },
-    }
-}
-
 fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     let (left, r) = parse_atom(tokens)?;
 
@@ -321,13 +302,32 @@ fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
                     l: Box::new(root),
                     r: Box::new(right),
                 };
-                println!("wolf {:?}", root);
 
                 r_tokens = r;
             }
 
             Ok((root, r_tokens))
         }
+    }
+}
+
+fn parse_atom(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => Ok((Expr::Num(f.lexeme.parse().unwrap()), r)),
+    }
+}
+
+fn parse_term_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::Plus => Ok((Op::Add, r)),
+            TokenType::Minus => Ok((Op::Sub, r)),
+            _ => {
+                Err(io::Error::new(io::ErrorKind::Other, "bla"))
+            }
+        },
     }
 }
 
@@ -338,101 +338,20 @@ fn parse_factor_op(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
             TokenType::Star => Ok((Op::Mult, r)),
             TokenType::Slash => Ok((Op::Div, r)),
             _ => {
-                // println!("{:?}", f);
                 Err(io::Error::new(io::ErrorKind::Other, "bla"))
             }
         },
     }
 }
-
-fn parse_atom(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
-    match tokens {
-        [] => todo!(),
-        [f, r @ ..] => Ok((Expr::Num(f.lexeme.parse().unwrap()), r)),
-    }
-}
 ```
 
-
-*Problem 3: Associativity*
-
-`Parser halts with wrong answer: (does not bind correctly *within* operators)`
-
-Test Case 1: Addition (Pass)
-```
-                                 +
-                                / \
-  9 + 10 + 11 -> |parser| ->   9   +
-                                  / \
-                                 10 11
-```
-Multiplication works for the same reasons.
-
-Test Case 2: Subtraction (Fail)
-```
-                                 -
-                                / \
-  9 - 10 - 11 -> |parser| ->   9   -
-                                  / \
-                                 10 11
-```
-Division fails for the same reasons.
-
-
-
-Whether or not the compiler
-considers this to be a legal
-
-They key here is to remember the order of recursion.
-
-Sol: ???
-
-
-*Problem 2: precedence*
-- sol 1: lookahead? messy for hand written
-- sol 2: fix grammar? structure gets hidden
-- sol 3: pratt parsing
-
-// problem 1: precedence
-(+ (* 9 10) 3)
-      +
-     / \
-    *   3        =   93
-   / \
-  9  10
-
-
-9 * 10 + 3;
-
-        *
-       / \
-      9   +       =   117
-         / \
-        10  3
-
-// sol 1: ❌
-maybe...
-((9 * 10) + 3);
-((9 * (3 + 6)) + 10)
-
-
-// how do we find op. we have to look ahead from paren
-// that's why s expressions are easy, op is with opening paren (lookahead > 1)
-// which then implies tables, b/c by hand is messy to lookahead more than 1: why?
-
-// sol 2: fix grammar ✅
-
-// problem 2: associativity
-// -> how do you make a RD parser not left recursive AND non left associative??
-
-**Pratt Parsing**
-TODO
+**Sol 2: Pratt Parsing**
 - https://www.youtube.com/watch?v=2l1Si4gSb9A
 - https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing#Recursive-descent-and-left-recursion
 - https://eli.thegreenplace.net/2010/01/02/top-down-operator-precedence-parsing
 - https://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 - https://www.engr.mun.ca/~theo/Misc/exp_parsing.htm#RDP
-[Pratt Parsing References: ](https://www.oilshell.org/blog/2017/03/31.html)
+- https://www.oilshell.org/blog/2017/03/31.html
 
 ---
 

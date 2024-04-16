@@ -85,7 +85,6 @@ pub enum BinOp {
     Sub,
     Mult,
     Div,
-    // AddAdd, // works on strings
 }
 
 pub fn parse(tokens: Vec<Token>) -> Result<Program, io::Error> {
@@ -99,7 +98,7 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
     let (_, r) = mtch(r, TokenType::PuncLeftParen)?;
     let (_, r) = mtch(r, TokenType::PuncRightParen)?;
     let (_, r) = mtch(r, TokenType::PuncLeftBrace)?;
-    let (statement, r) = parse_statement(r)?;
+    let (statement, r) = parse_stmt(r)?;
     let (_, r) = mtch(r, TokenType::PuncRightBrace)?;
 
     if !r.is_empty() {
@@ -109,54 +108,84 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
     Ok(MainFunction { statement })
 }
 
-fn parse_statement(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
-    let (_, r) = mtch(tokens, TokenType::StmtReturn)?;
-    let (expr, r) = parse_expr(r)?;
-    let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
-    Ok((Stmt::Return(expr), r))
+fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::StmtIf => {
+                let (_, r) = mtch(r, TokenType::PuncLeftParen)?;
+                let (cond, r) = parse_expr(r)?;
+                let (_, r) = mtch(r, TokenType::PuncRightParen)?;
+                let (then, r) = parse_stmt(r)?;
+                let (els, r) = parse_stmt(r)?;
+
+                Ok((
+                    Stmt::If {
+                        cond: Box::new(cond),
+                        then: Box::new(then),
+                        els: Box::new(els),
+                    },
+                    r,
+                ))
+            }
+            TokenType::StmtReturn => {
+                let (expr, r) = parse_expr(r)?;
+                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+                Ok((Stmt::Return(expr), r))
+            }
+            _ => todo!(),
+        },
+    }
 }
 
 fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     parse_term(tokens)
 }
 
+// fn parse_log() {}
+
+// fn parse_rel() {}
+
+// fn parse_rel_op(tokens: &[Token]) -> Result<(RelOp, &[Token]), io::Error> {
+//     match tokens {
+//         [] => todo!(),
+//         [f, r @ ..] => match f.typ {
+//             TokenType::Plus => Ok((BinOp::Add, r)),
+//             TokenType::Minus => Ok((BinOp::Sub, r)),
+//             foo => {
+//                 println!("{:?}", foo);
+//                 Err(io::Error::new(io::ErrorKind::Other, "bla"))
+//             }
+//         },
+//     }
+// }
+
 fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     let (left, r) = parse_factor(tokens)?;
+    println!("left: {:?}", left);
 
     match r {
         [] => Ok((left, r)),
         r => {
-            let mut root = left;
-            let mut r_tokens = r;
+            let mut cur_node = left;
+            let mut r = r;
 
-            while let Ok((op, r)) = parse_term_op(r_tokens) {
-                let (right, r) = parse_factor(r)?;
+            while let Ok((op, r_temp)) = parse_term_op(r) {
+                let (right, r_temp) = parse_factor(r_temp)?;
+                println!("right: {:?}", right);
 
-                root = Expr::BinE {
+                cur_node = Expr::BinE {
                     op,
-                    l: Box::new(root),
+                    l: Box::new(cur_node),
                     r: Box::new(right),
                 };
+                println!("cur_node: {:?}", cur_node);
 
-                r_tokens = r;
+                r = r_temp;
             }
 
-            Ok((root, r_tokens))
+            Ok((cur_node, r))
         }
-    }
-}
-
-fn parse_term_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
-    match tokens {
-        [] => todo!(),
-        [f, r @ ..] => match f.typ {
-            TokenType::Plus => Ok((BinOp::Add, r)),
-            TokenType::Minus => Ok((BinOp::Sub, r)),
-            foo => {
-                println!("{:?}", foo);
-                Err(io::Error::new(io::ErrorKind::Other, "bla")) // MOOSE. KEEP STRONG. DON'T GET DISTRACTED!!!
-            }
-        },
     }
 }
 
@@ -166,38 +195,23 @@ fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     match r {
         [] => Ok((left, r)),
         r => {
-            let mut root = left;
-            let mut r_tokens = r;
+            let mut cur_node = left;
+            let mut r = r;
 
-            while let Ok((op, r)) = parse_factor_op(r_tokens) {
-                let (right, r) = parse_atom(r)?;
+            while let Ok((op, r_temp)) = parse_factor_op(r) {
+                let (right, r_temp) = parse_atom(r_temp)?;
 
-                root = Expr::BinE {
+                cur_node = Expr::BinE {
                     op,
-                    l: Box::new(root),
+                    l: Box::new(cur_node),
                     r: Box::new(right),
                 };
-                println!("wolf {:?}", root);
 
-                r_tokens = r;
+                r = r_temp;
             }
 
-            Ok((root, r_tokens))
+            Ok((cur_node, r))
         }
-    }
-}
-
-fn parse_factor_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
-    match tokens {
-        [] => todo!(),
-        [f, r @ ..] => match f.typ {
-            TokenType::Star => Ok((BinOp::Mult, r)),
-            TokenType::Slash => Ok((BinOp::Div, r)),
-            _ => {
-                // println!("{:?}", f);
-                Err(io::Error::new(io::ErrorKind::Other, "bla"))
-            }
-        },
     }
 }
 
@@ -208,80 +222,27 @@ fn parse_atom(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     }
 }
 
-// fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
-//     // parse_expr(tokens); // infinite recursion if parsing left-associative grammar;
+fn parse_term_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::Plus => Ok((BinOp::Add, r)),
+            TokenType::Minus => Ok((BinOp::Sub, r)),
+            _ => Err(io::Error::new(io::ErrorKind::Other, "bla")),
+        },
+    }
+}
 
-//     match tokens {
-//         [] => todo!(),
-//         [f, r @ ..] => match f.typ {
-//             TokenType::LiteralInt => {
-//                 let mut root = if let Ok((op, _)) = parse_binop(r) {
-//                     Expr::Binary {
-//                         op,
-//                         l: Box::new(Expr::Num(f.lexeme.parse().unwrap())), // TODO: unwrapping
-//                         r: Box::new(Expr::Num(-1)),                        // TODO??
-//                     }
-//                 } else {
-//                     Expr::Num(f.lexeme.parse().unwrap())
-//                 };
-
-//                 let mut cur_node = &mut root;
-//                 let mut r_tokens = r;
-
-//                 while let Ok((_, r)) = parse_binop(r_tokens) {
-//                     let (f, r) = mtch(r, TokenType::LiteralInt)?;
-//                     let lit = f.lexeme.parse::<i128>().unwrap();
-
-//                     if let Expr::Binary {
-//                         r: ref mut right_child,
-//                         ..
-//                     } = cur_node
-//                     {
-//                         if let Ok((op, r)) = parse_binop(r) {
-//                             *right_child = Box::new(Expr::Binary {
-//                                 op,
-//                                 l: Box::new(Expr::Num(lit)), // inheriting rust's i128 for now
-//                                 r: Box::new(Expr::Num(-1)),  // TODO??
-//                             });
-//                             cur_node = right_child;
-//                         } else {
-//                             *right_child = Box::new(Expr::Num(lit));
-//                             cur_node = right_child;
-//                         }
-//                     }
-
-//                     r_tokens = r;
-//                 }
-
-//                 Ok((root, r_tokens))
-//             }
-//             TokenType::PuncLeftParen => {
-//                 let (expr, r) = parse_expr(r)?;
-//                 println!("waz {:?}", expr);
-//                 println!("bla {:?}", r);
-//                 let (_, r) = mtch(r, TokenType::PuncRightParen)?;
-//                 Ok((expr, r))
-//             }
-//             _ => todo!(), // panic?
-//         },
-//     }
-// }
-
-// fn parse_binop(tokens: &[Token]) -> Result<(Op, &[Token]), io::Error> {
-//     match tokens {
-//         [] => todo!(),
-//         [f, r @ ..] => match f.typ {
-//             TokenType::Plus => Ok((Op::Add, r)),
-//             TokenType::Minus => Ok((Op::Sub, r)),
-//             TokenType::Star => Ok((Op::Mult, r)),
-//             TokenType::Slash => Ok((Op::Div, r)),
-//             _ => {
-//                 // println!("{:?}", f);
-//                 Err(io::Error::new(io::ErrorKind::Other, "bla"))
-//             }
-//         },
-//     }
-// }
+fn parse_factor_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::Star => Ok((BinOp::Mult, r)),
+            TokenType::Slash => Ok((BinOp::Div, r)),
+            _ => Err(io::Error::new(io::ErrorKind::Other, "bla")),
+        },
+    }
+}
 
 fn mtch(tokens: &[Token], tt: TokenType) -> Result<(&Token, &[Token]), io::Error> {
     match tokens {
