@@ -6,11 +6,9 @@ use serde::{Deserialize, Serialize};
 // - macros
 // - whitespace: spaces, tabs, newlines
 
-// see: docs/SOURCE for a more specified lexical grammar
-
 // note: variations are explicitly typed. Collapsing categories like keywords
-//       into one variant while outsourcing variation to lexeme field on Token
-//       will produce more work for syntactic analysis, since lexeme : String
+//       into one variant will lose information since lexeme : String, which
+//       will produce redundant work for the parser during syntactic analysis
 #[derive(Copy, Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum TokenType {
     // introductions (values)

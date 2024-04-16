@@ -17,6 +17,7 @@ assert() {
   fi
 }
 
+# arithmetic
 assert "./tests/fixtures/din/legal/arithmetic/lit.c" 8
 assert "./tests/fixtures/din/legal/arithmetic/add.c" 19
 assert "./tests/fixtures/din/legal/arithmetic/add_multi.c" 30
@@ -28,5 +29,9 @@ assert "./tests/fixtures/din/legal/arithmetic_precedence/add_associative.c" 30
 assert "./tests/fixtures/din/legal/arithmetic_precedence/sub_associative.c" 11
 assert "./tests/fixtures/din/legal/arithmetic_precedence/mult_add_precedence.c" 101
 assert "./tests/fixtures/din/legal/arithmetic_precedence/mult_add_precedence_multi.c" 222
+
+# control flow
+assert "./tests/fixtures/din/legal/control_flow/lt.c" 1
+assert "./tests/fixtures/din/legal/control_flow/gt.c" 1
 
 echo OK

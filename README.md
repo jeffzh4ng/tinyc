@@ -11,7 +11,7 @@ by smoking `din` with 2kloc/10kloc operating systems ([egos2000](), [xv6]()),
 and stressing it with `gcc`'s torture test suite. Because the correctness needs
 to be bootstrapped from zero, `din`'s passes will look like HLL -> AST -> 3AC
 register machine (emulating 1AC stack machine). Compiling Linux will be left as
-a challenge for when someone wants to hire me to help with the third C/C++
+a challenge for when someone wants to hire me to help out with the third C/C++
 compiler after `gcc` and `clang`.
 
 The second goal, (after a base level of correctness has been achieved) is to

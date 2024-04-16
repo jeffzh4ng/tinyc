@@ -27,16 +27,6 @@ pub enum Expr {
     // introductions (values)
     Num(i128),
     String(String),
-    // Bool(bool),
-    // Let {
-    //     identifier: String,
-    //     binding: Box<Expr>,
-    //     body: Box<Expr>,
-    // },
-    // Lambda {
-    //     f_param: String,
-    //     body: Box<Expr>,
-    // },
 
     // eliminations (operations)
     BinE {
@@ -54,11 +44,6 @@ pub enum Expr {
         l: Box<Expr>,
         r: Box<Expr>,
     },
-    // Var(String),
-    // LambdaApp {
-    //     a_param: Box<Expr>,
-    //     lambda: Box<Expr>, // choice: identifier or expr
-    // },
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
