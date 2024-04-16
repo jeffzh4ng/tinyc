@@ -19,10 +19,9 @@ pub enum TokenType {
     KeywordTypeInt,
     KeywordMain,
     KeywordVoid,
-
-    // statements
-    StmtReturn,
-    StmtIf,
+    KeywordRet,
+    KeywordIf,
+    KeywordEls,
 
     // eliminations (operations)
     Plus,
@@ -261,11 +260,15 @@ fn scan_id(input: &[char]) -> Vec<Token> {
                     }),
                     "if" => Some(Token {
                         lexeme: "if".to_string(),
-                        typ: TokenType::StmtIf,
+                        typ: TokenType::KeywordIf,
+                    }),
+                    "else" => Some(Token {
+                        lexeme: "else".to_string(),
+                        typ: TokenType::KeywordEls,
                     }),
                     "return" => Some(Token {
                         lexeme: "return".to_string(),
-                        typ: TokenType::StmtReturn,
+                        typ: TokenType::KeywordRet,
                     }),
                     _ => None,
                 };

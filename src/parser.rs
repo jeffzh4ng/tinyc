@@ -95,12 +95,17 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
         [f, r @ ..] => match f.typ {
-            TokenType::StmtIf => {
+            TokenType::KeywordIf => {
                 let (_, r) = mtch(r, TokenType::PuncLeftParen)?;
                 let (cond, r) = parse_rel_expr(r)?;
                 let (_, r) = mtch(r, TokenType::PuncRightParen)?;
+                let (_, r) = mtch(r, TokenType::PuncLeftBrace)?;
                 let (then, r) = parse_stmt(r)?;
+                let (_, r) = mtch(r, TokenType::PuncRightBrace)?;
+                let (_, r) = mtch(r, TokenType::KeywordEls)?;
+                let (_, r) = mtch(r, TokenType::PuncLeftBrace)?;
                 let (els, r) = parse_stmt(r)?;
+                let (_, r) = mtch(r, TokenType::PuncRightBrace)?;
 
                 Ok((
                     Stmt::If {
@@ -111,12 +116,15 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                     r,
                 ))
             }
-            TokenType::StmtReturn => {
+            TokenType::KeywordRet => {
                 let (expr, r) = parse_rel_expr(r)?;
                 let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
                 Ok((Stmt::Return(expr), r))
             }
-            _ => todo!(),
+            t => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("token not recognizable {:?}", t),
+            )),
         },
     }
 }
@@ -224,7 +232,10 @@ fn parse_rel_op(tokens: &[Token]) -> Result<(RelOp, &[Token]), io::Error> {
                     _ => Ok((RelOp::Gt, &tokens[1..])), // include s
                 },
             },
-            _ => Err(io::Error::new(io::ErrorKind::Other, "bla")),
+            t => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("token not recognizable {:?}", t),
+            )),
         },
     }
 }
@@ -235,7 +246,10 @@ fn parse_term_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
         [f, r @ ..] => match f.typ {
             TokenType::Plus => Ok((BinOp::Add, r)),
             TokenType::Minus => Ok((BinOp::Sub, r)),
-            _ => Err(io::Error::new(io::ErrorKind::Other, "bla")),
+            t => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("token not recognizable {:?}", t),
+            )),
         },
     }
 }
@@ -246,7 +260,10 @@ fn parse_factor_op(tokens: &[Token]) -> Result<(BinOp, &[Token]), io::Error> {
         [f, r @ ..] => match f.typ {
             TokenType::Star => Ok((BinOp::Mult, r)),
             TokenType::Slash => Ok((BinOp::Div, r)),
-            _ => Err(io::Error::new(io::ErrorKind::Other, "bla")),
+            t => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("token not recognizable {:?}", t),
+            )),
         },
     }
 }
@@ -259,8 +276,10 @@ fn mtch(tokens: &[Token], tt: TokenType) -> Result<(&Token, &[Token]), io::Error
                 // Use an if-guard to compare values
                 Ok((f, r))
             } else {
-                println!("expected: {:?} got: {:?}", tt, f);
-                Err(io::Error::new(io::ErrorKind::Other, "bla"))
+                Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    format!("expected: {:?} got: {:?}", tt, f),
+                ))
             }
         }
     }
@@ -602,6 +621,37 @@ mod test_legal_control_flow {
                   Num: 10
                 r:
                   Num: 9
+        "###);
+    }
+
+    #[test]
+    fn ifels_gt() {
+        let chars = fs::read(format!("{TEST_DIR}/ifels_lt.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            If:
+              cond:
+                RelE:
+                  op: Lt
+                  l:
+                    Num: 9
+                  r:
+                    Num: 10
+              then:
+                Return:
+                  Num: 0
+              els:
+                Return:
+                  Num: 1
         "###);
     }
 }

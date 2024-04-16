@@ -1,7 +1,6 @@
 use crate::parser;
 
 pub fn gen(tree: parser::Program) -> Vec<String> {
-    println!("{:?}", tree.main_function.statement);
     let expr = match tree.main_function.statement {
         parser::Stmt::Return(e) => gen_expr(e),
         parser::Stmt::If { cond, then, els } => {
