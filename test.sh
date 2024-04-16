@@ -32,6 +32,11 @@ assert "./tests/fixtures/din/legal/arithmetic_precedence/mult_add_precedence_mul
 
 # control flow
 assert "./tests/fixtures/din/legal/control_flow/lt.c" 1
+assert "./tests/fixtures/din/legal/control_flow/lteq.c" 1
+assert "./tests/fixtures/din/legal/control_flow/lteq2.c" 1
 assert "./tests/fixtures/din/legal/control_flow/gt.c" 1
+assert "./tests/fixtures/din/legal/control_flow/gteq.c" 1
+assert "./tests/fixtures/din/legal/control_flow/gteq2.c" 1
+
 
 echo OK

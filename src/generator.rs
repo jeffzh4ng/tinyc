@@ -79,8 +79,8 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             output.push(instr);
             output.push("".to_owned());
 
-            // 3. push the operands
-            output.push("# 3. push the operands".to_owned());
+            // 3. push the value
+            output.push("# 3. push the value".to_owned());
             output.push("addi sp,sp,-8".to_owned());
             output.push("sw t3,0(sp)".to_owned());
             output.push(
@@ -99,8 +99,10 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             output.extend(right_expr);
 
             // emulating stack machine's push/pop 1AC with register machine's load/store 3AC
-            // 1. pop the operands
-            output.push("# 1. pop the operands".to_owned());
+            // 1. pop the operands into t2 (left) and t1 (right) off the stack
+            output.push(
+                "# 1. pop the operands into t2 (left) and t1 (right) off the stack".to_owned(),
+            );
             output.push("lw t1,0(sp)".to_owned());
             output.push("addi sp,sp,8".to_owned());
             output.push("lw t2,0(sp)".to_owned());
@@ -111,17 +113,31 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
             let instr = match op {
                 parser::RelOp::Eq => todo!(),
                 parser::RelOp::Neq => todo!(),
-                parser::RelOp::Lteq => todo!(),
+                parser::RelOp::Lteq => {
+                    // a <= b equivalent to !(b < a)
+                    let foo = vec![
+                        "slt t3,t1,t2".to_owned(),   // b < a
+                        "  xori t3,t3,1".to_owned(), // !(b < a)
+                    ];
+                    foo.join("\n")
+                }
                 parser::RelOp::Lt => "slt t3,t2,t1".to_owned(),
-                parser::RelOp::Gteq => todo!(),
+                parser::RelOp::Gteq => {
+                    // a >= b equivalent b <= a equivalent to !(a < b)
+                    let foo = vec![
+                        "slt t3,t2,t1".to_owned(),   // a < b
+                        "  xori t3,t3,1".to_owned(), // !(a < b)
+                    ];
+                    foo.join("\n")
+                }
                 parser::RelOp::Gt => "slt t3,t1,t2".to_owned(),
             };
-            output.push("# 2. operate on the operands".to_owned());
+            output.push("# 2. operate on the operands in t2 (left) and t1 (right)".to_owned());
             output.push(instr);
             output.push("".to_owned());
 
-            // 3. push the operands
-            output.push("# 3. push the operands".to_owned());
+            // 3. push value in t3 onto stack
+            output.push("# 3. push value in t3 onto stack".to_owned());
             output.push("addi sp,sp,-8".to_owned());
             output.push("sw t3,0(sp)".to_owned());
             output.push(
