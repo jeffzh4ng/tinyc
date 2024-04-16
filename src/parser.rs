@@ -1,5 +1,3 @@
-// use proptest::prelude::*;
-
 use crate::lexer::{Token, TokenType};
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -114,7 +112,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
         [f, r @ ..] => match f.typ {
             TokenType::StmtIf => {
                 let (_, r) = mtch(r, TokenType::PuncLeftParen)?;
-                let (cond, r) = parse_expr(r)?;
+                let (cond, r) = parse_rel_expr(r)?;
                 let (_, r) = mtch(r, TokenType::PuncRightParen)?;
                 let (then, r) = parse_stmt(r)?;
                 let (els, r) = parse_stmt(r)?;
@@ -129,7 +127,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                 ))
             }
             TokenType::StmtReturn => {
-                let (expr, r) = parse_expr(r)?;
+                let (expr, r) = parse_rel_expr(r)?;
                 let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
                 Ok((Stmt::Return(expr), r))
             }
@@ -138,31 +136,34 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
     }
 }
 
-fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
-    parse_term(tokens)
+fn parse_rel_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
+    let (left, r) = parse_term(tokens)?;
+
+    match r {
+        [] => Ok((left, r)),
+        r => {
+            let mut cur_node = left;
+            let mut r = r;
+
+            while let Ok((op, r_temp)) = parse_rel_op(r) {
+                let (right, r_temp) = parse_term(r_temp)?;
+
+                cur_node = Expr::RelE {
+                    op,
+                    l: Box::new(cur_node),
+                    r: Box::new(right),
+                };
+
+                r = r_temp;
+            }
+
+            Ok((cur_node, r))
+        }
+    }
 }
-
-// fn parse_log() {}
-
-// fn parse_rel() {}
-
-// fn parse_rel_op(tokens: &[Token]) -> Result<(RelOp, &[Token]), io::Error> {
-//     match tokens {
-//         [] => todo!(),
-//         [f, r @ ..] => match f.typ {
-//             TokenType::Plus => Ok((BinOp::Add, r)),
-//             TokenType::Minus => Ok((BinOp::Sub, r)),
-//             foo => {
-//                 println!("{:?}", foo);
-//                 Err(io::Error::new(io::ErrorKind::Other, "bla"))
-//             }
-//         },
-//     }
-// }
 
 fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     let (left, r) = parse_factor(tokens)?;
-    println!("left: {:?}", left);
 
     match r {
         [] => Ok((left, r)),
@@ -172,14 +173,12 @@ fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
 
             while let Ok((op, r_temp)) = parse_term_op(r) {
                 let (right, r_temp) = parse_factor(r_temp)?;
-                println!("right: {:?}", right);
 
                 cur_node = Expr::BinE {
                     op,
                     l: Box::new(cur_node),
                     r: Box::new(right),
                 };
-                println!("cur_node: {:?}", cur_node);
 
                 r = r_temp;
             }
@@ -219,6 +218,29 @@ fn parse_atom(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
         [f, r @ ..] => Ok((Expr::Num(f.lexeme.parse().unwrap()), r)),
+    }
+}
+
+fn parse_rel_op(tokens: &[Token]) -> Result<(RelOp, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::LeftAngleBracket => match r {
+                [] => todo!(),
+                [s, r @ ..] => match s.typ {
+                    TokenType::Equals => Ok((RelOp::Lteq, r)),
+                    _ => Ok((RelOp::Lt, &tokens[1..])), // include s
+                },
+            },
+            TokenType::RightAngleBracket => match r {
+                [] => todo!(),
+                [s, r @ ..] => match s.typ {
+                    TokenType::Equals => Ok((RelOp::Gteq, r)),
+                    _ => Ok((RelOp::Gt, &tokens[1..])), // include s
+                },
+            },
+            _ => Err(io::Error::new(io::ErrorKind::Other, "bla")),
+        },
     }
 }
 
@@ -539,6 +561,62 @@ mod test_legal_arithmetic_precedence {
                       Num: 11
                     r:
                       Num: 12
+        "###);
+    }
+}
+
+#[cfg(test)]
+mod test_legal_control_flow {
+    use crate::lexer;
+    use std::fs;
+
+    const TEST_DIR: &str = "tests/fixtures/din/legal/control_flow";
+
+    #[test]
+    fn lt() {
+        let chars = fs::read(format!("{TEST_DIR}/lt.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              RelE:
+                op: Lt
+                l:
+                  Num: 9
+                r:
+                  Num: 10
+        "###);
+    }
+
+    #[test]
+    fn gt() {
+        let chars = fs::read(format!("{TEST_DIR}/gt.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              RelE:
+                op: Gt
+                l:
+                  Num: 10
+                r:
+                  Num: 9
         "###);
     }
 }
