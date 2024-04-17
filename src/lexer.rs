@@ -251,23 +251,23 @@ fn scan_id(input: &[char]) -> Vec<Token> {
 
                 let keyword = match f.as_str() {
                     "int" => Some(Token {
-                        lexeme: "int".to_string(),
+                        lexeme: f.to_string(),
                         typ: TokenType::KeywordTypeInt,
                     }),
                     "main" => Some(Token {
-                        lexeme: "main".to_string(),
+                        lexeme: f.to_string(),
                         typ: TokenType::KeywordMain,
                     }),
                     "if" => Some(Token {
-                        lexeme: "if".to_string(),
+                        lexeme: f.to_string(),
                         typ: TokenType::KeywordIf,
                     }),
                     "else" => Some(Token {
-                        lexeme: "else".to_string(),
+                        lexeme: f.to_string(),
                         typ: TokenType::KeywordEls,
                     }),
                     "return" => Some(Token {
-                        lexeme: "return".to_string(),
+                        lexeme: f.to_string(),
                         typ: TokenType::KeywordRet,
                     }),
                     _ => None,

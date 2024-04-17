@@ -38,5 +38,8 @@ assert "./tests/fixtures/din/legal/control_flow/gt.c" 1
 assert "./tests/fixtures/din/legal/control_flow/gteq.c" 1
 assert "./tests/fixtures/din/legal/control_flow/gteq2.c" 1
 
+assert "./tests/fixtures/din/legal/control_flow/ifels_then.c" 0
+assert "./tests/fixtures/din/legal/control_flow/ifels_els.c" 0
+
 
 echo OK
