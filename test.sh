@@ -31,15 +31,21 @@ assert "./tests/fixtures/din/legal/arithmetic_precedence/mult_add_precedence.c" 
 assert "./tests/fixtures/din/legal/arithmetic_precedence/mult_add_precedence_multi.c" 222
 
 # control flow
-assert "./tests/fixtures/din/legal/control_flow/lt.c" 1
-assert "./tests/fixtures/din/legal/control_flow/lteq.c" 1
-assert "./tests/fixtures/din/legal/control_flow/lteq2.c" 1
-assert "./tests/fixtures/din/legal/control_flow/gt.c" 1
-assert "./tests/fixtures/din/legal/control_flow/gteq.c" 1
-assert "./tests/fixtures/din/legal/control_flow/gteq2.c" 1
+assert "./tests/fixtures/din/legal/control_flow/lt_true.c" 1
+assert "./tests/fixtures/din/legal/control_flow/lteq_true.c" 1
+assert "./tests/fixtures/din/legal/control_flow/lteq2_true.c" 1
+assert "./tests/fixtures/din/legal/control_flow/gt_true.c" 1
+assert "./tests/fixtures/din/legal/control_flow/gteq_true.c" 1
+assert "./tests/fixtures/din/legal/control_flow/gteq2_true.c" 1
+
+# assert "./tests/fixtures/din/legal/control_flow/and.c" 1
+# assert "./tests/fixtures/din/legal/control_flow/or.c" 1
+# assert "./tests/fixtures/din/legal/control_flow/eq.c" 1
+# assert "./tests/fixtures/din/legal/control_flow/neq.c" 1
 
 assert "./tests/fixtures/din/legal/control_flow/ifels_then.c" 0
 assert "./tests/fixtures/din/legal/control_flow/ifels_els.c" 0
+
 
 
 echo OK

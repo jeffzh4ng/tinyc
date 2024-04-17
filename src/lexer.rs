@@ -333,7 +333,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StmtReturn
+          typ: KeywordRet
         - lexeme: "8"
           typ: LiteralInt
         - lexeme: ;
@@ -366,7 +366,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StmtReturn
+          typ: KeywordRet
         - lexeme: "9"
           typ: LiteralInt
         - lexeme: +
@@ -403,7 +403,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StmtReturn
+          typ: KeywordRet
         - lexeme: "9"
           typ: LiteralInt
         - lexeme: +
@@ -444,7 +444,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StmtReturn
+          typ: KeywordRet
         - lexeme: "88"
           typ: LiteralInt
         - lexeme: "-"
@@ -481,7 +481,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StmtReturn
+          typ: KeywordRet
         - lexeme: "9"
           typ: LiteralInt
         - lexeme: "*"
@@ -518,7 +518,7 @@ mod test_legal_arithmetic {
         - lexeme: "{"
           typ: PuncLeftBrace
         - lexeme: return
-          typ: StmtReturn
+          typ: KeywordRet
         - lexeme: "100"
           typ: LiteralInt
         - lexeme: /

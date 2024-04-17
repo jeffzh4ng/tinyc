@@ -578,7 +578,7 @@ mod test_legal_control_flow {
 
     #[test]
     fn lt() {
-        let chars = fs::read(format!("{TEST_DIR}/lt.c"))
+        let chars = fs::read(format!("{TEST_DIR}/lt_true.c"))
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -602,7 +602,7 @@ mod test_legal_control_flow {
 
     #[test]
     fn gt() {
-        let chars = fs::read(format!("{TEST_DIR}/gt.c"))
+        let chars = fs::read(format!("{TEST_DIR}/gt_true.c"))
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
@@ -625,8 +625,8 @@ mod test_legal_control_flow {
     }
 
     #[test]
-    fn ifels_gt() {
-        let chars = fs::read(format!("{TEST_DIR}/ifels_lt.c"))
+    fn ifels_lt() {
+        let chars = fs::read(format!("{TEST_DIR}/ifels_then.c"))
             .expect("Should have been able to read the file")
             .iter()
             .map(|b| *b as char)
