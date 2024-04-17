@@ -166,8 +166,8 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
                     "xori t3,t3,1".to_owned(),
                 ]
                 .join("\n"),
-                parser::RelOp::And => todo!(),
-                parser::RelOp::Or => todo!(),
+                parser::RelOp::And => "and t3,t2,t1".to_owned(),
+                parser::RelOp::Or => "or t3,t2,t1".to_owned(),
                 parser::RelOp::Lteq => vec![
                     // a <= b equivalent to !(b < a)
                     "slt t3,t1,t2".to_owned(),   // b < a

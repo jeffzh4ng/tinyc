@@ -36,8 +36,10 @@ assert "./tests/fixtures/din/legal/control_flow/eq_false.c" 0
 assert "./tests/fixtures/din/legal/control_flow/neq_true.c" 1
 assert "./tests/fixtures/din/legal/control_flow/neq_false.c" 0
 
-# assert "./tests/fixtures/din/legal/control_flow/and.c" 1
-# assert "./tests/fixtures/din/legal/control_flow/or.c" 1
+assert "./tests/fixtures/din/legal/control_flow/and_true.c" 1
+assert "./tests/fixtures/din/legal/control_flow/or_true.c" 1
+assert "./tests/fixtures/din/legal/control_flow/and_false.c" 0
+assert "./tests/fixtures/din/legal/control_flow/or_false.c" 0
 
 assert "./tests/fixtures/din/legal/control_flow/lt_true.c" 1
 assert "./tests/fixtures/din/legal/control_flow/lteq_true.c" 1
