@@ -17,22 +17,9 @@ pub fn gen(tree: parser::Program) -> Vec<String> {
 
 fn gen_stmt(s: parser::Stmt) -> Vec<String> {
     match s {
-        parser::Stmt::Return(e) => {
-            let output = vec![
-                gen_expr(e)
-                    .iter()
-                    .map(|line| format!("    {line}"))
-                    .collect::<Vec<_>>()
-                    .join("\n"),
-                "# return expr".to_owned(),
-                "lw a0,0(sp)".to_owned(),
-                "addi sp,sp,8".to_owned(),
-                "ret".to_owned(),
-            ];
-
-            output
-        }
-        parser::Stmt::If { cond, then, els } => {
+        parser::Stmt::Switch => todo!(),
+        parser::Stmt::If => todo!(),
+        parser::Stmt::IfEls { cond, then, els } => {
             let cond_mc = gen_expr(*cond);
             let then_mc = gen_stmt(*then);
             let els_mc = gen_stmt(*els);
@@ -79,9 +66,25 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
             output
         }
         parser::Stmt::While => todo!(),
-        parser::Stmt::For => todo!(),
         parser::Stmt::Dowhile => todo!(),
-        parser::Stmt::Switch => todo!(),
+        parser::Stmt::For => todo!(),
+        parser::Stmt::Break => todo!(),
+        parser::Stmt::Continue => todo!(),
+        parser::Stmt::Return(e) => {
+            let output = vec![
+                gen_expr(e)
+                    .iter()
+                    .map(|line| format!("    {line}"))
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+                "# return expr".to_owned(),
+                "lw a0,0(sp)".to_owned(),
+                "addi sp,sp,8".to_owned(),
+                "ret".to_owned(),
+            ];
+
+            output
+        }
     }
 }
 

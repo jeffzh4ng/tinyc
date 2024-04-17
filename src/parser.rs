@@ -14,15 +14,18 @@ pub struct MainFunction {
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Stmt {
-    If {
+    If,
+    IfEls {
         cond: Box<Expr>,
         then: Box<Stmt>,
         els: Box<Stmt>,
     },
-    While,
-    For,
-    Dowhile,
     Switch,
+    While,
+    Dowhile,
+    For,
+    Break,
+    Continue,
     Return(Expr),
 }
 
@@ -143,7 +146,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                 let (_, r) = mtch(r, TokenType::PuncRightBrace)?;
 
                 Ok((
-                    Stmt::If {
+                    Stmt::IfEls {
                         cond: Box::new(cond),
                         then: Box::new(then),
                         els: Box::new(els),
@@ -809,7 +812,7 @@ mod test_legal_control_flow {
         ---
         main_function:
           statement:
-            If:
+            IfEls:
               cond:
                 RelE:
                   op: Lt
