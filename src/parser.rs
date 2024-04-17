@@ -21,16 +21,28 @@ pub enum Stmt {
     },
     While,
     For,
+    Dowhile,
+    Switch,
     Return(Expr),
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Expr {
     // introductions (values)
+    // Char
+    // - sign: Signed/Unsighed
     Int(i128),
-    String(String),
+    // - sign: Signed/Unsighed
+    // - length: Short/Long
+    // Float
+    // Double
+    Str(String),
 
     // eliminations (operations)
+    UnaryE {
+        op: UnaryOp,
+        l: Box<Expr>,
+    },
     BinE {
         op: BinOp,
         l: Box<Expr>,
@@ -41,11 +53,22 @@ pub enum Expr {
         l: Box<Expr>,
         r: Box<Expr>,
     },
+    BitE {
+        op: BitOp,
+        l: Box<Expr>,
+        r: Box<Expr>,
+    },
     LogE {
         op: LogOp,
         l: Box<Expr>,
         r: Box<Expr>,
     },
+}
+
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub enum UnaryOp {
+    Add,
+    Sub,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
@@ -61,6 +84,13 @@ pub enum RelOp {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub enum BitOp {
+    And,
+    Or,
+    Xor,
+}
+
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum LogOp {
     And,
     Or,
@@ -72,6 +102,7 @@ pub enum BinOp {
     Sub,
     Mult,
     Div,
+    Mod,
 }
 
 pub fn parse(tokens: Vec<Token>) -> Result<Program, io::Error> {

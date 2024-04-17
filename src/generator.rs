@@ -80,6 +80,8 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
         }
         parser::Stmt::While => todo!(),
         parser::Stmt::For => todo!(),
+        parser::Stmt::Dowhile => todo!(),
+        parser::Stmt::Switch => todo!(),
     }
 }
 
@@ -101,7 +103,8 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
 
             output
         }
-        parser::Expr::String(_) => todo!(),
+        parser::Expr::Str(_) => todo!(),
+        parser::Expr::UnaryE { op, l } => todo!(),
         parser::Expr::BinE { op, l, r } => {
             let left_expr = gen_expr(*l);
             let right_expr = gen_expr(*r);
@@ -125,6 +128,7 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
                 parser::BinOp::Sub => "sub t3,t2,t1".to_owned(),
                 parser::BinOp::Mult => "mul t3,t2,t1".to_owned(),
                 parser::BinOp::Div => "div t3,t2,t1".to_owned(),
+                parser::BinOp::Mod => todo!(),
             };
             output.push("# 2. operate on the operands".to_owned());
             output.push(instr);
@@ -168,8 +172,8 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
                     "xori t3,t3,1".to_owned(),
                 ]
                 .join("\n"),
-                parser::RelOp::And => "and t3,t2,t1".to_owned(),
-                parser::RelOp::Or => "or t3,t2,t1".to_owned(),
+                parser::RelOp::And => "and t3,t2,t1".to_owned(), // TODO: does riscv short circuit?
+                parser::RelOp::Or => "or t3,t2,t1".to_owned(),   // TODO: does riscv short circuit?
                 parser::RelOp::Lteq => vec![
                     // a <= b equivalent to !(b < a)
                     "slt t3,t1,t2".to_owned(),   // b < a
@@ -200,6 +204,7 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
 
             output
         }
+        parser::Expr::BitE { op, l, r } => todo!(),
         parser::Expr::LogE { op, l, r } => todo!(),
     }
 }
