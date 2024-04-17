@@ -78,12 +78,14 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
 
             output
         }
+        parser::Stmt::While => todo!(),
+        parser::Stmt::For => todo!(),
     }
 }
 
 fn gen_expr(e: parser::Expr) -> Vec<String> {
     match e {
-        parser::Expr::Num(n) => {
+        parser::Expr::Int(n) => {
             let mut output = Vec::new();
             output.push("# 1. load".to_owned());
             output.push(format!("li t1,{n}"));

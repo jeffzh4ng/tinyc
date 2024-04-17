@@ -19,13 +19,15 @@ pub enum Stmt {
         then: Box<Stmt>,
         els: Box<Stmt>,
     },
+    While,
+    For,
     Return(Expr),
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Expr {
     // introductions (values)
-    Num(i128),
+    Int(i128),
     String(String),
 
     // eliminations (operations)
@@ -212,7 +214,7 @@ fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
 fn parse_atom(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
-        [f, r @ ..] => Ok((Expr::Num(f.lexeme.parse().unwrap()), r)),
+        [f, r @ ..] => Ok((Expr::Int(f.lexeme.parse().unwrap()), r)),
     }
 }
 
@@ -349,7 +351,7 @@ mod test_legal_arithmetic {
         main_function:
           statement:
             Return:
-              Num: 8
+              Int: 8
         "###);
     }
 
@@ -371,9 +373,9 @@ mod test_legal_arithmetic {
               BinE:
                 op: Add
                 l:
-                  Num: 9
+                  Int: 9
                 r:
-                  Num: 10
+                  Int: 10
         "###);
     }
 
@@ -398,11 +400,11 @@ mod test_legal_arithmetic {
                   BinE:
                     op: Add
                     l:
-                      Num: 9
+                      Int: 9
                     r:
-                      Num: 10
+                      Int: 10
                 r:
-                  Num: 11
+                  Int: 11
         "###);
     }
 
@@ -425,9 +427,9 @@ mod test_legal_arithmetic {
               BinE:
                 op: Sub
                 l:
-                  Num: 88
+                  Int: 88
                 r:
-                  Num: 32
+                  Int: 32
         "###);
     }
 
@@ -450,9 +452,9 @@ mod test_legal_arithmetic {
               BinE:
                 op: Mult
                 l:
-                  Num: 9
+                  Int: 9
                 r:
-                  Num: 10
+                  Int: 10
         "###);
     }
 
@@ -475,9 +477,9 @@ mod test_legal_arithmetic {
               BinE:
                 op: Div
                 l:
-                  Num: 100
+                  Int: 100
                 r:
-                  Num: 9
+                  Int: 9
         "###);
     }
 }
@@ -510,11 +512,11 @@ mod test_legal_arithmetic_precedence {
                   BinE:
                     op: Add
                     l:
-                      Num: 9
+                      Int: 9
                     r:
-                      Num: 10
+                      Int: 10
                 r:
-                  Num: 11
+                  Int: 11
         "###);
     }
 
@@ -539,11 +541,11 @@ mod test_legal_arithmetic_precedence {
                   BinE:
                     op: Sub
                     l:
-                      Num: 30
+                      Int: 30
                     r:
-                      Num: 9
+                      Int: 9
                 r:
-                  Num: 10
+                  Int: 10
         "###);
     }
 
@@ -568,11 +570,11 @@ mod test_legal_arithmetic_precedence {
                   BinE:
                     op: Mult
                     l:
-                      Num: 9
+                      Int: 9
                     r:
-                      Num: 10
+                      Int: 10
                 r:
-                  Num: 11
+                  Int: 11
         "###);
     }
 
@@ -597,16 +599,16 @@ mod test_legal_arithmetic_precedence {
                   BinE:
                     op: Mult
                     l:
-                      Num: 9
+                      Int: 9
                     r:
-                      Num: 10
+                      Int: 10
                 r:
                   BinE:
                     op: Mult
                     l:
-                      Num: 11
+                      Int: 11
                     r:
-                      Num: 12
+                      Int: 12
         "###);
     }
 }
@@ -636,9 +638,9 @@ mod test_legal_control_flow {
               RelE:
                 op: Eq
                 l:
-                  Num: 9
+                  Int: 9
                 r:
-                  Num: 9
+                  Int: 9
         "###);
     }
 
@@ -660,9 +662,9 @@ mod test_legal_control_flow {
               RelE:
                 op: Neq
                 l:
-                  Num: 9
+                  Int: 9
                 r:
-                  Num: 10
+                  Int: 10
         "###);
     }
 
@@ -684,9 +686,9 @@ mod test_legal_control_flow {
               RelE:
                 op: And
                 l:
-                  Num: 1
+                  Int: 1
                 r:
-                  Num: 1
+                  Int: 1
         "###);
     }
 
@@ -708,9 +710,9 @@ mod test_legal_control_flow {
               RelE:
                 op: Or
                 l:
-                  Num: 1
+                  Int: 1
                 r:
-                  Num: 1
+                  Int: 1
         "###);
     }
 
@@ -732,9 +734,9 @@ mod test_legal_control_flow {
               RelE:
                 op: Lt
                 l:
-                  Num: 9
+                  Int: 9
                 r:
-                  Num: 10
+                  Int: 10
         "###);
     }
 
@@ -756,9 +758,9 @@ mod test_legal_control_flow {
               RelE:
                 op: Gt
                 l:
-                  Num: 10
+                  Int: 10
                 r:
-                  Num: 9
+                  Int: 9
         "###);
     }
 
@@ -781,15 +783,15 @@ mod test_legal_control_flow {
                 RelE:
                   op: Lt
                   l:
-                    Num: 9
+                    Int: 9
                   r:
-                    Num: 10
+                    Int: 10
               then:
                 Return:
-                  Num: 0
+                  Int: 0
               els:
                 Return:
-                  Num: 1
+                  Int: 1
         "###);
     }
 }
