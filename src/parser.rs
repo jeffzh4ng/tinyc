@@ -232,6 +232,26 @@ fn parse_rel_op(tokens: &[Token]) -> Result<(RelOp, &[Token]), io::Error> {
                     _ => Ok((RelOp::Gt, &tokens[1..])), // include s
                 },
             },
+            TokenType::Equals => match r {
+                [] => todo!(),
+                [s, r @ ..] => match s.typ {
+                    TokenType::Equals => Ok((RelOp::Eq, r)),
+                    t => Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!("token not recognizable {:?}", t),
+                    )),
+                },
+            },
+            TokenType::Bang => match r {
+                [] => todo!(),
+                [s, r @ ..] => match s.typ {
+                    TokenType::Equals => Ok((RelOp::Neq, r)),
+                    t => Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!("token not recognizable {:?}", t),
+                    )),
+                },
+            },
             t => Err(io::Error::new(
                 io::ErrorKind::Other,
                 format!("token not recognizable {:?}", t),
@@ -575,6 +595,54 @@ mod test_legal_control_flow {
     use std::fs;
 
     const TEST_DIR: &str = "tests/fixtures/din/legal/control_flow";
+
+    #[test]
+    fn eq() {
+        let chars = fs::read(format!("{TEST_DIR}/eq_true.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              RelE:
+                op: Eq
+                l:
+                  Num: 9
+                r:
+                  Num: 9
+        "###);
+    }
+
+    #[test]
+    fn neq() {
+        let chars = fs::read(format!("{TEST_DIR}/neq_true.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              RelE:
+                op: Neq
+                l:
+                  Num: 9
+                r:
+                  Num: 10
+        "###);
+    }
 
     #[test]
     fn lt() {
