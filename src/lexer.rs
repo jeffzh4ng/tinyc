@@ -32,7 +32,7 @@ pub enum TokenType {
     RightAngleBracket,
     Equals,
     Bang,
-    Ampersand,
+    Amp,
     Bar,
 
     // punctuation
@@ -130,7 +130,7 @@ pub fn lex(input: &[char]) -> Vec<Token> {
             '&' => {
                 let t = Token {
                     lexeme: String::from("&"),
-                    typ: TokenType::Ampersand,
+                    typ: TokenType::Amp,
                 };
 
                 std::iter::once(t).chain(lex(r)).collect()

@@ -50,6 +50,8 @@ pub enum Expr {
 pub enum RelOp {
     Eq,
     Neq,
+    And,
+    Or,
     Lteq,
     Lt,
     Gteq,
@@ -246,6 +248,26 @@ fn parse_rel_op(tokens: &[Token]) -> Result<(RelOp, &[Token]), io::Error> {
                 [] => todo!(),
                 [s, r @ ..] => match s.typ {
                     TokenType::Equals => Ok((RelOp::Neq, r)),
+                    t => Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!("token not recognizable {:?}", t),
+                    )),
+                },
+            },
+            TokenType::Amp => match r {
+                [] => todo!(),
+                [s, r @ ..] => match s.typ {
+                    TokenType::Amp => Ok((RelOp::And, r)),
+                    t => Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        format!("token not recognizable {:?}", t),
+                    )),
+                },
+            },
+            TokenType::Bar => match r {
+                [] => todo!(),
+                [s, r @ ..] => match s.typ {
+                    TokenType::Bar => Ok((RelOp::Or, r)),
                     t => Err(io::Error::new(
                         io::ErrorKind::Other,
                         format!("token not recognizable {:?}", t),
@@ -645,6 +667,54 @@ mod test_legal_control_flow {
     }
 
     #[test]
+    fn and() {
+        let chars = fs::read(format!("{TEST_DIR}/and_true.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              RelE:
+                op: And
+                l:
+                  Num: 1
+                r:
+                  Num: 1
+        "###);
+    }
+
+    #[test]
+    fn or() {
+        let chars = fs::read(format!("{TEST_DIR}/or_true.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          statement:
+            Return:
+              RelE:
+                op: Or
+                l:
+                  Num: 1
+                r:
+                  Num: 1
+        "###);
+    }
+
+    #[test]
     fn lt() {
         let chars = fs::read(format!("{TEST_DIR}/lt_true.c"))
             .expect("Should have been able to read the file")
@@ -693,7 +763,7 @@ mod test_legal_control_flow {
     }
 
     #[test]
-    fn ifels_lt() {
+    fn ifels_then() {
         let chars = fs::read(format!("{TEST_DIR}/ifels_then.c"))
             .expect("Should have been able to read the file")
             .iter()
