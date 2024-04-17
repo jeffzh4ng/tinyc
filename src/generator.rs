@@ -157,25 +157,28 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
 
             // 2. operate on the operands
             let instr = match op {
-                parser::RelOp::Eq => todo!(),
-                parser::RelOp::Neq => todo!(),
-                parser::RelOp::Lteq => {
+                parser::RelOp::Eq => {
+                    vec!["sub t3,t2,t1".to_owned(), "seqz t3,t3".to_owned()].join("\n")
+                }
+                parser::RelOp::Neq => vec![
+                    "sub t3,t2,t1".to_owned(),
+                    "seqz t3,t3".to_owned(),
+                    "xori t3,t3,1".to_owned(),
+                ]
+                .join("\n"),
+                parser::RelOp::Lteq => vec![
                     // a <= b equivalent to !(b < a)
-                    let foo = vec![
-                        "slt t3,t1,t2".to_owned(),   // b < a
-                        "  xori t3,t3,1".to_owned(), // !(b < a)
-                    ];
-                    foo.join("\n")
-                }
+                    "slt t3,t1,t2".to_owned(),   // b < a
+                    "  xori t3,t3,1".to_owned(), // !(b < a)
+                ]
+                .join("\n"),
                 parser::RelOp::Lt => "slt t3,t2,t1".to_owned(),
-                parser::RelOp::Gteq => {
+                parser::RelOp::Gteq => vec![
                     // a >= b equivalent b <= a equivalent to !(a < b)
-                    let foo = vec![
-                        "slt t3,t2,t1".to_owned(),   // a < b
-                        "  xori t3,t3,1".to_owned(), // !(a < b)
-                    ];
-                    foo.join("\n")
-                }
+                    "slt t3,t2,t1".to_owned(),   // a < b
+                    "  xori t3,t3,1".to_owned(), // !(a < b)
+                ]
+                .join("\n"),
                 parser::RelOp::Gt => "slt t3,t1,t2".to_owned(),
             };
             output.push("# 2. op(t2, t1)".to_owned());
