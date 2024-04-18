@@ -16,7 +16,7 @@ pub enum TokenType {
     Identifier, // RE: [a−zA−Z][a−zA−Z0−9]*
 
     // keywords (subset of identifiers)
-    KeywordTypeInt,
+    KeywordInt,
     KeywordMain,
     KeywordVoid,
     KeywordRet,
@@ -252,7 +252,7 @@ fn scan_id(input: &[char]) -> Vec<Token> {
                 let keyword = match f.as_str() {
                     "int" => Some(Token {
                         lexeme: f.to_string(),
-                        typ: TokenType::KeywordTypeInt,
+                        typ: TokenType::KeywordInt,
                     }),
                     "main" => Some(Token {
                         lexeme: f.to_string(),
@@ -323,7 +323,7 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
-          typ: KeywordTypeInt
+          typ: KeywordInt
         - lexeme: main
           typ: KeywordMain
         - lexeme: (
@@ -356,7 +356,7 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
-          typ: KeywordTypeInt
+          typ: KeywordInt
         - lexeme: main
           typ: KeywordMain
         - lexeme: (
@@ -393,7 +393,7 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
-          typ: KeywordTypeInt
+          typ: KeywordInt
         - lexeme: main
           typ: KeywordMain
         - lexeme: (
@@ -434,7 +434,7 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
-          typ: KeywordTypeInt
+          typ: KeywordInt
         - lexeme: main
           typ: KeywordMain
         - lexeme: (
@@ -471,7 +471,7 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
-          typ: KeywordTypeInt
+          typ: KeywordInt
         - lexeme: main
           typ: KeywordMain
         - lexeme: (
@@ -508,7 +508,7 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(output, @r###"
         ---
         - lexeme: int
-          typ: KeywordTypeInt
+          typ: KeywordInt
         - lexeme: main
           typ: KeywordMain
         - lexeme: (
@@ -525,6 +525,56 @@ mod test_legal_arithmetic {
           typ: Slash
         - lexeme: "9"
           typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
+    }
+}
+
+#[cfg(test)]
+mod test_legal_data_flow {
+    use std::fs;
+
+    const TEST_DIR: &str = "tests/fixtures/din/legal/data_flow";
+
+    #[test]
+    fn var() {
+        #[rustfmt::skip]
+        let input = fs::read(format!("{TEST_DIR}/asnmt.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let output = super::lex(input.as_slice());
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: int
+          typ: KeywordInt
+        - lexeme: n
+          typ: Identifier
+        - lexeme: "="
+          typ: Equals
+        - lexeme: "0"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: return
+          typ: KeywordRet
+        - lexeme: n
+          typ: Identifier
         - lexeme: ;
           typ: PuncSemiColon
         - lexeme: "}"
