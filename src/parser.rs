@@ -9,50 +9,35 @@ pub struct Program {
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct MainFunction {
-    pub statement: Stmt,
+    pub stmts: Vec<Stmt>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Stmt {
+    // Continue,
+    // Break,
+    Asnmt {
+        identifier: String,
+        expr: Box<Expr>,
+    },
+    Return(Expr),
+    For,
+    While,
+    // Dowhile,
+    // Switch
     If,
     IfEls {
         cond: Box<Expr>,
         then: Box<Stmt>,
         els: Box<Stmt>,
     },
-    Switch,
-    While,
-    Dowhile,
-    For,
-    Break,
-    Continue,
-    Return(Expr),
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Expr {
-    // introductions (values)
-    // Char
-    // - sign: Signed/Unsighed
-    Int(i128),
-    // - sign: Signed/Unsighed
-    // - length: Short/Long
-    // Float
-    // Double
-    Str(String),
-
     // eliminations (operations)
-    UnaryE {
-        op: UnaryOp,
-        l: Box<Expr>,
-    },
-    BinE {
-        op: BinOp,
-        l: Box<Expr>,
-        r: Box<Expr>,
-    },
-    RelE {
-        op: RelOp,
+    LogE {
+        op: LogOp,
         l: Box<Expr>,
         r: Box<Expr>,
     },
@@ -61,17 +46,43 @@ pub enum Expr {
         l: Box<Expr>,
         r: Box<Expr>,
     },
-    LogE {
-        op: LogOp,
+    RelE {
+        op: RelOp,
         l: Box<Expr>,
         r: Box<Expr>,
     },
+    BinE {
+        op: BinOp,
+        l: Box<Expr>,
+        r: Box<Expr>,
+    },
+    UnaryE {
+        op: UnaryOp,
+        l: Box<Expr>,
+    },
+
+    // introductions (operands)
+    // Char
+    // - sign: Signed/Unsighed
+    Int(i128),
+    // - sign: Signed/Unsighed
+    // - length: Short/Long
+    // Float
+    // Double
+    Str(String),
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
-pub enum UnaryOp {
-    Add,
-    Sub,
+pub enum LogOp {
+    And,
+    Or,
+}
+
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub enum BitOp {
+    And,
+    Or,
+    Xor,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
@@ -87,19 +98,6 @@ pub enum RelOp {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
-pub enum BitOp {
-    And,
-    Or,
-    Xor,
-}
-
-#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
-pub enum LogOp {
-    And,
-    Or,
-}
-
-#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum BinOp {
     Add,
     Sub,
@@ -108,31 +106,48 @@ pub enum BinOp {
     Mod,
 }
 
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub enum UnaryOp {
+    Add,
+    Sub,
+}
+
 pub fn parse(tokens: Vec<Token>) -> Result<Program, io::Error> {
     let main_function = parse_function(tokens)?;
     Ok(Program { main_function })
 }
 
 fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
-    let (_, r) = mtch(&tokens, TokenType::KeywordTypeInt)?;
+    let (_, r) = mtch(&tokens, TokenType::KeywordInt)?;
     let (_, r) = mtch(r, TokenType::KeywordMain)?;
     let (_, r) = mtch(r, TokenType::PuncLeftParen)?;
     let (_, r) = mtch(r, TokenType::PuncRightParen)?;
     let (_, r) = mtch(r, TokenType::PuncLeftBrace)?;
-    let (statement, r) = parse_stmt(r)?;
-    let (_, r) = mtch(r, TokenType::PuncRightBrace)?;
+
+    let mut stmts = vec![];
+    let mut r0 = r;
+    while let Ok((s, r1)) = parse_stmt(r0) {
+        stmts.push(s);
+        r0 = r1;
+    }
+    let (_, r) = mtch(r0, TokenType::PuncRightBrace)?;
 
     if !r.is_empty() {
         // panic?
     }
 
-    Ok(MainFunction { statement })
+    Ok(MainFunction { stmts })
 }
 
 fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
         [f, r @ ..] => match f.typ {
+            TokenType::KeywordRet => {
+                let (expr, r) = parse_rel_expr(r)?;
+                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+                Ok((Stmt::Return(expr), r))
+            }
             TokenType::KeywordIf => {
                 let (_, r) = mtch(r, TokenType::PuncLeftParen)?;
                 let (cond, r) = parse_rel_expr(r)?;
@@ -153,11 +168,6 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                     },
                     r,
                 ))
-            }
-            TokenType::KeywordRet => {
-                let (expr, r) = parse_rel_expr(r)?;
-                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
-                Ok((Stmt::Return(expr), r))
             }
             t => Err(io::Error::new(
                 io::ErrorKind::Other,
@@ -383,9 +393,9 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              Int: 8
+          stmts:
+            - Return:
+                Int: 8
         "###);
     }
 
@@ -402,14 +412,14 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Add
-                l:
-                  Int: 9
-                r:
-                  Int: 10
+          stmts:
+            - Return:
+                BinE:
+                  op: Add
+                  l:
+                    Int: 9
+                  r:
+                    Int: 10
         "###);
     }
 
@@ -426,19 +436,19 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Add
-                l:
-                  BinE:
-                    op: Add
-                    l:
-                      Int: 9
-                    r:
-                      Int: 10
-                r:
-                  Int: 11
+          stmts:
+            - Return:
+                BinE:
+                  op: Add
+                  l:
+                    BinE:
+                      op: Add
+                      l:
+                        Int: 9
+                      r:
+                        Int: 10
+                  r:
+                    Int: 11
         "###);
     }
 
@@ -456,14 +466,14 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Sub
-                l:
-                  Int: 88
-                r:
-                  Int: 32
+          stmts:
+            - Return:
+                BinE:
+                  op: Sub
+                  l:
+                    Int: 88
+                  r:
+                    Int: 32
         "###);
     }
 
@@ -481,14 +491,14 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Mult
-                l:
-                  Int: 9
-                r:
-                  Int: 10
+          stmts:
+            - Return:
+                BinE:
+                  op: Mult
+                  l:
+                    Int: 9
+                  r:
+                    Int: 10
         "###);
     }
 
@@ -506,14 +516,14 @@ mod test_legal_arithmetic {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Div
-                l:
-                  Int: 100
-                r:
-                  Int: 9
+          stmts:
+            - Return:
+                BinE:
+                  op: Div
+                  l:
+                    Int: 100
+                  r:
+                    Int: 9
         "###);
     }
 }
@@ -538,19 +548,19 @@ mod test_legal_arithmetic_precedence {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Add
-                l:
-                  BinE:
-                    op: Add
-                    l:
-                      Int: 9
-                    r:
-                      Int: 10
-                r:
-                  Int: 11
+          stmts:
+            - Return:
+                BinE:
+                  op: Add
+                  l:
+                    BinE:
+                      op: Add
+                      l:
+                        Int: 9
+                      r:
+                        Int: 10
+                  r:
+                    Int: 11
         "###);
     }
 
@@ -567,19 +577,19 @@ mod test_legal_arithmetic_precedence {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Sub
-                l:
-                  BinE:
-                    op: Sub
-                    l:
-                      Int: 30
-                    r:
-                      Int: 9
-                r:
-                  Int: 10
+          stmts:
+            - Return:
+                BinE:
+                  op: Sub
+                  l:
+                    BinE:
+                      op: Sub
+                      l:
+                        Int: 30
+                      r:
+                        Int: 9
+                  r:
+                    Int: 10
         "###);
     }
 
@@ -596,19 +606,19 @@ mod test_legal_arithmetic_precedence {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Add
-                l:
-                  BinE:
-                    op: Mult
-                    l:
-                      Int: 9
-                    r:
-                      Int: 10
-                r:
-                  Int: 11
+          stmts:
+            - Return:
+                BinE:
+                  op: Add
+                  l:
+                    BinE:
+                      op: Mult
+                      l:
+                        Int: 9
+                      r:
+                        Int: 10
+                  r:
+                    Int: 11
         "###);
     }
 
@@ -625,24 +635,24 @@ mod test_legal_arithmetic_precedence {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              BinE:
-                op: Add
-                l:
-                  BinE:
-                    op: Mult
-                    l:
-                      Int: 9
-                    r:
-                      Int: 10
-                r:
-                  BinE:
-                    op: Mult
-                    l:
-                      Int: 11
-                    r:
-                      Int: 12
+          stmts:
+            - Return:
+                BinE:
+                  op: Add
+                  l:
+                    BinE:
+                      op: Mult
+                      l:
+                        Int: 9
+                      r:
+                        Int: 10
+                  r:
+                    BinE:
+                      op: Mult
+                      l:
+                        Int: 11
+                      r:
+                        Int: 12
         "###);
     }
 }
@@ -667,14 +677,14 @@ mod test_legal_control_flow {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              RelE:
-                op: Eq
-                l:
-                  Int: 9
-                r:
-                  Int: 9
+          stmts:
+            - Return:
+                RelE:
+                  op: Eq
+                  l:
+                    Int: 9
+                  r:
+                    Int: 9
         "###);
     }
 
@@ -691,14 +701,14 @@ mod test_legal_control_flow {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              RelE:
-                op: Neq
-                l:
-                  Int: 9
-                r:
-                  Int: 10
+          stmts:
+            - Return:
+                RelE:
+                  op: Neq
+                  l:
+                    Int: 9
+                  r:
+                    Int: 10
         "###);
     }
 
@@ -715,14 +725,14 @@ mod test_legal_control_flow {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              RelE:
-                op: And
-                l:
-                  Int: 1
-                r:
-                  Int: 1
+          stmts:
+            - Return:
+                RelE:
+                  op: And
+                  l:
+                    Int: 1
+                  r:
+                    Int: 1
         "###);
     }
 
@@ -739,14 +749,14 @@ mod test_legal_control_flow {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              RelE:
-                op: Or
-                l:
-                  Int: 1
-                r:
-                  Int: 1
+          stmts:
+            - Return:
+                RelE:
+                  op: Or
+                  l:
+                    Int: 1
+                  r:
+                    Int: 1
         "###);
     }
 
@@ -763,14 +773,14 @@ mod test_legal_control_flow {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              RelE:
-                op: Lt
-                l:
-                  Int: 9
-                r:
-                  Int: 10
+          stmts:
+            - Return:
+                RelE:
+                  op: Lt
+                  l:
+                    Int: 9
+                  r:
+                    Int: 10
         "###);
     }
 
@@ -787,14 +797,14 @@ mod test_legal_control_flow {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            Return:
-              RelE:
-                op: Gt
-                l:
-                  Int: 10
-                r:
-                  Int: 9
+          stmts:
+            - Return:
+                RelE:
+                  op: Gt
+                  l:
+                    Int: 10
+                  r:
+                    Int: 9
         "###);
     }
 
@@ -811,22 +821,43 @@ mod test_legal_control_flow {
         insta::assert_yaml_snapshot!(tree, @r###"
         ---
         main_function:
-          statement:
-            IfEls:
-              cond:
-                RelE:
-                  op: Lt
-                  l:
-                    Int: 9
-                  r:
-                    Int: 10
-              then:
-                Return:
-                  Int: 0
-              els:
-                Return:
-                  Int: 1
+          stmts:
+            - IfEls:
+                cond:
+                  RelE:
+                    op: Lt
+                    l:
+                      Int: 9
+                    r:
+                      Int: 10
+                then:
+                  Return:
+                    Int: 0
+                els:
+                  Return:
+                    Int: 1
         "###);
+    }
+}
+
+#[cfg(test)]
+mod test_legal_data_flow {
+    use crate::lexer;
+    use std::fs;
+
+    const TEST_DIR: &str = "tests/fixtures/din/legal/data_flow";
+
+    #[test]
+    fn eq() {
+        let chars = fs::read(format!("{TEST_DIR}/asnmt.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @"");
     }
 }
 

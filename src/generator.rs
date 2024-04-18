@@ -1,7 +1,7 @@
 use crate::parser;
 
 pub fn gen(tree: parser::Program) -> Vec<String> {
-    let program = gen_stmt(tree.main_function.statement);
+    let program = gen_stmt(tree.main_function.stmts[0].to_owned());
 
     let output: Vec<String> = vec![
         ".text".to_owned(),
@@ -17,7 +17,24 @@ pub fn gen(tree: parser::Program) -> Vec<String> {
 
 fn gen_stmt(s: parser::Stmt) -> Vec<String> {
     match s {
-        parser::Stmt::Switch => todo!(),
+        parser::Stmt::Asnmt { identifier, expr } => todo!(),
+        parser::Stmt::For => todo!(),
+        parser::Stmt::While => todo!(),
+        parser::Stmt::Return(e) => {
+            let output = vec![
+                gen_expr(e)
+                    .iter()
+                    .map(|line| format!("    {line}"))
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+                "# return expr".to_owned(),
+                "lw a0,0(sp)".to_owned(),
+                "addi sp,sp,8".to_owned(),
+                "ret".to_owned(),
+            ];
+
+            output
+        }
         parser::Stmt::If => todo!(),
         parser::Stmt::IfEls { cond, then, els } => {
             let cond_mc = gen_expr(*cond);
@@ -61,26 +78,6 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
                     .to_owned(),
                 "end:".to_owned(),
                 "  ret".to_owned(),
-            ];
-
-            output
-        }
-        parser::Stmt::While => todo!(),
-        parser::Stmt::Dowhile => todo!(),
-        parser::Stmt::For => todo!(),
-        parser::Stmt::Break => todo!(),
-        parser::Stmt::Continue => todo!(),
-        parser::Stmt::Return(e) => {
-            let output = vec![
-                gen_expr(e)
-                    .iter()
-                    .map(|line| format!("    {line}"))
-                    .collect::<Vec<_>>()
-                    .join("\n"),
-                "# return expr".to_owned(),
-                "lw a0,0(sp)".to_owned(),
-                "addi sp,sp,8".to_owned(),
-                "ret".to_owned(),
             ];
 
             output
