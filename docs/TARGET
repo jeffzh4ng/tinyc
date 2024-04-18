@@ -1,0 +1,24 @@
+# TARGET
+
+**References**
+- [The case for the reduced instruction set computer (Patterson, Ditzel)](https://dl.acm.org/doi/10.1145/641914.641917)
+- [Instruction Sets Should Be Free: The Case For RISC-V (Asanović, Patterson)](https://people.eecs.berkeley.edu/~krste/papers/EECS-2014-146.pdf)
+- [RISC-V Reader](http://riscvbook.com/)
+- [RV32I Unprivileged Spec](https://github.com/riscv/riscv-isa-manual/releases/tag/Ratified-IMAFDQC)
+- [RV32I Privileged Spec](https://github.com/riscv/riscv-isa-manual/releases/tag/Priv-v1.12)
+
+reg    | name  | saver  | description
+-------+-------+--------+------------
+x0     | zero  |        | hardwired zero
+x1     | ra    | caller | return address
+x2     | sp    | callee | stack pointer
+x3     | gp    |        | global pointer
+x4     | tp    |        | thread pointer
+x5-7   | t0-2  | caller | temporary registers
+x8     | s0/fp | callee | saved register / frame pointer
+x9     | s1    | callee | saved register
+x10-11 | a0-1  | caller | function arguments / return values
+x12-17 | a2-7  | caller | function arguments
+x18-27 | s2-11 | callee | saved registers
+x28-31 | t3-6  | caller | temporary registers
+pc     |       |        | program counter
