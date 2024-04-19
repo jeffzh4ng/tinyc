@@ -17,7 +17,7 @@ assert() {
   fi
 }
 
-# arithmetic
+# 1. expressions
 assert "./tests/fixtures/din/legal/arithmetic/lit.c" 8
 assert "./tests/fixtures/din/legal/arithmetic/add.c" 19
 assert "./tests/fixtures/din/legal/arithmetic/add_multi.c" 30
@@ -30,7 +30,10 @@ assert "./tests/fixtures/din/legal/arithmetic_precedence/sub_associative.c" 11
 assert "./tests/fixtures/din/legal/arithmetic_precedence/mult_add_precedence.c" 101
 assert "./tests/fixtures/din/legal/arithmetic_precedence/mult_add_precedence_multi.c" 222
 
-# control flow
+
+
+# 2. control flow
+# -- booleans
 assert "./tests/fixtures/din/legal/control_flow/eq_true.c" 1
 assert "./tests/fixtures/din/legal/control_flow/eq_false.c" 0
 assert "./tests/fixtures/din/legal/control_flow/neq_true.c" 1
@@ -48,7 +51,34 @@ assert "./tests/fixtures/din/legal/control_flow/gt_true.c" 1
 assert "./tests/fixtures/din/legal/control_flow/gteq_true.c" 1
 assert "./tests/fixtures/din/legal/control_flow/gteq2_true.c" 1
 
+# -- conditionals
 assert "./tests/fixtures/din/legal/control_flow/ifels_then.c" 0
 assert "./tests/fixtures/din/legal/control_flow/ifels_els.c" 0
+
+# -- loops
+
+# -- functions
+
+
+
+# 3. data transfer
+assert "./tests/fixtures/din/legal/data_flow/asnmt.c" 8
+assert "./tests/fixtures/din/legal/data_flow/asnmt_multi.c" 9
+assert "./tests/fixtures/din/legal/data_flow/asnmt_multi_expr.c" 19
+assert "./tests/fixtures/din/legal/data_flow/asnmt_multi_expr_var.c" 38
+
+
+# -- bindings
+# - introduction
+# - update (++/+=, --/-=)
+# - elimination
+# - 1 moral judgement from plai: scope. spatial (static) > temporal (dynamic)
+
+# -- malloc/free
+# -- pointer/deref
+# -- structs selec/deref
+# -- alloc/dealloc fixed sized arrays
+
+
 
 echo OK

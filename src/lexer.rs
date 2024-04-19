@@ -540,7 +540,7 @@ mod test_legal_data_flow {
     const TEST_DIR: &str = "tests/fixtures/din/legal/data_flow";
 
     #[test]
-    fn var() {
+    fn asnmt() {
         #[rustfmt::skip]
         let input = fs::read(format!("{TEST_DIR}/asnmt.c"))
             .expect("Should have been able to read the file")
@@ -563,17 +563,17 @@ mod test_legal_data_flow {
           typ: PuncLeftBrace
         - lexeme: int
           typ: KeywordInt
-        - lexeme: n
+        - lexeme: x
           typ: Identifier
         - lexeme: "="
           typ: Equals
-        - lexeme: "0"
+        - lexeme: "8"
           typ: LiteralInt
         - lexeme: ;
           typ: PuncSemiColon
         - lexeme: return
           typ: KeywordRet
-        - lexeme: n
+        - lexeme: x
           typ: Identifier
         - lexeme: ;
           typ: PuncSemiColon

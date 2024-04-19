@@ -1,23 +1,54 @@
 use crate::parser;
 
 pub fn gen(tree: parser::Program) -> Vec<String> {
-    let program = gen_stmt(tree.main_function.stmts[0].to_owned());
+    let prologue = vec!["mv fp,sp".to_owned(), "addi sp,sp,208".to_owned()]; // 26 vars
+    let program = tree
+        .main_function
+        .stmts
+        .into_iter()
+        .map(|s| gen_stmt(s))
+        .flatten()
+        .collect::<Vec<_>>();
 
     let output: Vec<String> = vec![
         ".text".to_owned(),
         ".globl main".to_owned(),
         ".section .text".to_owned(),
         "main:".to_owned(),
+        prologue
+            .iter()
+            .map(|line| format!("    {line}"))
+            .collect::<Vec<_>>()
+            .join("\n"),
         program.join("\n"),
+        // mov rbp rsp
+        // pop rbp
         "".to_owned(),
     ];
 
     output
 }
 
+fn calc_offset(id: &parser::Id) -> u8 {
+    let binding = id.0.chars().next().unwrap();
+    let offset = binding as u8 - 'a' as u8;
+    offset * 8
+}
+
 fn gen_stmt(s: parser::Stmt) -> Vec<String> {
     match s {
-        parser::Stmt::Asnmt { identifier, expr } => todo!(),
+        parser::Stmt::Asnmt { id, expr } => {
+            let offset = calc_offset(&id);
+            let expr = gen_expr(*expr);
+
+            vec![
+                expr.join("\n"),
+                "# assigning...".to_owned(),
+                "lw t0,0(sp)".to_owned(),
+                format!("sw t0,{offset}(fp)"),
+                "# done...".to_owned(),
+            ]
+        }
         parser::Stmt::For => todo!(),
         parser::Stmt::While => todo!(),
         parser::Stmt::Return(e) => {
@@ -87,6 +118,14 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
 
 fn gen_expr(e: parser::Expr) -> Vec<String> {
     match e {
+        parser::Expr::Var(id) => {
+            let offset = calc_offset(&id);
+            vec![
+                "# elimination of variable".to_owned(),
+                format!("lw t0,{offset}(fp)"),
+                "sw t0,0(sp)".to_owned(),
+            ]
+        }
         parser::Expr::Int(n) => {
             let mut output = Vec::new();
             output.push("# 1. load".to_owned());
@@ -174,14 +213,14 @@ fn gen_expr(e: parser::Expr) -> Vec<String> {
                 .join("\n"),
                 parser::RelOp::And => "and t3,t2,t1".to_owned(), // TODO: does riscv short circuit?
                 parser::RelOp::Or => "or t3,t2,t1".to_owned(),   // TODO: does riscv short circuit?
-                parser::RelOp::Lteq => vec![
+                parser::RelOp::LtEq => vec![
                     // a <= b equivalent to !(b < a)
                     "slt t3,t1,t2".to_owned(),   // b < a
                     "  xori t3,t3,1".to_owned(), // !(b < a)
                 ]
                 .join("\n"),
                 parser::RelOp::Lt => "slt t3,t2,t1".to_owned(),
-                parser::RelOp::Gteq => vec![
+                parser::RelOp::GtEq => vec![
                     // a >= b equivalent b <= a equivalent to !(a < b)
                     "slt t3,t2,t1".to_owned(),   // a < b
                     "  xori t3,t3,1".to_owned(), // !(a < b)

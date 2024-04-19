@@ -13,11 +13,14 @@ pub struct MainFunction {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub struct Id(pub String);
+
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Stmt {
     // Continue,
     // Break,
     Asnmt {
-        identifier: String,
+        id: Id,
         expr: Box<Expr>,
     },
     Return(Expr),
@@ -36,6 +39,7 @@ pub enum Stmt {
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Expr {
     // eliminations (operations)
+    Var(Id), // eliminates assignment
     LogE {
         op: LogOp,
         l: Box<Expr>,
@@ -91,9 +95,9 @@ pub enum RelOp {
     Neq,
     And,
     Or,
-    Lteq,
+    LtEq,
     Lt,
-    Gteq,
+    GtEq,
     Gt,
 }
 
@@ -127,7 +131,10 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
     let mut stmts = vec![];
     let mut r0 = r;
     while let Ok((s, r1)) = parse_stmt(r0) {
+        println!("moose: {:?}", r0);
+        println!("deer: {:?}", s);
         stmts.push(s);
+        println!("wolf: {:?}", r1);
         r0 = r1;
     }
     let (_, r) = mtch(r0, TokenType::PuncRightBrace)?;
@@ -143,6 +150,21 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
         [f, r @ ..] => match f.typ {
+            TokenType::KeywordInt => {
+                let (idt, r) = mtch(r, TokenType::Identifier)?;
+                let (_, r) = mtch(r, TokenType::Equals)?;
+                let (expr, r) = parse_rel_expr(r)?;
+
+                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+
+                Ok((
+                    Stmt::Asnmt {
+                        id: Id(idt.lexeme.to_owned()),
+                        expr: Box::new(expr),
+                    },
+                    r,
+                ))
+            }
             TokenType::KeywordRet => {
                 let (expr, r) = parse_rel_expr(r)?;
                 let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
@@ -258,7 +280,14 @@ fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
 fn parse_atom(tokens: &[Token]) -> Result<(Expr, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
-        [f, r @ ..] => Ok((Expr::Int(f.lexeme.parse().unwrap()), r)),
+        [f, r @ ..] => match f.typ {
+            TokenType::Identifier => Ok((Expr::Var(Id(f.lexeme.to_owned())), r)),
+            TokenType::LiteralInt => Ok((Expr::Int(f.lexeme.parse().unwrap()), r)),
+            t => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("token not recognizable {:?}", t),
+            )),
+        },
     }
 }
 
@@ -269,14 +298,14 @@ fn parse_rel_op(tokens: &[Token]) -> Result<(RelOp, &[Token]), io::Error> {
             TokenType::LeftAngleBracket => match r {
                 [] => todo!(),
                 [s, r @ ..] => match s.typ {
-                    TokenType::Equals => Ok((RelOp::Lteq, r)),
+                    TokenType::Equals => Ok((RelOp::LtEq, r)),
                     _ => Ok((RelOp::Lt, &tokens[1..])), // include s
                 },
             },
             TokenType::RightAngleBracket => match r {
                 [] => todo!(),
                 [s, r @ ..] => match s.typ {
-                    TokenType::Equals => Ok((RelOp::Gteq, r)),
+                    TokenType::Equals => Ok((RelOp::GtEq, r)),
                     _ => Ok((RelOp::Gt, &tokens[1..])), // include s
                 },
             },
@@ -848,7 +877,7 @@ mod test_legal_data_flow {
     const TEST_DIR: &str = "tests/fixtures/din/legal/data_flow";
 
     #[test]
-    fn eq() {
+    fn asnmt() {
         let chars = fs::read(format!("{TEST_DIR}/asnmt.c"))
             .expect("Should have been able to read the file")
             .iter()
@@ -857,7 +886,17 @@ mod test_legal_data_flow {
 
         let tokens = lexer::lex(&chars);
         let tree = super::parse(tokens).unwrap();
-        insta::assert_yaml_snapshot!(tree, @"");
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          stmts:
+            - Asnmt:
+                id: x
+                expr:
+                  Int: 8
+            - Return:
+                Var: x
+        "###);
     }
 }
 
