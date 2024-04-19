@@ -49,7 +49,25 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
                 "# done...".to_owned(),
             ]
         }
-        parser::Stmt::AsnmtUpdate { op, expr } => todo!(),
+        parser::Stmt::AsnmtUpdate { id, op, expr } => {
+            let expr = gen_expr(*expr);
+            let offset = calc_offset(&id);
+            let update = match op {
+                parser::BinOp::Add => "add",
+                parser::BinOp::Sub => "sub",
+                parser::BinOp::Mult => "mul",
+                parser::BinOp::Div => "div",
+                parser::BinOp::Mod => todo!(),
+            };
+
+            vec![
+                expr.join("\n"),
+                format!("lw t0,0(sp)").to_owned(),
+                format!("lw t1,{offset}(fp)").to_owned(),
+                format!("{update} t2,t0,t1").to_owned(),
+                format!("sw t2,{offset}(fp)").to_owned(),
+            ]
+        }
         parser::Stmt::For => todo!(),
         parser::Stmt::While => todo!(),
         parser::Stmt::Return(e) => {

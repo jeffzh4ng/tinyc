@@ -62,17 +62,16 @@ assert "./tests/fixtures/din/legal/control_flow/ifels_els.c" 0
 
 
 # 3. data transfer
+# -- bindings
+# - 1 moral judgement from plai: scope spatial (static) > temporal (dynamic)
 assert "./tests/fixtures/din/legal/data_flow/asnmt.c" 8
 assert "./tests/fixtures/din/legal/data_flow/asnmt_multi.c" 9
 assert "./tests/fixtures/din/legal/data_flow/asnmt_multi_expr.c" 19
 assert "./tests/fixtures/din/legal/data_flow/asnmt_multi_expr_var.c" 38
+assert "./tests/fixtures/din/legal/data_flow/asnmt_update.c" 10
 
 
-# -- bindings
-# - introduction
-# - update (++/+=, --/-=)
-# - elimination
-# - 1 moral judgement from plai: scope. spatial (static) > temporal (dynamic)
+
 
 # -- malloc/free
 # -- pointer/deref

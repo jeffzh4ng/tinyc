@@ -24,6 +24,7 @@ pub enum Stmt {
         expr: Box<Expr>,
     },
     AsnmtUpdate {
+        id: Id,
         op: BinOp,
         expr: Box<Expr>,
     },
@@ -168,12 +169,13 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
             }
             TokenType::Identifier => match r {
                 [] => todo!(),
-                [f, s, r @ ..] => match (f.typ, s.typ) {
+                [s, t, r @ ..] => match (s.typ, t.typ) {
                     (TokenType::Plus, TokenType::Equals) => {
                         let (expr, r) = parse_rel_expr(r)?;
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
                         Ok((
                             Stmt::AsnmtUpdate {
+                                id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Add,
                                 expr: Box::new(expr),
                             },
@@ -186,6 +188,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
 
                         Ok((
                             Stmt::AsnmtUpdate {
+                                id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Sub,
                                 expr: Box::new(expr),
                             },
@@ -198,6 +201,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
 
                         Ok((
                             Stmt::AsnmtUpdate {
+                                id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Mult,
                                 expr: Box::new(expr),
                             },
@@ -210,6 +214,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
 
                         Ok((
                             Stmt::AsnmtUpdate {
+                                id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Div,
                                 expr: Box::new(expr),
                             },
@@ -973,6 +978,7 @@ mod test_legal_data_flow {
                 expr:
                   Int: 0
             - AsnmtUpdate:
+                id: n
                 op: Add
                 expr:
                   Int: 10
