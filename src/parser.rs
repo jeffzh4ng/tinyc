@@ -23,6 +23,10 @@ pub enum Stmt {
         id: Id,
         expr: Box<Expr>,
     },
+    AsnmtUpdate {
+        op: BinOp,
+        expr: Box<Expr>,
+    },
     Return(Expr),
     For,
     While,
@@ -131,10 +135,7 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
     let mut stmts = vec![];
     let mut r0 = r;
     while let Ok((s, r1)) = parse_stmt(r0) {
-        println!("moose: {:?}", r0);
-        println!("deer: {:?}", s);
         stmts.push(s);
-        println!("wolf: {:?}", r1);
         r0 = r1;
     }
     let (_, r) = mtch(r0, TokenType::PuncRightBrace)?;
@@ -165,6 +166,60 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                     r,
                 ))
             }
+            TokenType::Identifier => match r {
+                [] => todo!(),
+                [f, s, r @ ..] => match (f.typ, s.typ) {
+                    (TokenType::Plus, TokenType::Equals) => {
+                        let (expr, r) = parse_rel_expr(r)?;
+                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+                        Ok((
+                            Stmt::AsnmtUpdate {
+                                op: BinOp::Add,
+                                expr: Box::new(expr),
+                            },
+                            r,
+                        ))
+                    }
+                    (TokenType::Minus, TokenType::Equals) => {
+                        let (expr, r) = parse_rel_expr(r)?;
+                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+
+                        Ok((
+                            Stmt::AsnmtUpdate {
+                                op: BinOp::Sub,
+                                expr: Box::new(expr),
+                            },
+                            r,
+                        ))
+                    }
+                    (TokenType::Star, TokenType::Equals) => {
+                        let (expr, r) = parse_rel_expr(r)?;
+                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+
+                        Ok((
+                            Stmt::AsnmtUpdate {
+                                op: BinOp::Mult,
+                                expr: Box::new(expr),
+                            },
+                            r,
+                        ))
+                    }
+                    (TokenType::Slash, TokenType::Equals) => {
+                        let (expr, r) = parse_rel_expr(r)?;
+                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+
+                        Ok((
+                            Stmt::AsnmtUpdate {
+                                op: BinOp::Div,
+                                expr: Box::new(expr),
+                            },
+                            r,
+                        ))
+                    }
+                    _ => todo!(),
+                },
+                t => todo!(),
+            },
             TokenType::KeywordRet => {
                 let (expr, r) = parse_rel_expr(r)?;
                 let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
@@ -896,6 +951,33 @@ mod test_legal_data_flow {
                   Int: 8
             - Return:
                 Var: x
+        "###);
+    }
+
+    #[test]
+    fn asnmt_update() {
+        let chars = fs::read(format!("{TEST_DIR}/asnmt_update.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          stmts:
+            - Asnmt:
+                id: n
+                expr:
+                  Int: 0
+            - AsnmtUpdate:
+                op: Add
+                expr:
+                  Int: 10
+            - Return:
+                Var: n
         "###);
     }
 }

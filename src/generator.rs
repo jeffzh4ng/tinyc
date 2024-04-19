@@ -49,6 +49,7 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
                 "# done...".to_owned(),
             ]
         }
+        parser::Stmt::AsnmtUpdate { op, expr } => todo!(),
         parser::Stmt::For => todo!(),
         parser::Stmt::While => todo!(),
         parser::Stmt::Return(e) => {
