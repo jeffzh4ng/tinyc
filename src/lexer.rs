@@ -267,6 +267,10 @@ fn scan_id(input: &[char]) -> Vec<Token> {
                         lexeme: f.to_string(),
                         typ: TokenType::KeywordEls,
                     }),
+                    "for" => Some(Token {
+                        lexeme: f.to_string(),
+                        typ: TokenType::KeywordFor,
+                    }),
                     "return" => Some(Token {
                         lexeme: f.to_string(),
                         typ: TokenType::KeywordRet,
@@ -526,6 +530,110 @@ mod test_legal_arithmetic {
           typ: Slash
         - lexeme: "9"
           typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        "###);
+    }
+}
+
+#[cfg(test)]
+mod test_legal_control_flow {
+    use std::fs;
+
+    const TEST_DIR: &str = "tests/fixtures/din/legal/control_flow";
+
+    #[test]
+    fn for_loop() {
+        #[rustfmt::skip]
+        let input = fs::read(format!("{TEST_DIR}/for.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let output = super::lex(input.as_slice());
+        insta::assert_yaml_snapshot!(output, @r###"
+        ---
+        - lexeme: int
+          typ: KeywordInt
+        - lexeme: main
+          typ: KeywordMain
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: int
+          typ: KeywordInt
+        - lexeme: n
+          typ: Identifier
+        - lexeme: "="
+          typ: Equals
+        - lexeme: "0"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: for
+          typ: KeywordFor
+        - lexeme: (
+          typ: PuncLeftParen
+        - lexeme: int
+          typ: KeywordInt
+        - lexeme: i
+          typ: Identifier
+        - lexeme: "="
+          typ: Equals
+        - lexeme: "0"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: i
+          typ: Identifier
+        - lexeme: "<"
+          typ: LeftAngleBracket
+        - lexeme: "10"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: i
+          typ: Identifier
+        - lexeme: +
+          typ: Plus
+        - lexeme: +
+          typ: Plus
+        - lexeme: )
+          typ: PuncRightParen
+        - lexeme: "{"
+          typ: PuncLeftBrace
+        - lexeme: n
+          typ: Identifier
+        - lexeme: +
+          typ: Plus
+        - lexeme: "="
+          typ: Equals
+        - lexeme: "1"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: n
+          typ: Identifier
+        - lexeme: +
+          typ: Plus
+        - lexeme: "="
+          typ: Equals
+        - lexeme: "1"
+          typ: LiteralInt
+        - lexeme: ;
+          typ: PuncSemiColon
+        - lexeme: "}"
+          typ: PuncRightBrace
+        - lexeme: return
+          typ: KeywordRet
+        - lexeme: n
+          typ: Identifier
         - lexeme: ;
           typ: PuncSemiColon
         - lexeme: "}"

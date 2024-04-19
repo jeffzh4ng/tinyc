@@ -74,7 +74,12 @@ fn gen_asnmt(a: parser::Asnmt) -> Vec<String> {
 fn gen_stmt(s: parser::Stmt) -> Vec<String> {
     match s {
         parser::Stmt::Asnmt(a) => gen_asnmt(a),
-        parser::Stmt::For { cond, body, update } => todo!(),
+        parser::Stmt::For {
+            asnmt,
+            cond,
+            update,
+            body,
+        } => todo!(),
         parser::Stmt::While => todo!(),
         parser::Stmt::Return(e) => {
             let output = vec![

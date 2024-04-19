@@ -29,9 +29,10 @@ pub enum Stmt {
         els: Box<Stmt>,
     },
     For {
-        cond: Asnmt,
-        body: Box<Expr>,
-        update: Asnmt,
+        asnmt: Box<Asnmt>,
+        cond: Box<Expr>,
+        update: Box<Asnmt>,
+        body: Vec<Stmt>,
     },
     Return(Expr),
     Asnmt(Asnmt),
@@ -162,8 +163,6 @@ fn parse_asmt(tokens: &[Token]) -> Result<(Asnmt, &[Token]), io::Error> {
                 let (_, r) = mtch(r, TokenType::Equals)?;
                 let (expr, r) = parse_rel_expr(r)?;
 
-                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
-
                 Ok((
                     Asnmt::CreateBind {
                         id: Id(idt.lexeme.to_owned()),
@@ -177,7 +176,6 @@ fn parse_asmt(tokens: &[Token]) -> Result<(Asnmt, &[Token]), io::Error> {
                 [s, t, r @ ..] => match (s.typ, t.typ) {
                     (TokenType::Plus, TokenType::Equals) => {
                         let (expr, r) = parse_rel_expr(r)?;
-                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
                         Ok((
                             Asnmt::UpdateBind {
                                 id: Id(f.lexeme.parse().unwrap()),
@@ -187,21 +185,16 @@ fn parse_asmt(tokens: &[Token]) -> Result<(Asnmt, &[Token]), io::Error> {
                             r,
                         ))
                     }
-                    (TokenType::Plus, TokenType::Plus) => {
-                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
-
-                        Ok((
-                            Asnmt::UpdateBind {
-                                id: Id(f.lexeme.parse().unwrap()),
-                                op: BinOp::Add,
-                                expr: Box::new(Expr::Int(1)),
-                            },
-                            r,
-                        ))
-                    }
+                    (TokenType::Plus, TokenType::Plus) => Ok((
+                        Asnmt::UpdateBind {
+                            id: Id(f.lexeme.parse().unwrap()),
+                            op: BinOp::Add,
+                            expr: Box::new(Expr::Int(1)),
+                        },
+                        r,
+                    )),
                     (TokenType::Minus, TokenType::Equals) => {
                         let (expr, r) = parse_rel_expr(r)?;
-                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
                             Asnmt::UpdateBind {
@@ -212,22 +205,16 @@ fn parse_asmt(tokens: &[Token]) -> Result<(Asnmt, &[Token]), io::Error> {
                             r,
                         ))
                     }
-                    (TokenType::Minus, TokenType::Minus) => {
-                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
-
-                        Ok((
-                            Asnmt::UpdateBind {
-                                id: Id(f.lexeme.parse().unwrap()),
-                                op: BinOp::Sub,
-                                expr: Box::new(Expr::Int(1)),
-                            },
-                            r,
-                        ))
-                    }
-
+                    (TokenType::Minus, TokenType::Minus) => Ok((
+                        Asnmt::UpdateBind {
+                            id: Id(f.lexeme.parse().unwrap()),
+                            op: BinOp::Sub,
+                            expr: Box::new(Expr::Int(1)),
+                        },
+                        r,
+                    )),
                     (TokenType::Star, TokenType::Equals) => {
                         let (expr, r) = parse_rel_expr(r)?;
-                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
                             Asnmt::UpdateBind {
@@ -240,7 +227,6 @@ fn parse_asmt(tokens: &[Token]) -> Result<(Asnmt, &[Token]), io::Error> {
                     }
                     (TokenType::Slash, TokenType::Equals) => {
                         let (expr, r) = parse_rel_expr(r)?;
-                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
                             Asnmt::UpdateBind {
@@ -251,7 +237,9 @@ fn parse_asmt(tokens: &[Token]) -> Result<(Asnmt, &[Token]), io::Error> {
                             r,
                         ))
                     }
-                    _ => todo!(),
+                    t => {
+                        todo!()
+                    }
                 },
                 t => todo!(),
             },
@@ -269,6 +257,8 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
         [f, r @ ..] => match f.typ {
             TokenType::KeywordInt | TokenType::Identifier => {
                 let (a, r) = parse_asmt(tokens)?;
+                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+
                 Ok((Stmt::Asnmt(a), r))
             }
             TokenType::KeywordRet => {
@@ -293,6 +283,34 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                         cond: Box::new(cond),
                         then: Box::new(then),
                         els: Box::new(els),
+                    },
+                    r,
+                ))
+            }
+            TokenType::KeywordFor => {
+                let (_, r) = mtch(r, TokenType::PuncLeftParen)?;
+                let (asnmt, r) = parse_asmt(r)?;
+                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+                let (cond, r) = parse_rel_expr(r)?;
+                let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+                let (update, r) = parse_asmt(r)?;
+                let (_, r) = mtch(r, TokenType::PuncRightParen)?;
+                let (_, r) = mtch(r, TokenType::PuncLeftBrace)?;
+
+                let mut body = vec![];
+                let mut r0 = r;
+                while let Ok((s, r1)) = parse_stmt(r0) {
+                    body.push(s);
+                    r0 = r1;
+                }
+                let (_, r) = mtch(r0, TokenType::PuncRightBrace)?;
+
+                Ok((
+                    Stmt::For {
+                        asnmt: Box::new(asnmt),
+                        cond: Box::new(cond),
+                        update: Box::new(update),
+                        body,
                     },
                     r,
                 ))
@@ -971,6 +989,62 @@ mod test_legal_control_flow {
                 els:
                   Return:
                     Int: 1
+        "###);
+    }
+
+    #[test]
+    fn for_loop() {
+        let chars = fs::read(format!("{TEST_DIR}/for.c"))
+            .expect("Should have been able to read the file")
+            .iter()
+            .map(|b| *b as char)
+            .collect::<Vec<_>>();
+
+        let tokens = lexer::lex(&chars);
+        let tree = super::parse(tokens).unwrap();
+        insta::assert_yaml_snapshot!(tree, @r###"
+        ---
+        main_function:
+          stmts:
+            - Asnmt:
+                CreateBind:
+                  id: n
+                  expr:
+                    Int: 0
+            - For:
+                asnmt:
+                  CreateBind:
+                    id: i
+                    expr:
+                      Int: 0
+                cond:
+                  RelE:
+                    op: Lt
+                    l:
+                      Var: i
+                    r:
+                      Int: 10
+                update:
+                  UpdateBind:
+                    id: i
+                    op: Add
+                    expr:
+                      Int: 1
+                body:
+                  - Asnmt:
+                      UpdateBind:
+                        id: n
+                        op: Add
+                        expr:
+                          Int: 1
+                  - Asnmt:
+                      UpdateBind:
+                        id: n
+                        op: Add
+                        expr:
+                          Int: 1
+            - Return:
+                Var: n
         "###);
     }
 }
