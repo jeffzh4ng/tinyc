@@ -19,17 +19,6 @@ pub struct Id(pub String);
 pub enum Stmt {
     // Continue,
     // Break,
-    Asnmt {
-        id: Id,
-        expr: Box<Expr>,
-    },
-    AsnmtUpdate {
-        id: Id,
-        op: BinOp,
-        expr: Box<Expr>,
-    },
-    Return(Expr),
-    For,
     While,
     // Dowhile,
     // Switch
@@ -39,6 +28,22 @@ pub enum Stmt {
         then: Box<Stmt>,
         els: Box<Stmt>,
     },
+    For {
+        cond: Asnmt,
+        body: Box<Expr>,
+        update: Asnmt,
+    },
+    Return(Expr),
+    Asnmt(Asnmt),
+}
+
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
+pub enum Asnmt {
+    // intro
+    CreateBind { id: Id, expr: Box<Expr> },
+
+    // update
+    UpdateBind { id: Id, op: BinOp, expr: Box<Expr> },
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
@@ -148,7 +153,7 @@ fn parse_function(tokens: Vec<Token>) -> Result<MainFunction, io::Error> {
     Ok(MainFunction { stmts })
 }
 
-fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
+fn parse_asmt(tokens: &[Token]) -> Result<(Asnmt, &[Token]), io::Error> {
     match tokens {
         [] => todo!(),
         [f, r @ ..] => match f.typ {
@@ -160,7 +165,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                 let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                 Ok((
-                    Stmt::Asnmt {
+                    Asnmt::CreateBind {
                         id: Id(idt.lexeme.to_owned()),
                         expr: Box::new(expr),
                     },
@@ -174,7 +179,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                         let (expr, r) = parse_rel_expr(r)?;
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
                         Ok((
-                            Stmt::AsnmtUpdate {
+                            Asnmt::UpdateBind {
                                 id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Add,
                                 expr: Box::new(expr),
@@ -186,7 +191,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
-                            Stmt::AsnmtUpdate {
+                            Asnmt::UpdateBind {
                                 id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Add,
                                 expr: Box::new(Expr::Int(1)),
@@ -199,7 +204,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
-                            Stmt::AsnmtUpdate {
+                            Asnmt::UpdateBind {
                                 id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Sub,
                                 expr: Box::new(expr),
@@ -211,7 +216,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
-                            Stmt::AsnmtUpdate {
+                            Asnmt::UpdateBind {
                                 id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Sub,
                                 expr: Box::new(Expr::Int(1)),
@@ -225,7 +230,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
-                            Stmt::AsnmtUpdate {
+                            Asnmt::UpdateBind {
                                 id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Mult,
                                 expr: Box::new(expr),
@@ -238,7 +243,7 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
 
                         Ok((
-                            Stmt::AsnmtUpdate {
+                            Asnmt::UpdateBind {
                                 id: Id(f.lexeme.parse().unwrap()),
                                 op: BinOp::Div,
                                 expr: Box::new(expr),
@@ -250,6 +255,22 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                 },
                 t => todo!(),
             },
+            t => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("token not recognizable {:?}", t),
+            )),
+        },
+    }
+}
+
+fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
+    match tokens {
+        [] => todo!(),
+        [f, r @ ..] => match f.typ {
+            TokenType::KeywordInt | TokenType::Identifier => {
+                let (a, r) = parse_asmt(tokens)?;
+                Ok((Stmt::Asnmt(a), r))
+            }
             TokenType::KeywordRet => {
                 let (expr, r) = parse_rel_expr(r)?;
                 let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
@@ -976,9 +997,10 @@ mod test_legal_data_flow {
         main_function:
           stmts:
             - Asnmt:
-                id: x
-                expr:
-                  Int: 8
+                CreateBind:
+                  id: x
+                  expr:
+                    Int: 8
             - Return:
                 Var: x
         "###);
@@ -999,14 +1021,16 @@ mod test_legal_data_flow {
         main_function:
           stmts:
             - Asnmt:
-                id: n
-                expr:
-                  Int: 0
-            - AsnmtUpdate:
-                id: n
-                op: Add
-                expr:
-                  Int: 10
+                CreateBind:
+                  id: n
+                  expr:
+                    Int: 0
+            - Asnmt:
+                UpdateBind:
+                  id: n
+                  op: Add
+                  expr:
+                    Int: 10
             - Return:
                 Var: n
         "###);

@@ -35,9 +35,9 @@ fn calc_offset(id: &parser::Id) -> u8 {
     offset * 8
 }
 
-fn gen_stmt(s: parser::Stmt) -> Vec<String> {
-    match s {
-        parser::Stmt::Asnmt { id, expr } => {
+fn gen_asnmt(a: parser::Asnmt) -> Vec<String> {
+    match a {
+        parser::Asnmt::CreateBind { id, expr } => {
             let offset = calc_offset(&id);
             let expr = gen_expr(*expr);
 
@@ -49,7 +49,7 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
                 "# done...".to_owned(),
             ]
         }
-        parser::Stmt::AsnmtUpdate { id, op, expr } => {
+        parser::Asnmt::UpdateBind { id, op, expr } => {
             let expr = gen_expr(*expr);
             let offset = calc_offset(&id);
             let update = match op {
@@ -68,7 +68,13 @@ fn gen_stmt(s: parser::Stmt) -> Vec<String> {
                 format!("sw t2,{offset}(fp)").to_owned(),
             ]
         }
-        parser::Stmt::For => todo!(),
+    }
+}
+
+fn gen_stmt(s: parser::Stmt) -> Vec<String> {
+    match s {
+        parser::Stmt::Asnmt(a) => gen_asnmt(a),
+        parser::Stmt::For { cond, body, update } => todo!(),
         parser::Stmt::While => todo!(),
         parser::Stmt::Return(e) => {
             let output = vec![

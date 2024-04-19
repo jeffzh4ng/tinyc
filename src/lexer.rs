@@ -22,6 +22,7 @@ pub enum TokenType {
     KeywordRet,
     KeywordIf,
     KeywordEls,
+    KeywordFor,
 
     // eliminations (operations)
     Plus,
