@@ -56,6 +56,7 @@ assert "./tests/fixtures/din/legal/control_flow/ifels_then.c" 0
 assert "./tests/fixtures/din/legal/control_flow/ifels_els.c" 0
 
 # -- loops
+# assert "./tests/fixtures/din/legal/control_flow/for.c" 10
 
 # -- functions
 
@@ -69,6 +70,10 @@ assert "./tests/fixtures/din/legal/data_flow/asnmt_multi.c" 9
 assert "./tests/fixtures/din/legal/data_flow/asnmt_multi_expr.c" 19
 assert "./tests/fixtures/din/legal/data_flow/asnmt_multi_expr_var.c" 38
 assert "./tests/fixtures/din/legal/data_flow/asnmt_update.c" 10
+assert "./tests/fixtures/din/legal/data_flow/asnmt_update_inc.c" 3
+assert "./tests/fixtures/din/legal/data_flow/asnmt_update_dec.c" 7
+
+
 
 
 

@@ -182,6 +182,18 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                             r,
                         ))
                     }
+                    (TokenType::Plus, TokenType::Plus) => {
+                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+
+                        Ok((
+                            Stmt::AsnmtUpdate {
+                                id: Id(f.lexeme.parse().unwrap()),
+                                op: BinOp::Add,
+                                expr: Box::new(Expr::Int(1)),
+                            },
+                            r,
+                        ))
+                    }
                     (TokenType::Minus, TokenType::Equals) => {
                         let (expr, r) = parse_rel_expr(r)?;
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
@@ -195,6 +207,19 @@ fn parse_stmt(tokens: &[Token]) -> Result<(Stmt, &[Token]), io::Error> {
                             r,
                         ))
                     }
+                    (TokenType::Minus, TokenType::Minus) => {
+                        let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
+
+                        Ok((
+                            Stmt::AsnmtUpdate {
+                                id: Id(f.lexeme.parse().unwrap()),
+                                op: BinOp::Sub,
+                                expr: Box::new(Expr::Int(1)),
+                            },
+                            r,
+                        ))
+                    }
+
                     (TokenType::Star, TokenType::Equals) => {
                         let (expr, r) = parse_rel_expr(r)?;
                         let (_, r) = mtch(r, TokenType::PuncSemiColon)?;
