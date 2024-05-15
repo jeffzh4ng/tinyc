@@ -22,9 +22,12 @@ SPEC benchmarks will be left as another challenge for employment, because I ain'
 paying for that out pocket.
 
 The third (and long-term) goal is hacking on the longtail of correctness and
-performance with csmith/yarpgen fuzzing, and -O2/-O3 techniques. However,
-because of Proebsting's Law, my efforts will probably shift to hacking on
-software 2.0 compilers. Gotta follow those exponentials people.
+performance with csmith/yarpgen fuzzing, and -O2/-O3 techniques. A fun paper to
+read is Thompson's [Reflections on Trusting Trust](https://www.cs.cmu.edu/~rdriley/487/papers/Thompson_1984_ReflectionsonTrustingTrust.pdf), and
+Wheeler's [Countering Trusting Trust](https://dwheeler.com/trusting-trust/),
+which is the compiler-equivalent of math and computation's Incompleteness and
+Undecidable results. However, because of Proebsting's Law, my efforts will
+probably shift to hacking on software 2.0 compilers.
 
 ### Roadmap
 A project's roadmap to 1.0 is great legend. Those who apply the Lindy Effect (or
