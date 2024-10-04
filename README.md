@@ -1,10 +1,9 @@
-# din
-![](./din.gif)
+# tinyc
+![](./stallman.jpg)
 
 **a software 1.0 compiler: C89/90 -> RV32G**
 
-`din` is an ambitiously academic batch-style compiler for a 0.25 man year of work
-that compiles the unsafest language with the safest. There's three goals
+`tinyc` is an batch-style compiler that compiles the unsafest language with the safest.
 
 The first goal is to reach a base level of confidence in compiler correctness
 by smoking `din` with 2kloc/10kloc operating systems ([egos2000](), [xv6]()),
@@ -29,20 +28,6 @@ which is the compiler-equivalent of math and computation's Incompleteness and
 Undecidable results. However, because of Proebsting's Law, my efforts will
 probably shift to hacking on software 2.0 compilers.
 
-### Research
-- [SOURCE](./docs/SOURCE)
-- [INTER](./docs/INTER)
-- [TARGET](./docs/TARGET)
-- [UARCH](./docs/UARCH)
-
-### References
-**Textbooks**
-- Cooper, Torczon
-- Muchnick
-- Harper
-- SSA book
-- Levine
-- Patterson & Hennesey
 
 **Architectures**
 - [rustc High Level Compiler Architecture](https://rustc-dev-guide.rust-lang.org/part-2-intro.html)
